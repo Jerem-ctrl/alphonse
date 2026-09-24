@@ -1,0 +1,7 @@
+# LEs fichiers du système :
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Les réglages personnels de notre éditeur :
+.vscode/
