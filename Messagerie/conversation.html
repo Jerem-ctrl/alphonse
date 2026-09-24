@@ -4,35 +4,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=4, initial-scale=1.0">
-    <link rel="icon" type="image/png"  href="./images/logo-alphonse2-removebg-preview.png">
+    <link rel="icon" type="image/png" href="./images/logo-alphonse2-removebg-preview.png">
     <link rel="stylesheet" href="style.css">
     <title>Conversation</title>
 </head>
 
 <body>
-    <ul>
-        <li> <a href="./contact.html">Contact</a></li>
-        <li> <a href="./parametre.html">Parametre</a></li>
-        <li><button>Nouvelle conversation</button></li>
-    </ul>
 
-    <table>
-        <tr>
-            <th>Alice</th>
-        </tr>
-        <tr>
-            <th>Bob</th>
-        </tr>
-    </table>
+    <header>
+        
+        <nav>
+            <ul>
+                <li><a href="./contact.html">Contact</a></li>
+                <li><a href="./parametres.html">Paramètres</a></li>
+                <li><button type="button">Nouvelle conversation</button></li>
+            </ul>
+        </nav>
 
-    <div id="message-form">
-        <input type="messsage" id="messsage" name="messsage" required>
-        <button type="submit">Envoyer</button>
-    </div>
+    </header>
+
+    <main>
+
+        <div id="liste-conversations">
+            <h2>Conversations</h2>
+            <ul>
+                <li><a href="#">Alice</a></li>
+                <li><a href="#">Bob</a></li>
+            </ul>
+        </div>
+
+        <form id="message-form">
+            <label for="message">Votre message</label>
+            <input type="text" id="message" name="message" required>
+            <button type="submit">Envoyer</button>
+        </form>
+
+    </main>
+
 </body>
 
 <footer>
-    <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4s>
+    <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4>
 </footer>
 
 </html>

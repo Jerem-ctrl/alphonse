@@ -4,22 +4,3 @@
     padding: 0;
     font-family: Arial, sans-serif;
 }
-
-#title-form img {
-    padding-top: 15%;
-    width: 15%;
-    height: auto;
-}
-
-#login-form{
-    text-align: center;
-}
-
- #email-form{
-    padding-top: 2%;
- }
-
-#button{
-    padding-top: 2%;
-}
-
