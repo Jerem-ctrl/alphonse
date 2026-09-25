@@ -24,18 +24,25 @@ Il servira de structure HTML uniquement, sans style ni comportement.
           Pour les téléphone par exemple. -->
           <meta name="viewport" content="width=device-width, initial-scale=1">
 
-          <!-- On affiche notre titre dans l'onglet du navigateur -->
-           <title>Conversation - Alphonse</title>
+          <!-- On affiche notre titre de l'onglet soit le nom du salon d'abord, pour repère le salon 
+           d'un coup d'oeil hehe ! -->
+           <title>Recutement - technicien réseau · Alphonse</title>
            
            <!-- Un petit résumé de notre page qui pourrait être repris par les moteurs de recherche. -->
             <meta name="description" content="Messagerie proffessionnelle Alphonse : rédigez, évaluez 
             et améliorez vos messages avant de les envoyer">
+
             <!-- Petit lien également vers la feuille de style commune (dossier assets/css) -->
              <link rel="stylesheet" href="assets/css/style.css">
      </head>
 
      <!-- =========== LE CONTENU VISIBLE DE NOTRE PAGE AHAH =========== -->
       <body>
+         <!-- ===== 0. LIEN D'EVITEMENT ===== 
+          Il va permettre aux personnes qui naviguent au clavier (touvhe tab) d'accéder directement
+          à la page de conversation, c'est plus fast -->
+          <a class="lien-evitement" href="#fil-messages">Aller à la page conversation</a>
+
          <!-- ========== 1. EN-TETE DE NOTRE SITE ========== 
           <header> : va contenir le nom (Alphonse) et la navigation prinicpale
             de notre site web -->
