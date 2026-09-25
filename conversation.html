@@ -54,5 +54,50 @@ Il servira de structure HTML uniquement, sans style ni comportement.
                      </ul>
                   </nav>
             </header>
+
+            <!-- ===== 2. CONCEPTION DE LA COLONNE DE GAUCHE : CONTACTS ET SALONS ===== 
+             Tout simplement des liens pour changer de conversation -->
+             <nav aria-label="Conversation">
+
+               <!-- <section> = pour un groupe de contenu lié par un thème.
+                  On commence la section par un titre, c'est + beau ! -->
+                  <section>
+                     <h2>Contacts</h2>
+                     <!-- <ul> = On la choisi car l'ordre des contacts n'a pas vraiment d'importance -->
+                        <ul>
+                           <li>
+                              <a href="#">Marc Gagnon</a>
+
+                              <!-- Nous avons écrit le status en toutes lettres pour que l'inforamtion 
+                               ne dépende pas uniquement d'une pastille de couleur (Pour répondre aux exigences 
+                               d'accessibilité AA c'est mieux, car l'indication est plus précise)-->
+                              <span class="statut en ligne">en ligne</span>
+                           </li>
+                           <li>
+                              <a href="#">Sophie</a>
+                              <span class="statut hors-ligne">hors ligne</span>
+                           </li>
+                           <li>
+                              <a href="#">Karim Benali</a>
+                              <span class="statut en ligne">en ligne</span>
+                           </li>
+                           <li>
+                              <a href="#">Julie Coté</a>
+                              <span class="statut hors-ligne">hors ligne</span>
+                           </li>
+                        </ul>
+                  </section>
+
+                  <section>
+                     <h2>Salons</h2>
+                     <ul>
+                        <!-- aria-current="page" signalera le salon actuellement ouvert.
+                         On le mettra en évidence en utilisant le CSS.-->
+                         <li><a href="#" aria-current="page">Recrutement - technicien réseau</a></li>
+                         <li><a href="#">Equipe RH</a></li>
+                         <li><a href="#">Intégration des nouveaux employés</a></li>
+                     </ul>
+                  </section>
+             </nav>
       </body>
  </html>
