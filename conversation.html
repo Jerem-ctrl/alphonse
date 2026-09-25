@@ -33,4 +33,26 @@ Il servira de structure HTML uniquement, sans style ni comportement.
             <!-- Petit lien également vers la feuille de style commune (dossier assets/css) -->
              <link rel="stylesheet" href="assets/css/style.css">
      </head>
+
+     <!-- =========== LE CONTENU VISIBLE DE NOTRE PAGE AHAH =========== -->
+      <body>
+         <!-- ========== 1. EN-TETE DE NOTRE SITE ========== 
+          <header> : va contenir le nom (Alphonse) et la navigation prinicpale
+            de notre site web -->
+            <header>
+               <!-- Avec <h1> on va mettre le titre le plus important, c'est génial !-->
+                  <h1>Alphonse</h1>
+                  <!-- <nav> = les bloc de liens de navigation. 
+                  aria-label donnera un nom à ce bloc, 
+                  Étant donné que la page contiendra plusieurs « <nav> » ,
+                  il nous faut donc distinguer ses dernières-->
+                  <nav aria-label="Navigation principale">
+                     <ul>
+                        <li><a href="conversation.html">Messagerie</a></li>
+                        <li><a href="profil.html">Profil et paramètres</a></li>
+                        <li><a href="connexion.html">Déconnexion</a></li>
+                     </ul>
+                  </nav>
+            </header>
+      </body>
  </html>
