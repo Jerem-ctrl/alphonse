@@ -1,0 +1,128 @@
+{
+  "software": {
+    "name": "LanguageTool",
+    "version": "6.9-SNAPSHOT",
+    "buildDate": "2026-09-01 15:16:00 +0000",
+    "apiVersion": 1,
+    "premium": true,
+    "premiumHint": "You might be missing errors only the Premium version can find. Contact us at support<at>languagetoolplus.com.",
+    "status": ""
+  },
+  "warnings": {
+    "incompleteResults": false
+  },
+  "language": {
+    "name": "French",
+    "code": "fr",
+    "detectedLanguage": {
+      "name": "French",
+      "code": "fr",
+      "confidence": 1.0,
+      "source": "ngram"
+    }
+  },
+  "matches": [
+    {
+      "message": "Un verbe conjugué est généralement attendu après le pronom personnel sujet « je ».",
+      "shortMessage": "",
+      "replacements": [
+        {
+          "value": "envoie"
+        }
+      ],
+      "offset": 17,
+      "length": 5,
+      "context": {
+        "text": "Bonjour, je vous envoi le raport demain.",
+        "offset": 17,
+        "length": 5
+      },
+      "sentence": "Bonjour, je vous envoi le raport demain.",
+      "type": {
+        "typeName": "Other"
+      },
+      "rule": {
+        "id": "PRONSUJ_NONVERBE",
+        "subId": "6",
+        "sourceFile": "grammar.xml",
+        "description": "pronom sujet + non verbe",
+        "issueType": "uncategorized",
+        "category": {
+          "id": "CAT_GRAMMAIRE",
+          "name": "Grammaire"
+        },
+        "isPremium": false
+      },
+      "ignoreForIncompleteSentence": true,
+      "contextForSureMatch": 7
+    },
+    {
+      "message": "Faute de frappe possible trouvée.",
+      "shortMessage": "Faute de frappe",
+      "replacements": [
+        {
+          "value": "rapport"
+        },
+        {
+          "value": "rapports"
+        },
+        {
+          "value": "rapporte"
+        },
+        {
+          "value": "rapporté"
+        },
+        {
+          "value": "rapporta"
+        },
+        {
+          "value": "report"
+        },
+        {
+          "value": "ra port"
+        }
+      ],
+      "offset": 26,
+      "length": 6,
+      "context": {
+        "text": "Bonjour, je vous envoi le raport demain.",
+        "offset": 26,
+        "length": 6
+      },
+      "sentence": "Bonjour, je vous envoi le raport demain.",
+      "type": {
+        "typeName": "UnknownWord"
+      },
+      "rule": {
+        "id": "FR_SPELLING_RULE",
+        "description": "Faute de frappe possible",
+        "issueType": "misspelling",
+        "category": {
+          "id": "TYPOS",
+          "name": "Faute de frappe possible"
+        },
+        "isPremium": false
+      },
+      "ignoreForIncompleteSentence": false,
+      "contextForSureMatch": 0
+    }
+  ],
+  "sentenceRanges": [
+    [
+      0,
+      40
+    ]
+  ],
+  "extendedSentenceRanges": [
+    {
+      "from": 0,
+      "to": 40,
+      "detectedLanguages": [
+        {
+          "language": "fr",
+          "rate": 1.0
+        }
+      ]
+    }
+  ]
+}
