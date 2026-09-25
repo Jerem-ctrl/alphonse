@@ -1,7 +1,6 @@
 # Note technique : API LanguageTool
 
 **Projet :** Alphonse, projet fil-rouge 8WEB101 (UQAC, automne 2026)
-**Étape du planning :** lire la documentation de l'API LanguageTool et effectuer un premier appel de test avec `curl`
 **Date des tests :** 25 septembre 2026
 **Environnement de test :** iPad avec le terminal a-Shell (`curl` et `python3 -m json.tool`) pour les tests 1 à 7 ; ordinateur sous Windows avec Git Bash (`curl` et `jq`) pour les tests 7 b et 7 c
 
