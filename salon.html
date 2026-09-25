@@ -1,124 +1,142 @@
-# du doctype jusqu'a </head>
 <!doctype html>
 <!--
-
 =====================================================================
-Cette page représentera l'écran de conversation d'Alphonse 
-Projet fil-rouge 8WEB101 - UQAC, autonme 2026
-Le nom du fichier est : conversation.html
-Son role : Il servira de structure 
-Il servira de structure HTML uniquement, sans style ni comportement.
+Cette page représente l'écran de conversation d'Alphonse
+Projet fil-rouge 8WEB101 - UQAC, automne 2026
+Le nom du fichier est : salon.html
+Son rôle : structure HTML uniquement, sans style ni comportement.
 =====================================================================
---->
+-->
 
-<!-- lang="fr" : indique la langue de la page ci-dessous aux lecteur d'écran ainsi qu'aux navigateurs.
- Dans notre cas il s'agira du Français -->
+<!-- lang="fr" : indique la langue de la page aux lecteurs d'écran ainsi qu'aux navigateurs.
+     Dans notre cas, il s'agit du français -->
+<html lang="fr">
 
- <html lang="fr">
-    <!-- ========== EN-TETE DE NOTRE PAGE (Invisibile à l'écran) ========== -->
-     <head>
-        <!-- L'encodage UTF-8 nous permet ici d'afficher correctement les : é ; à ; ect... -->
-         <meta charset="utf-8">
+  <!-- ========== EN-TÊTE DE NOTRE PAGE (invisible à l'écran) ========== -->
+  <head>
+    <!-- L'encodage UTF-8 nous permet d'afficher correctement les é, à, ç, etc. -->
+    <meta charset="utf-8">
 
-         <!-- On adapte la largeur de la page à l'écran de l'appareil.
-          Pour les téléphone par exemple. -->
-          <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- On adapte la largeur de la page à l'écran de l'appareil, pour les téléphones par exemple -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-          <!-- On affiche notre titre de l'onglet soit le nom du salon d'abord, pour repère le salon 
-           d'un coup d'oeil hehe ! -->
-           <title>Recutement - technicien réseau · Alphonse</title>
-           
-           <!-- Un petit résumé de notre page qui pourrait être repris par les moteurs de recherche. -->
-            <meta name="description" content="Messagerie proffessionnelle Alphonse : rédigez, évaluez 
-            et améliorez vos messages avant de les envoyer">
+    <!-- Le titre de l'onglet : le nom du salon d'abord, pour le repérer d'un coup d'œil hehe ! -->
+    <title>Recrutement – technicien réseau · Alphonse</title>
 
-            <!-- Petit lien également vers la feuille de style commune (dossier assets/css) -->
-             <link rel="stylesheet" href="assets/css/style.css">
-     </head>
+    <!-- Un petit résumé de notre page, qui peut être repris par les moteurs de recherche -->
+    <meta name="description" content="Alphonse, messagerie professionnelle : rédigez, évaluez et améliorez vos messages avant de les envoyer.">
 
-     <!-- =========== LE CONTENU VISIBLE DE NOTRE PAGE AHAH =========== -->
-      <body>
-         <!-- ===== 0. LIEN D'EVITEMENT ===== 
-          Il va permettre aux personnes qui naviguent au clavier (touvhe tab) d'accéder directement
-          à la page de conversation, c'est plus fast -->
-          <a class="lien-evitement" href="#fil-messages">Aller à la page conversation</a>
+    <!-- Petit lien vers la feuille de style commune (dossier assets/css) -->
+    <link rel="stylesheet" href="assets/css/style.css">
+  </head>
 
-         <!-- ========== 1. EN-TETE DE NOTRE SITE ========== 
-          <header> : va contenir le nom (Alphonse) et la navigation prinicpale
-            de notre site web -->
-            <header>
-               <!-- Avec <h1> on va mettre le titre le plus important, c'est génial !-->
-                  <h1>Alphonse</h1>
-                  <!-- <nav> = les bloc de liens de navigation. 
-                  aria-label donnera un nom à ce bloc, 
-                  Étant donné que la page contiendra plusieurs « <nav> » ,
-                  il nous faut donc distinguer ses dernières-->
-                  <nav aria-label="Navigation principale">
-                     <ul>
-                        <li><a href="conversation.html">Messagerie</a></li>
-                        <li><a href="profil.html">Profil et paramètres</a></li>
-                        <li><a href="connexion.html">Déconnexion</a></li>
-                     </ul>
-                  </nav>
-            </header>
+  <!-- ========== LE CONTENU VISIBLE DE NOTRE PAGE AHAH ========== -->
+  <body>
 
-            <!-- ===== 2. CONCEPTION DE LA COLONNE DE GAUCHE : CONTACTS ET SALONS ===== 
-             Tout simplement des liens pour changer de conversation -->
-             <nav aria-label="Conversation">
+    <!-- ===== 0. LIEN D'ÉVITEMENT =====
+         Il permet aux personnes qui naviguent au clavier (touche Tab)
+         d'aller directement à la conversation, c'est plus fast -->
+    <a class="lien-evitement" href="#fil-messages">Aller à la conversation</a>
 
-               <!-- <section> = pour un groupe de contenu lié par un thème.
-                  On commence la section par un titre, c'est + beau ! -->
-                  <section>
-                     <h2>Contacts</h2>
-                     <!-- <ul> = On la choisi car l'ordre des contacts n'a pas vraiment d'importance -->
-                        <ul>
-                           <li>
-                              <a href="#">Marc Gagnon</a>
+    <!-- ========== 1. EN-TÊTE DE NOTRE SITE ==========
+         <header> : contient le nom (Alphonse), la navigation principale et le compte connecté -->
+    <header class="entete-site">
+      <!-- Avec <h1>, on met le titre le plus important, c'est génial ! -->
+      <h1><a href="messagerie.html">Alphonse</a></h1>
 
-                              <!-- Nous avons écrit le status en toutes lettres pour que l'inforamtion 
-                               ne dépende pas uniquement d'une pastille de couleur (Pour répondre aux exigences 
-                               d'accessibilité AA c'est mieux, car l'indication est plus précise)-->
-                              <span class="statut en ligne">en ligne</span>
-                           </li>
-                           <li>
-                              <a href="#">Sophie</a>
-                              <span class="statut hors-ligne">hors ligne</span>
-                           </li>
-                           <li>
-                              <a href="#">Karim Benali</a>
-                              <span class="statut en ligne">en ligne</span>
-                           </li>
-                           <li>
-                              <a href="#">Julie Coté</a>
-                              <span class="statut hors-ligne">hors ligne</span>
-                           </li>
-                        </ul>
-                  </section>
+      <!-- <nav> = un bloc de liens de navigation.
+           La page contient plusieurs <nav> : aria-label donne un nom à chacun pour les distinguer -->
+      <nav aria-label="Navigation principale">
+        <ul>
+          <!-- aria-current="true" : la rubrique dans laquelle on se trouve.
+               "page" est gardé pour le salon ouvert, un peu plus bas -->
+          <li><a href="messagerie.html" aria-current="true">Messagerie</a></li>
+          <li><a href="contacts.html">Contacts</a></li>
+          <li><a href="parametres.html">Paramètres</a></li>
+        </ul>
+      </nav>
 
-                  <section>
-                     <h2>Salons</h2>
-                     <ul>
-                        <!-- aria-current="page" signalera le salon actuellement ouvert.
-                         On le mettra en évidence en utilisant le CSS.-->
-                         <li><a href="#" aria-current="page">Recrutement - technicien réseau</a></li>
-                         <li><a href="#">Equipe RH</a></li>
-                         <li><a href="#">Intégration des nouveaux employés</a></li>
-                     </ul>
-                  </section>
-             </nav>
+      <!-- Le compte de la personne connectée -->
+      <div class="compte">
+        <a href="profil.html">
+          <!-- L'avatar en initiales est décoratif : aria-hidden="true" le cache aux lecteurs d'écran,
+               qui lisent déjà le nom juste après -->
+          <span class="avatar" aria-hidden="true">ER</span>
+          <span class="nom">Emma Roy</span>
+          <span class="statut en-ligne">en ligne</span>
+        </a>
+        <!-- Se déconnecter est une action, pas un changement de page : donc un bouton et pas un lien -->
+        <button type="button" class="bouton-deconnexion">Se déconnecter</button>
+      </div>
+    </header>
 
-             <!-- ===== 3. CONTENU PRINCIPALE : LA CONVERSATION ===== 
-              <main> = sera le contenu central de notre page. Et oui car une messagerie sans 
-               conversation, c'est un peut comme une table sans chaise ahah-->
-               <main>
+    <!-- ===== 2. LA BARRE LATÉRALE : NOS CONVERSATIONS =====
+         Tout simplement des liens pour changer de conversation, d'où le <nav> -->
+    <nav class="barre-conversations" aria-label="Conversations">
 
-                  <!-- On défini une en-tete propre à la conversation avec <header> qui introduira
-                     une zone de la page -->
+      <!-- role="search" : on signale aux lecteurs d'écran que c'est un formulaire de recherche -->
+      <form class="recherche-conversations" role="search">
+        <label for="recherche">Rechercher une conversation</label>
+        <!-- type="search" : sur téléphone, le clavier affiche directement une touche « Rechercher » -->
+        <input type="search" id="recherche" name="q" autocomplete="off">
+      </form>
 
-                     <header>
-                        <h2>Recrutement - technicien réseau</h2>
-                        <p>Particpants </p>
-                     </header>
-               </main>
-      </body>
- </html>
+      <!-- Direction la page de création d'un salon -->
+      <a class="bouton-nouveau-salon" href="nouveau-salon.html">Nouveau salon</a>
+
+      <!-- <section> = un groupe de contenu lié par un thème.
+           On commence la section par un titre, c'est + beau ! -->
+      <section aria-labelledby="titre-salons">
+        <h2 id="titre-salons">Salons</h2>
+        <ul>
+          <li>
+            <!-- ?id=... indique quel salon afficher : une seule page salon.html pour tous les salons.
+                 aria-current="page" signale le salon actuellement ouvert -->
+            <a href="salon.html?id=recrutement-technicien-reseau" aria-current="page">
+              <span class="nom-salon">Recrutement – technicien réseau</span>
+              <!-- L'aperçu du dernier message, comme dans toutes les bonnes messageries -->
+              <span class="apercu">Vous : Entendu. Je finalise le compte rendu…</span>
+            </a>
+          </li>
+          <li>
+            <a href="salon.html?id=equipe-rh">
+              <span class="nom-salon">Équipe RH</span>
+              <span class="apercu">Sophie : La réunion est déplacée à 14 h.</span>
+              <!-- Un « 2 » tout seul, c'est flou pour un lecteur d'écran :
+                   le texte masqué visuellement vient compléter l'information -->
+              <span class="badge-non-lus">2<span class="visuellement-masque"> messages non lus</span></span>
+            </a>
+          </li>
+          <li>
+            <a href="salon.html?id=integration-nouveaux-employes">
+              <span class="nom-salon">Intégration des nouveaux employés</span>
+              <span class="apercu">Karim : Les badges sont prêts.</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Les messages directs : des conversations à deux, en tête-à-tête quoi -->
+      <section aria-labelledby="titre-messages-directs">
+        <h2 id="titre-messages-directs">Messages directs</h2>
+        <ul>
+          <li>
+            <a href="salon.html?id=direct-marc-gagnon">
+              <span class="avatar" aria-hidden="true">MG</span>
+              <span class="nom-salon">Marc Gagnon</span>
+              <!-- Le statut est écrit en toutes lettres pour que l'information ne dépende pas
+                   uniquement d'une pastille de couleur (exigence d'accessibilité AA) -->
+              <span class="statut en-ligne">en ligne</span>
+            </a>
+          </li>
+          <li>
+            <a href="salon.html?id=direct-sophie-lavoie">
+              <span class="avatar" aria-hidden="true">SL</span>
+              <span class="nom-salon">Sophie Lavoie</span>
+              <span class="statut hors-ligne">hors ligne</span>
+            </a>
+          </li>
+        </ul>
+        <a href="contacts.html">Écrire à un contact</a>
+      </section>
+    </nav>
