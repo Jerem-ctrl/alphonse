@@ -140,3 +140,22 @@ Son rôle : structure HTML uniquement, sans style ni comportement.
         <a href="contacts.html">Écrire à un contact</a>
       </section>
     </nav>
+
+    <!-- ===== 3. CONTENU PRINCIPAL : LA CONVERSATION ===== 
+     <main> = le contenu central de notre page. Et oui, une messagerie sans conversation 
+      c'est un peu comme une table sans chaise ahah -->
+   <main araia-labelledby="titre-salon">
+
+      <!-- Une en-tete propre au salon : un <header> peut aussi introduire une zone de page -->
+      <header class="entete-salon">
+         <h2 id="titre-salon">Recrutement - technicien réseau</h2>
+         <p class="description-salon">Suivi du recrutement du poste de technicien réseau.</p>
+
+         <!-- <details> + <summary> : un bloc qui se déplie au clic, sans une ligne de JavaScript -->
+         <details class="membres-salon">
+            <summary>3 membres</summary>
+            <ul>
+            </ul>
+         </details>
+      </header>
+   </main>
