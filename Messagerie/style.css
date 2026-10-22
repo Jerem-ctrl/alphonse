@@ -12,16 +12,16 @@ Alphonse - Messagerie
 :root{
     /* ---- 1. Variables des couleurs ---- */
 
-    /* Fond de la page (vert sauge pâle) */
+    /* Fond de la page */
     --couleur-fond: #dde8e3;
 
     /* Fond du formulaire */
     --couleur-carte: #ffffff;
 
-    /* Texte principal (bleu-vert très foncé) */
+    /* Texte principal */
     --couleur-texte: #1b2e35;
 
-    /* Texte secondaire (plus doux) */
+    /* Texte secondaire */
     --couleur-texte-secondaire: #56676d;
 
     /* Boutons et liens */
