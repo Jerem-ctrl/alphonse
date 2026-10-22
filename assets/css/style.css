@@ -1,1 +1,70 @@
-/* La feuille de style principale d'Alphonse */
+/* La feuille de style principale d'Alphonse - Messagerie */
+
+/* ---- Variable Globale ---- */
+/*  
+    :root = La racine du document de la balise html 
+    On met des valeurs dans des variables qu'on réutilise partout.
+*/
+:root{
+    /* ---- 1. Variables des couleurs ---- */
+
+    /* Fond de la page */
+    --couleur-fond: #dde8e3;
+
+    /* Fond du formulaire */
+    --couleur-carte: #ffffff;
+
+    /* Texte principal */
+    --couleur-texte: #1b2e35;
+
+    /* Texte secondaire */
+    --couleur-texte-secondaire: #56676d;
+
+    /* Boutons et liens */
+    --couleur-action: #2457c5;
+
+    /* Survol des boutons et liens */
+    --couleur-survol: #1a419a;
+}
+
+/* ---- Base ---- */
+/*
+    * = tout les éléments.
+*/
+*{
+    /* border-box : la largeur inclut le padding et la bordure, ça évite de dépasser du conteneur */
+    box-sizing: border-box;
+}
+
+/* Page entière */
+body {
+    /* Enlève la marge par défaut */
+    margin: 0;
+
+    /* Hauteur minimum = tout l'écran */
+    min-height: 100vh;
+
+    /* Couleur du fond */
+    background-color: var(--couleur-fond);
+
+    /* Couleur du texte */
+    color: var(--couleur-texte);
+
+    /* Police */
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    /* Espace entre les lignes */
+    line-height: 1.5;
+}
+
+/* Couleur des liens, sans soulignement */
+a {
+    color: var(--couleur-action);
+    text-decoration: none;
+}
+
+/* Couleur des liens au survol de la souris, avec soulignement */
+a:hover {
+    color: var(--couleur-survol);
+    text-decoration: underline;
+}

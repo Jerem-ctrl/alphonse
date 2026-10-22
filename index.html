@@ -1,12 +1,68 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Alphonse</title>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="./images/logo-alphonse2-removebg-preview.png">
     <link rel="stylesheet" href="assets/css/style.css">
     <script type="module" src="assets/js/main.js"></script>
-  </head>
-  <body>
-  </body>
+    <title>Connexion - Alphonse</title>
+</head>
+
+<body>
+
+    <!-- Formulaire de connexion -->
+    <main>
+
+        <form id="login-form">
+
+            <!-- Titre de l'application web -->
+            <div id="title-form">
+                <img src="" alt="" class="">
+                <img src="" alt="" class="">
+                <h1>Connexion</h1>
+            </div>
+
+            <!-- Champ email -->
+            <div id="email-form">
+                <label for="email">Adresse email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <!-- Champ mot de passe -->
+            <div id="mdp-form">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <!-- Se souvenir de moi -->
+            <div id="remember-form">
+                <input type="checkbox" name="choix" id="mon-choix" value="oui">
+                <label for="mon-choix">Se souvenir de moi</label>
+            </div>
+
+            <!-- Bouton de connexion -->
+            <div id="button-login">
+                <button type="submit">Se connecter</button>
+            </div>
+
+            <!-- Redirection vers l'inscription -->
+            <div id="button-register">
+                <a href="./inscription.html">S'inscrire ?</a>
+            </div>
+
+            <a href="./mdp.html">Mot de passe oublié ?</a>
+
+        </form>
+
+    </main>
+
+    <!-- Pied de page : copyright -->
+    <footer>
+        <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4>
+    </footer>
+
+</body>
+
 </html>
