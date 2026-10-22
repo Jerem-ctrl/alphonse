@@ -1,6 +1,35 @@
-*{
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+/*--------------------
+Fichier : style.css
+Alphonse - Messagerie
+----------------------*/
+
+
+/* ---- Variable Globale ---- */
+/*  
+    :root = La racine du document de la balise html 
+    On met des valeurs dans des variables qu'on réutilise partout.
+*/
+:root{
+    /* ---- 1. Variables des couleurs ---- */
+
+    /* Fond de la page (vert sauge pâle) */
+    --couleur-fond: #dde8e3;
+
+    /* Fond du formulaire */
+    --couleur-carte: #ffffff;
+
+    /* Texte principal (bleu-vert très foncé) */
+    --couleur-texte: #1b2e35;
+
+    /* Texte secondaire (plus doux) */
+    --couleur-texte-secondaire: #56676d;
+
+    /* Boutons et liens */
+    --couleur-action: #2457c5;
+
+    /* Survol des boutons et liens */
+    --couleur-survol: #1a419a;
 }
+
+
+
