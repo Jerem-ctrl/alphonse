@@ -31,5 +31,42 @@ Alphonse - Messagerie
     --couleur-survol: #1a419a;
 }
 
+/* ---- Base ---- */
+/*
+    * = tout les éléments.
+*/
+*{
+    /* border-box : la largeur inclut le padding et la bordure, ça évite de dépasser du conteneur */
+    box-sizing: border-box;
+}
 
+/* Page entière */
+body {
+    /* Enlève la marge par défaut */
+    margin: 0;
 
+    /* Hauteur minimum = tout l'écran */
+    min-height: 100vh;
+
+    /* Couleur du fond */
+    background-color: var(--couleur-fond);
+
+    /* Couleur du texte */
+    color: var(--couleur-texte);
+
+    /* Police */
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    /* Espace entre les lignes */
+    line-height: 1.5;
+}
+
+/* Couleur des liens */
+a {
+    color: var(--couleur-action);
+}
+
+/* Couleur des liens au survol de la souris */
+a:hover {
+    color: var(--couleur-survol);
+}
