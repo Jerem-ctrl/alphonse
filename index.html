@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="./images/logo-alphonse2-removebg-preview.png">
+    <link rel="icon" type="image/png" href="./assets/img/logo-alphonse.png">
     <link rel="stylesheet" href="assets/css/style.css">
-    <script type="module" src="assets/js/main.js"></script>
     <title>Connexion - Alphonse</title>
 </head>
 
@@ -42,6 +41,9 @@
                 <label for="mon-choix">Se souvenir de moi</label>
             </div>
 
+            <!-- Zone d'erreur, remplie par connexion.js -->
+            <p id="message-erreur" aria-live="polite"></p>
+
             <!-- Bouton de connexion -->
             <div id="button-login">
                 <button type="submit">Se connecter</button>
@@ -62,6 +64,18 @@
     <footer>
         <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4>
     </footer>
+
+    <!-- 1. Bibliothèque Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 2. Connexion à notre projet --->
+    <script src="./assets/js/spclient.js"></script>
+
+    <!-- 3. Fonctions de connexion / inscription -->
+    <script src="./assets/js/auth.js"></script>
+
+    <!-- 4. Script de la page de connexion -->
+    <script src="./assets/js/connexion.js"></script>
 
 </body>
 
