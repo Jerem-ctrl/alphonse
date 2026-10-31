@@ -13,10 +13,11 @@ const Auth = {
   },
 
   // Création d'un compte (Supabase hache le mot de passe)
-  async signUp(email, password) {
+  async signUp(email, password, pseudo) {
     return await supabaseClient.auth.signUp({
       email,
-      password
+      password,
+      options: { data: { pseudo } }
     });
   },
 

@@ -41,7 +41,7 @@
                 <label for="mon-choix">Se souvenir de moi</label>
             </div>
 
-            <!-- Zone d'erreur, remplie par connexion.js -->
+            <!-- Zone d'erreur de la connexion -->
             <p id="message-erreur" aria-live="polite"></p>
 
             <!-- Bouton de connexion -->
@@ -49,16 +49,54 @@
                 <button type="submit">Se connecter</button>
             </div>
 
-            <!-- Redirection vers l'inscription -->
-            <div id="button-register">
-                <a href="./inscription.html">S'inscrire ?</a>
-            </div>
+            <!-- Ouverture de la fenêtre d'inscription -->
+            <p id="button-register">
+                Pas encore de compte ?
+                <button type="button" id="ouvrir-inscription">Créer un compte</button>
+            </p>
 
             <a href="./mdp.html">Mot de passe oublié ?</a>
 
         </form>
 
     </main>
+
+    <!-- Fenêtre d'inscription (pop-up) -->
+    <dialog id="dialog-inscription">
+
+        <form id="signup-form">
+
+            <!-- Bouton de fermeture -->
+            <button type="button" id="fermer-inscription" aria-label="Fermer">✕</button>
+
+            <h2>Créer un compte</h2>
+
+            <!-- Champ pseudo -->
+            <div>
+                <label for="signup-pseudo">Pseudo</label>
+                <input type="text" id="signup-pseudo" name="pseudo" minlength="3" maxlength="20" required>
+            </div>
+
+            <!-- Champ email -->
+            <div>
+                <label for="signup-email">Adresse email UQAC</label>
+                <input type="email" id="signup-email" name="email" required>
+            </div>
+
+            <!-- Champ mot de passe : 6 caractères minimum -->
+            <div>
+                <label for="signup-password">Mot de passe</label>
+                <input type="password" id="signup-password" name="password" minlength="6" required>
+            </div>
+
+            <!-- Zone d'erreur de l'inscription -->
+            <p id="message-erreur-inscription" aria-live="polite"></p>
+
+            <button type="submit">S'inscrire</button>
+
+        </form>
+
+    </dialog>
 
     <!-- Pied de page : copyright -->
     <footer>
@@ -68,13 +106,13 @@
     <!-- 1. Bibliothèque Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- 2. Connexion à notre projet --->
+    <!-- 2. Connexion à notre projet -->
     <script src="./assets/js/spclient.js"></script>
 
     <!-- 3. Fonctions de connexion / inscription -->
     <script src="./assets/js/auth.js"></script>
 
-    <!-- 4. Script de la page de connexion -->
+    <!-- 4. Script de la page (connexion + inscription) -->
     <script src="./assets/js/connexion.js"></script>
 
 </body>
