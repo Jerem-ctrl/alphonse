@@ -74,6 +74,6 @@ formulaireInscription.addEventListener("submit", async (event) => {
 // Dès qu'une session existe : direction la messagerie
 Auth.onSessionChange((event, session) => {
   if (session) {
-    window.location.replace("./conversation.html");
+    window.location.replace("./pages/conversation.html");
   }
 });
