@@ -11,29 +11,46 @@
 
 <body>
 
+    <!-- Menu de navigation -->
+    <header>
+        <nav>
+            <a href="./conversation.html">Conversations</a>
+            <a href="./contact.html">Contacts</a>
+        </nav>
+    </header>
+
     <main>
 
-        <!-- Lien de redirection sur la page conversation -->
-        <a href="./conversation.html">Conversation</a>
+        <h1>Paramètres</h1>
 
-        <p>Alice</p>
+        <!-- Informations du compte -->
+        <section>
+            <h2>Mon compte</h2>
+            <p>Pseudo : <strong id="affichage-pseudo">…</strong></p>
+            <p>Email : <strong id="affichage-email">…</strong></p>
+        </section>
 
-        <!-- Bouton de déconnexion du compte -->
-        <form action="../index.html">
-            <button type="submit">Se déconnecter</button>
-        </form>
-
-        <!-- Bouton de suppresion du compte -->
-        <form action="../index.html">
-            <button type="submit">Supprimer son compte</button>
-        </form>
-
-        <!-- Pied de page : copyright -->
-        <footer>
-            <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4>
-        </footer>
+        <!-- Déconnexion -->
+        <button type="button" id="bouton-deconnexion">Se déconnecter</button>
 
     </main>
+
+    <!-- Pied de page : copyright -->
+    <footer>
+        <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4>
+    </footer>
+
+    <!-- 1. Bibliothèque Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 2. Connexion à notre projet -->
+    <script src="../assets/js/spclient.js"></script>
+
+    <!-- 3. Fonctions de connexion / déconnexion -->
+    <script src="../assets/js/auth.js"></script>
+
+    <!-- 4. Script de la page paramètres -->
+    <script src="../assets/js/parametre.js"></script>
 
 </body>
 
