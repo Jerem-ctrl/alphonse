@@ -68,3 +68,25 @@ a:hover {
     color: var(--couleur-survol);
     text-decoration: underline;
 }
+
+/* ---- Images ---- */
+/* La règle de la fiche Adaptabilité : une image ne dépasse jamais de son conteneur, et height: auto garde ses proportions. On l'a placée en tête de la section pour qu'aucune image ne s'affiche en taille réelle. */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Le logo de l'en-tête : on déclare 500 × 500 dans le HTML pour réserver la place, mais on l'affiche en 2.5rem. Un logo géant dans un menu, c'est envahissant. */
+header img {
+    width: 2.5rem;
+}
+
+/* Le logo de la connexion, un peu plus présent que dans l'en-tête : 6rem, assez pour dire bonjour sans crier. */
+.logo {
+    width: 6rem;
+}
+
+/* La bannière « ALPHONSE. » : 20rem de large, et max-width: 100% la fait rétrécir sur un petit écran. */
+.banniere {
+    width: 20rem;
+}
