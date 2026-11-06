@@ -17,20 +17,72 @@ body {
         radial-gradient(circle at 10% 95%, rgba(17, 20, 24, 0.07), transparent 26rem);
 }
 
+/* Sur téléphone : le titre au-dessus du formulaire, le tout centré */
 main {
     /* Prend toute la place libre : pousse le footer en bas de l'écran */
     flex: 1;
 
-    /* Centre le formulaire horizontalement et verticalement */
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 2rem;
 
     padding: 2.5rem 1rem 3.5rem;
 }
 
 
-/* ---- 2. Les formulaires en forme de bulle de message ---- */
+/* ---- 2. Le titre de la page : logo, nom, titre et slogan ---- */
+
+#title-form {
+    /* Même largeur que le formulaire en dessous */
+    width: 100%;
+    max-width: 25rem;
+
+    /* Le logo et le nom côte à côte, le reste passe à la ligne */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* Les fichiers sont grands : on les réduit à l'affichage */
+.logo {
+    width: 2.5rem;
+    height: auto;
+}
+
+.banniere {
+    width: 8.5rem;
+    height: auto;
+    mix-blend-mode: multiply;
+}
+
+/* Titres de la page et de la fenêtre, dans la police du logo */
+#title-form h1,
+#signup-form h2 {
+    width: 100%;
+    margin: 1rem 0 0;
+    font-family: var(--police-titre);
+    font-weight: 800;
+    font-size: 2.25rem;
+    line-height: 1.1;
+}
+
+/* Le point bleu après le titre, comme dans le logo « A. » */
+#title-form h1::after,
+#signup-form h2::after {
+    content: ".";
+    color: var(--couleur-action);
+}
+
+.slogan {
+    margin: 0;
+    color: var(--couleur-texte-secondaire);
+}
+
+
+/* ---- 3. Les formulaires en forme de bulle de message ---- */
 
 /* Même style pour la connexion et pour la fenêtre d'inscription */
 #login-form,
@@ -42,7 +94,7 @@ main {
     width: 100%;
     max-width: 25rem;
 
-    padding: 2.25rem 2rem 2rem;
+    padding: 2rem;
     background-color: var(--couleur-carte);
 
     /* Coin en bas à gauche presque carré : comme une bulle de conversation */
@@ -62,46 +114,25 @@ main {
     border-right: 1.1rem solid transparent;
 }
 
-
-/* ---- 3. En-tête : logo, nom et titre ---- */
-
-/* Le logo et le nom côte à côte */
-#title-form {
-    display: flex;
-    flex-wrap: wrap; 
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 1.75rem;
+/* Le groupe de champs : on enlève le cadre gris par défaut du navigateur */
+#login-form fieldset,
+#signup-form fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+    min-width: 0;
 }
 
-/* Les fichiers sont grands : on les réduit à l'affichage */
-.logo {
-    width: 2.5rem;
-    height: auto;
-}
-
-.banniere {
-    width: 8.5rem;
-    height: auto;
-    mix-blend-mode: multiply; 
-}
-
-/* Titres de la page et de la fenêtre, dans la police du logo */
-#title-form h1,
-#signup-form h2 {
-    width: 100%;
-    margin: 1.25rem 0 0;
-    font-family: var(--police-titre);
-    font-weight: 800;
-    font-size: 2.25rem;
-    line-height: 1.1;
-}
-
-/* Le point bleu après le titre, comme dans le logo « A. » */
-#title-form h1::after,
-#signup-form h2::after {
-    content: ".";
-    color: var(--couleur-action);
+/* Sa légende devient un petit sur-titre discret */
+#login-form legend,
+#signup-form legend {
+    padding: 0;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--couleur-texte-secondaire);
 }
 
 
@@ -110,7 +141,7 @@ main {
 /* Un champ = un label au-dessus d'une zone de saisie */
 #email-form,
 #mdp-form,
-#signup-form div {
+#signup-form fieldset div {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -136,6 +167,12 @@ main {
     transition: border-color 0.15s, background-color 0.15s;
 }
 
+/* Le texte d'exemple (placeholder), plus clair que le vrai texte */
+#login-form input::placeholder,
+#signup-form input::placeholder {
+    color: #9aa1ab;
+}
+
 /* Survol d'un champ */
 #login-form input:not([type="checkbox"]):hover,
 #signup-form input:hover {
@@ -151,6 +188,18 @@ main {
     box-shadow: 0 0 0 4px rgba(31, 96, 244, 0.15);
 }
 
+/* Champ mal rempli (après qu'on a écrit dedans) : bordure rouge */
+#login-form input:user-invalid,
+#signup-form input:user-invalid {
+    border-color: var(--couleur-erreur);
+}
+
+/* Les petites aides sous les champs de l'inscription */
+#signup-form small {
+    font-size: 0.8rem;
+    color: var(--couleur-texte-secondaire);
+}
+
 
 /* ---- 5. « Se souvenir de moi » et messages d'erreur ---- */
 
@@ -158,7 +207,7 @@ main {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 #remember-form label {
@@ -170,7 +219,7 @@ main {
     width: 1.1rem;
     height: 1.1rem;
     margin: 0;
-    accent-color: var(--couleur-action);
+    accent-color: var(--couleur-action); 
 }
 
 /* Messages d'erreur, cachés tant qu'ils sont vides */
@@ -198,7 +247,7 @@ main {
     font: inherit;
     font-weight: 600;
     color: #ffffff;
-    background-color: var(--couleur-texte);   /* noir, comme le logo */
+    background-color: var(--couleur-texte);
     border: none;
     border-radius: 0.75rem;
     cursor: pointer;
@@ -305,8 +354,38 @@ footer p {
 }
 
 
-/* ---- 9. Petits écrans (téléphones) ---- */
+/* ---- 9. Adaptation à la taille de l'écran ---- */
 
+/* Grands écrans : le titre à gauche, le formulaire à droite */
+@media (min-width: 56rem) {
+    main {
+        flex-direction: row;
+        gap: 6rem;
+    }
+
+    #title-form {
+        max-width: 24rem;
+    }
+
+    .logo {
+        width: 3rem;
+    }
+
+    .banniere {
+        width: 10rem;
+    }
+
+    #title-form h1 {
+        margin-top: 2rem;
+        font-size: 3.75rem;
+    }
+
+    .slogan {
+        font-size: 1.1rem;
+    }
+}
+
+/* Très petits écrans : un peu moins d'espace intérieur */
 @media (max-width: 30rem) {
     #login-form,
     #signup-form {
