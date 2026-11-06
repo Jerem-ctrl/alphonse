@@ -13,57 +13,72 @@
 
 <body>
 
-    <header>
+    <!-- Le lien d'évitement : les personnes qui naviguent au clavier (touche Tab) sautent directement au fil des messages, sans repasser par tout le menu. Un raccourci, en somme. -->
+    <a href="#fil-messages">Aller à la conversation</a>
 
-        <!-- Section pour les liens principaux -->
-        <nav>
+    <!-- <header> : l'en-tête de notre site, qui accueille la navigation principale. -->
+    <header>
+        <!-- <nav> = un bloc de liens de navigation. La page en contient deux : aria-label donne un nom à chacun pour que les lecteurs d'écran fassent la différence. -->
+        <nav aria-label="Navigation principale">
             <ul>
-                <li><a href="./contact.html">Contact</a></li>
-                <li><a href="./parametre.html">Paramètre</a></li>
-                <li><button type="button">Nouvelle conversation</button></li>
+                <!-- aria-current="page" : on signale aux lecteurs d'écran la page sur laquelle on se trouve déjà. -->
+                <li><a href="conversation.html" aria-current="page">Conversations</a></li>
+                <li><a href="contact.html">Contacts</a></li>
+                <li><a href="parametre.html">Paramètres</a></li>
             </ul>
         </nav>
-
     </header>
 
-    <main>
+    <!-- <aside> pour les salons : on a jugé que c'était du contenu complémentaire à la conversation, toujours là sur le côté, mais pas le cœur de la page. -->
+    <aside aria-labelledby="titre-salons">
+        <h2 id="titre-salons">Salons</h2>
 
-        <!-- Liste des conversations -->
-        <div id="liste-conversations">
-            <h2>Conversations</h2>
-            <ul>
-                <li><a href="#">Alice</a></li>
-                <li><a href="#">Bob</a></li>
-            </ul>
-        </div>
-
-        <!-- Liste des invitations et des contacts -->
-        <div id="liste-invitations">
-            <h2>Invitations et contacts</h2>
-            <ul>
-                <li><a href="#">Invitations reçues</a></li>
-                <li><a href="#">Invitations envoyées</a></li>
-                <li><a href="#">Contacts</a></li>
-            </ul>
-        </div>
-
-        <!-- Zone d'affichage des messages -->
-        <div id="messages">
-            
-        </div>
-
-        <!-- Formulaire d'envoi de message -->
-        <form id="message-form">
-            <label for="message">Votre message</label>
-            <input type="text" id="message" name="message" required>
-            <button type="submit">Envoyer</button>
+        <!-- On crée un salon sans changer de page. maxlength="40" et required évitent les noms vides ou interminables ; on revérifiera quand même côté Supabase, parce qu'un navigateur, ça se contourne. -->
+        <form id="formulaire-salon">
+            <label for="nom-salon">Nom du nouveau salon</label>
+            <input type="text" id="nom-salon" name="nom" maxlength="40" autocomplete="off" required>
+            <button type="submit">Créer le salon</button>
         </form>
 
+        <!-- La liste reste vide : c'est JavaScript qui la remplit. Chaque salon y devient un lien conversation.html?salon=…, une seule page pour tous les salons. Pratique, et pas de copier-coller ! -->
+        <nav aria-label="Salons">
+            <ul id="liste-salons"></ul>
+        </nav>
+    </aside>
+
+    <!-- <main> = le cœur de notre page. Une messagerie sans conversation, c'est un peu comme une table sans chaise. Le <h1> affiche le nom du salon ouvert ; en attendant, on invite à en choisir un. -->
+    <main>
+        <h1 id="titre-salon">Choisissez un salon</h1>
+
+        <!-- role="log" : on dit aux lecteurs d'écran que de nouveaux messages vont s'ajouter au fil, et qu'il faut les annoncer. tabindex="-1" permet au lien d'évitement d'y poser le focus. Chaque message y sera un <article>. -->
+        <div id="fil-messages" role="log" aria-labelledby="titre-salon" tabindex="-1"></div>
+
+        <!-- La petite zone « en train d'écrire… » : cachée avec hidden tant que personne ne tape. On n'en fait pas une zone annoncée, sinon le lecteur d'écran parlerait à chaque frappe, et ça deviendrait vite pénible. -->
+        <p id="en-train-ecrire" hidden></p>
+
+        <!-- role="alert" : on annonce les erreurs tout de suite aux lecteurs d'écran. Le paragraphe reste vide tant que tout va bien (et on espère qu'il le restera longtemps). -->
+        <p id="erreur-conversation" role="alert"></p>
+
+        <!-- L'emplacement de l'assistant, qui aidera à relire nos messages avant l'envoi. Il n'a encore rien à dire, mais on lui garde sa place. -->
+        <section id="assistant" aria-labelledby="titre-assistant">
+            <h2 id="titre-assistant">Assistant de rédaction</h2>
+        </section>
+
+        <!-- Pas d'action ni de method sur le formulaire : c'est JavaScript qui enverra le message à Supabase. Un <textarea> plutôt qu'un input, parce qu'un message pro tient rarement sur une ligne. accept="image/*" filtre les fichiers proposés, sans remplacer une vraie vérification côté service. -->
+        <form id="formulaire-message">
+            <label for="message">Votre message</label>
+            <textarea id="message" name="message" rows="3" maxlength="2000" required></textarea>
+
+            <label for="image">Joindre une image (facultatif)</label>
+            <input type="file" id="image" name="image" accept="image/*">
+
+            <button type="submit">Envoyer</button>
+        </form>
     </main>
 
     <!-- Pied de page : copyright -->
     <footer>
-        <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4>
+        <p>© 2026-2027 Alphonse. Tous droits réservés.</p>
     </footer>
 
 </body>
