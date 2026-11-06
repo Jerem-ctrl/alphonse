@@ -5,26 +5,37 @@
     :root = La racine du document de la balise html 
     On met des valeurs dans des variables qu'on réutilise partout.
 */
-:root{
-    /* ---- 1. Variables des couleurs ---- */
+:root {
+    /* ---- 1. Couleurs (reprises du logo : noir, blanc et le point bleu) ---- */
 
     /* Fond de la page */
-    --couleur-fond: #dde8e3;
+    --couleur-fond: #f2f3f5;
 
-    /* Fond du formulaire */
+    /* Fond des cartes et formulaires */
     --couleur-carte: #ffffff;
 
-    /* Texte principal */
-    --couleur-texte: #1b2e35;
+    /* Texte principal (le noir du logo) */
+    --couleur-texte: #111418;
 
     /* Texte secondaire */
-    --couleur-texte-secondaire: #56676d;
+    --couleur-texte-secondaire: #5c636e;
 
-    /* Boutons et liens */
-    --couleur-action: #2457c5;
+    /* Boutons et liens (le bleu du point du logo) */
+    --couleur-action: #1f60f4;
 
     /* Survol des boutons et liens */
-    --couleur-survol: #1a419a;
+    --couleur-survol: #1648c4;
+
+    /* Bordures des champs */
+    --couleur-bordure: #d5d9e0;
+
+    /* Messages d'erreur */
+    --couleur-erreur: #c42b1c;
+
+    /* ---- 2. Polices ---- */
+
+    /* Titres : police à empattements, comme le logo */
+    --police-titre: "Playfair Display", Georgia, serif;
 }
 
 /* ---- Base ---- */
@@ -70,23 +81,19 @@ a:hover {
 }
 
 /* ---- Images ---- */
-/* La règle de la fiche Adaptabilité : une image ne dépasse jamais de son conteneur, et height: auto garde ses proportions. On l'a placée en tête de la section pour qu'aucune image ne s'affiche en taille réelle. */
 img {
     max-width: 100%;
     height: auto;
 }
 
-/* Le logo de l'en-tête : on déclare 500 × 500 dans le HTML pour réserver la place, mais on l'affiche en 2.5rem. Un logo géant dans un menu, c'est envahissant. */
 header img {
     width: 2.5rem;
 }
 
-/* Le logo de la connexion, un peu plus présent que dans l'en-tête : 6rem, assez pour dire bonjour sans crier. */
 .logo {
     width: 6rem;
 }
 
-/* La bannière « ALPHONSE. » : 20rem de large, et max-width: 100% la fait rétrécir sur un petit écran. */
 .banniere {
     width: 20rem;
 }
