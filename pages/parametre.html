@@ -3,10 +3,17 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- On a ajouté viewport-fit=cover et interactive-widget=resizes-content : sur téléphone, la page occupe tout l'écran, encoche comprise, et se réajuste quand le clavier s'ouvre au lieu de cacher le champ de saisie. En revanche, on laisse zoomer : bloquer le zoom, c'est fermer la porte à celles et ceux qui en ont besoin. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Paramètres - Alphonse</title>
+    <meta name="description" content="Consultez les informations de votre compte Alphonse.">
     <link rel="icon" type="image/png" href="../assets/img/logo-alphonse.png">
     <link rel="stylesheet" href="../assets/css/style.css">
-    <title>Paramètres - Alphonse</title>
+    <!-- On a mis les scripts dans le <head> avec defer : le navigateur les télécharge pendant qu'il lit le HTML, mais attend que la page soit construite pour les lancer. Et defer garde l'ordre, ce qui nous arrange : Supabase d'abord, puis notre client, puis Auth, et enfin le script de la page. Chacun a besoin du précédent, comme des dominos. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="../assets/js/spclient.js" defer></script>
+    <script src="../assets/js/auth.js" defer></script>
+    <script src="../assets/js/parametre.js" defer></script>
 </head>
 
 <body>
@@ -39,18 +46,6 @@
     <footer>
         <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4>
     </footer>
-
-    <!-- 1. Bibliothèque Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- 2. Connexion à notre projet -->
-    <script src="../assets/js/spclient.js"></script>
-
-    <!-- 3. Fonctions de connexion / déconnexion -->
-    <script src="../assets/js/auth.js"></script>
-
-    <!-- 4. Script de la page paramètres -->
-    <script src="../assets/js/parametre.js"></script>
 
 </body>
 
