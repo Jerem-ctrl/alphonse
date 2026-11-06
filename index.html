@@ -37,13 +37,16 @@
                 <!-- Champ courriel : le pattern reprend le filtre d'adresses de Supabase, seules @uqac.ca et @etu.uqac.ca passent. Autant prévenir dès la saisie plutôt que d'attendre le refus du serveur. -->
                 <div id="email-form">
                     <label for="email">Adresse courriel</label>
-                    <input type="email" id="email" name="email" required autocomplete="email" placeholder="jdupont12@etu.uqac.ca" pattern=".+@(etu\.)?uqac\.ca" title="Adresse de l'UQAC uniquement : elle se termine par @uqac.ca ou @etu.uqac.ca">
+                    <input type="email" id="email" name="email" required autocomplete="email" placeholder="jdupont12@etu.uqac.ca" pattern=".+@(etu\.)?uqac\.ca" title="Adresse de l'UQAC uniquement : elle se termine par @uqac.ca ou @etu.uqac.ca" aria-describedby="message-courriel">
+                    <!-- Ce paragraphe vide attend le verdict de connexion.js. On l'a relié au champ avec aria-describedby : un lecteur d'écran lit le message en même temps que le champ, pas besoin d'aller le chercher. -->
+                    <p id="message-courriel"></p>
                 </div>
 
                 <!-- Champ mot de passe : ni minlength ni pattern, et c'est voulu. Les comptes créés avant le nouveau réglage peuvent avoir un mot de passe plus court ; on ne va pas leur claquer la porte au nez. C'est Supabase qui juge. -->
                 <div id="mdp-form">
                     <label for="password">Mot de passe</label>
-                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                    <input type="password" id="password" name="password" required autocomplete="current-password" aria-describedby="message-mot-de-passe">
+                    <p id="message-mot-de-passe"></p>
                 </div>
             </fieldset>
 
@@ -88,21 +91,25 @@
                 <!-- Champ pseudo : lettres sans accent, chiffres, _ ou -, de 3 à 20 caractères. L'aide reste affichée sous le champ, et aria-describedby la fait lire aux lecteurs d'écran : mieux vaut voir la règle que la deviner. -->
                 <div>
                     <label for="signup-pseudo">Pseudo</label>
-                    <input type="text" id="signup-pseudo" name="pseudo" minlength="3" maxlength="20" required autocomplete="nickname" placeholder="Ex. : alpha_42" pattern="[A-Za-z0-9_\-]{3,20}" title="De 3 à 20 caractères : lettres sans accent, chiffres, _ ou -" aria-describedby="aide-pseudo">
+                    <input type="text" id="signup-pseudo" name="pseudo" minlength="3" maxlength="20" required autocomplete="nickname" placeholder="Ex. : alpha_42" pattern="[A-Za-z0-9_\-]{3,20}" title="De 3 à 20 caractères : lettres sans accent, chiffres, _ ou -" aria-describedby="aide-pseudo message-pseudo-inscription">
                     <small id="aide-pseudo">3 à 20 caractères : lettres sans accent, chiffres, _ ou -</small>
+                    <!-- Même principe qu'à la connexion : chaque champ a son paragraphe de message, lu après l'aide grâce à aria-describedby. -->
+                    <p id="message-pseudo-inscription"></p>
                 </div>
 
                 <!-- Champ courriel : même pattern qu'à la connexion, calqué sur le filtre de Supabase. Une seule règle, deux formulaires qui disent la même chose. -->
                 <div>
                     <label for="signup-email">Adresse courriel UQAC</label>
-                    <input type="email" id="signup-email" name="email" required autocomplete="email" placeholder="jdupont12@etu.uqac.ca" pattern=".+@(etu\.)?uqac\.ca" title="Adresse de l'UQAC uniquement : elle se termine par @uqac.ca ou @etu.uqac.ca">
+                    <input type="email" id="signup-email" name="email" required autocomplete="email" placeholder="jdupont12@etu.uqac.ca" pattern=".+@(etu\.)?uqac\.ca" title="Adresse de l'UQAC uniquement : elle se termine par @uqac.ca ou @etu.uqac.ca" aria-describedby="message-courriel-inscription">
+                    <p id="message-courriel-inscription"></p>
                 </div>
 
                 <!-- Champ mot de passe : 8 caractères minimum, au moins une lettre et un chiffre, exactement comme dans Supabase Auth. Si le navigateur et le serveur avaient chacun leur règle, on collectionnerait les refus incompréhensibles. Le pattern reste un confort : Supabase a le dernier mot. -->
                 <div>
                     <label for="signup-password">Mot de passe</label>
-                    <input type="password" id="signup-password" name="password" minlength="8" required autocomplete="new-password" pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,}" title="Au moins 8 caractères, dont une lettre et un chiffre" aria-describedby="aide-mot-de-passe">
+                    <input type="password" id="signup-password" name="password" minlength="8" required autocomplete="new-password" pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,}" title="Au moins 8 caractères, dont une lettre et un chiffre" aria-describedby="aide-mot-de-passe message-mot-de-passe-inscription">
                     <small id="aide-mot-de-passe">8 caractères minimum, dont au moins une lettre et un chiffre</small>
+                    <p id="message-mot-de-passe-inscription"></p>
                 </div>
             </fieldset>
 
