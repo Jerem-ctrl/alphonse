@@ -26,26 +26,31 @@
     <!-- Formulaire de connexion -->
     <main>
 
+        <!-- Titre de la page : on l'a sorti du formulaire parce qu'il présente toute la page, pas seulement les champs de connexion. -->
+        <div id="title-form">
+            <img src="./assets/img/logo-alphonse.png" alt="" width="500" height="500" class="logo">
+            <img src="./assets/img/banniere-alphonse.png" alt="Alphonse" width="1500" height="600" class="banniere" fetchpriority="high">
+            <h1>Connexion</h1>
+        </div>
+
         <form id="login-form">
 
-            <!-- Titre de l'application web -->
-            <div id="title-form">
-                <img src="./assets/img/logo-alphonse.png" alt="" width="500" height="500" class="logo">
-                <img src="./assets/img/banniere-alphonse.png" alt="Alphonse" width="1500" height="600" class="banniere" fetchpriority="high">
-                <h1>Connexion</h1>
-            </div>
+            <!-- On a regroupé les champs dans un fieldset : sa légende est annoncée par les lecteurs d'écran avant le premier champ, ça évite de se demander où on a atterri. -->
+            <fieldset>
+                <legend>Vos identifiants</legend>
 
-            <!-- Champ email -->
-            <div id="email-form">
-                <label for="email">Adresse email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
+                <!-- Champ courriel : le pattern reprend le filtre d'adresses de Supabase, seules @uqac.ca et @etu.uqac.ca passent. Autant prévenir dès la saisie plutôt que d'attendre le refus du serveur. -->
+                <div id="email-form">
+                    <label for="email">Adresse courriel</label>
+                    <input type="email" id="email" name="email" required autocomplete="email" placeholder="jdupont12@etu.uqac.ca" pattern=".+@(etu\.)?uqac\.ca" title="Adresse de l'UQAC uniquement : elle se termine par @uqac.ca ou @etu.uqac.ca">
+                </div>
 
-            <!-- Champ mot de passe -->
-            <div id="mdp-form">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" name="password" required>
-            </div>
+                <!-- Champ mot de passe : ni minlength ni pattern, et c'est voulu. Les comptes créés avant le nouveau réglage peuvent avoir un mot de passe plus court ; on ne va pas leur claquer la porte au nez. C'est Supabase qui juge. -->
+                <div id="mdp-form">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+            </fieldset>
 
             <!-- Se souvenir de moi -->
             <div id="remember-form">
@@ -53,8 +58,8 @@
                 <label for="mon-choix">Se souvenir de moi</label>
             </div>
 
-            <!-- Zone d'erreur de la connexion -->
-            <p id="message-erreur" aria-live="polite"></p>
+            <!-- Zone d'erreur de la connexion : role="alert" fait annoncer le message tout de suite par les lecteurs d'écran, comme le suggère le webchat. -->
+            <p id="message-erreur" role="alert"></p>
 
             <!-- Bouton de connexion -->
             <div id="button-login">
@@ -81,26 +86,33 @@
 
             <h2>Créer un compte</h2>
 
-            <!-- Champ pseudo -->
-            <div>
-                <label for="signup-pseudo">Pseudo</label>
-                <input type="text" id="signup-pseudo" name="pseudo" minlength="3" maxlength="20" required>
-            </div>
+            <!-- Même idée qu'à la connexion : un fieldset pour que la légende annonce le groupe avant le premier champ. -->
+            <fieldset>
+                <legend>Vos informations</legend>
 
-            <!-- Champ email -->
-            <div>
-                <label for="signup-email">Adresse email UQAC</label>
-                <input type="email" id="signup-email" name="email" required>
-            </div>
+                <!-- Champ pseudo : lettres sans accent, chiffres, _ ou -, de 3 à 20 caractères. L'aide reste affichée sous le champ, et aria-describedby la fait lire aux lecteurs d'écran : mieux vaut voir la règle que la deviner. -->
+                <div>
+                    <label for="signup-pseudo">Pseudo</label>
+                    <input type="text" id="signup-pseudo" name="pseudo" minlength="3" maxlength="20" required autocomplete="nickname" placeholder="Ex. : alpha_42" pattern="[A-Za-z0-9_\-]{3,20}" title="De 3 à 20 caractères : lettres sans accent, chiffres, _ ou -" aria-describedby="aide-pseudo">
+                    <small id="aide-pseudo">3 à 20 caractères : lettres sans accent, chiffres, _ ou -</small>
+                </div>
 
-            <!-- Champ mot de passe : 6 caractères minimum -->
-            <div>
-                <label for="signup-password">Mot de passe</label>
-                <input type="password" id="signup-password" name="password" minlength="6" required>
-            </div>
+                <!-- Champ courriel : même pattern qu'à la connexion, calqué sur le filtre de Supabase. Une seule règle, deux formulaires qui disent la même chose. -->
+                <div>
+                    <label for="signup-email">Adresse courriel UQAC</label>
+                    <input type="email" id="signup-email" name="email" required autocomplete="email" placeholder="jdupont12@etu.uqac.ca" pattern=".+@(etu\.)?uqac\.ca" title="Adresse de l'UQAC uniquement : elle se termine par @uqac.ca ou @etu.uqac.ca">
+                </div>
 
-            <!-- Zone d'erreur de l'inscription -->
-            <p id="message-erreur-inscription" aria-live="polite"></p>
+                <!-- Champ mot de passe : 8 caractères minimum, au moins une lettre et un chiffre, exactement comme dans Supabase Auth. Si le navigateur et le serveur avaient chacun leur règle, on collectionnerait les refus incompréhensibles. Le pattern reste un confort : Supabase a le dernier mot. -->
+                <div>
+                    <label for="signup-password">Mot de passe</label>
+                    <input type="password" id="signup-password" name="password" minlength="8" required autocomplete="new-password" pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,}" title="Au moins 8 caractères, dont une lettre et un chiffre" aria-describedby="aide-mot-de-passe">
+                    <small id="aide-mot-de-passe">8 caractères minimum, dont au moins une lettre et un chiffre</small>
+                </div>
+            </fieldset>
+
+            <!-- Zone d'erreur de l'inscription : role="alert", pour la même raison qu'à la connexion. -->
+            <p id="message-erreur-inscription" role="alert"></p>
 
             <button type="submit">S'inscrire</button>
 
