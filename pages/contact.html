@@ -1,31 +1,56 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png"  href="../assets/img/logo-alphonse.png">
+    <link rel="icon" type="image/png" href="../assets/img/logo-alphonse.png">
     <link rel="stylesheet" href="../assets/css/style.css">
-    <title>Contact - Alphonse</title>
+    <title>Contacts - Alphonse</title>
 </head>
+
 <body>
-    
+
+    <!-- Menu de navigation -->
+    <header>
+        <nav>
+            <a href="./conversation.html">Conversations</a>
+            <a href="./parametre.html">Paramètres</a>
+        </nav>
+    </header>
+
     <main>
-         <!-- Lien de redirection sur la page conversation -->
-        <a href="./conversation.html">Conversation</a>
 
-        <!-- Champs de texte -->
-        <form id="text-form">
-            <label for="text">Nom du contact</label>
-            <input type="text" id="text" name="text" required>
-            <button type="submit">Chercher</button>
-        </form>
+        <h1>Contacts</h1>
 
-        <!-- Bouton d'invitation  -->
-        <div id="button-invit">
-            <button type="submit">Inviter</button>
+        <!-- Recherche par pseudo -->
+        <div>
+            <label for="recherche-contact">Rechercher un pseudo</label>
+            <input type="search" id="recherche-contact" name="recherche">
         </div>
 
+        <!-- Liste des personnes inscrites, remplie par contact.js -->
+        <ul id="liste-contacts"></ul>
+
     </main>
-    
+
+    <!-- Pied de page : copyright -->
+    <footer>
+        <h4>© 2026-2027 Alphonse. Tous droits réservés.</h4>
+    </footer>
+
+    <!-- 1. Bibliothèque Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 2. Connexion à notre projet -->
+    <script src="../assets/js/spclient.js"></script>
+
+    <!-- 3. Fonctions de connexion / déconnexion -->
+    <script src="../assets/js/auth.js"></script>
+
+    <!-- 4. Script de la page contacts -->
+    <script src="../assets/js/contact.js"></script>
+
 </body>
+
 </html>
