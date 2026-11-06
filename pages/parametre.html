@@ -18,11 +18,21 @@
 
 <body>
 
-    <!-- Menu de navigation -->
+    <!-- <header> : l'en-tête commun à nos trois pages, avec le logo et la navigation principale. Même place et mêmes liens partout : personne ne devrait avoir à chercher le menu. -->
     <header>
-        <nav>
-            <a href="./conversation.html">Conversations</a>
-            <a href="./contact.html">Contacts</a>
+        <!-- Le logo et le nom ramènent aux conversations, comme on s'y attend sur la plupart des sites. On laisse alt="" parce que le nom est écrit juste à côté : inutile que le lecteur d'écran dise « Alphonse » deux fois. Ce n'est pas un titre, chaque page garde son propre <h1>. -->
+        <a href="conversation.html">
+            <img src="../assets/img/logo-alphonse.png" alt="" width="40" height="40">
+            Alphonse
+        </a>
+        <!-- <nav> = un bloc de liens de navigation. aria-label lui donne un nom : sur la page des conversations, il le distingue du menu des salons, et ailleurs, il aide quand même les lecteurs d'écran à s'y retrouver. -->
+        <nav aria-label="Navigation principale">
+            <ul>
+                <!-- aria-current="page" : on signale aux lecteurs d'écran la page sur laquelle on se trouve déjà. -->
+                <li><a href="conversation.html">Conversations</a></li>
+                <li><a href="contact.html">Contacts</a></li>
+                <li><a href="parametre.html" aria-current="page">Paramètres</a></li>
+            </ul>
         </nav>
     </header>
 
