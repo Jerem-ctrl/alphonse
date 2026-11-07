@@ -106,6 +106,27 @@ Deux particularités sont à noter :
 
 \---
 
+## 4 bis. Tests depuis le site en ligne
+
+**Date :** 7 novembre 2026
+**Environnement :** site publié sur GitHub Pages (https://jerem-ctrl.github.io/alphonse/), console de Microsoft Edge, appel `fetch` en POST. Le corps est construit avec `URLSearchParams`, que le navigateur envoie au format `application/x-www-form-urlencoded` et en UTF-8 ; le texte passe d'abord par `normalize("NFC")`.
+
+|N°|Texte envoyé|Résultat|
+|-|-|-|
+|8|`Bonjour, je vous envoi le raport demain.`|Mêmes 2 défauts qu'au test 1 : « envoi » → « envoie » (`CAT_GRAMMAIRE`) et « raport » → « rapport » (`TYPOS`)|
+|9|`Objet: réunion de lundi`, avec un « é » volontairement décomposé (`e` suivi de `́`), puis normalisé en NFC|1 seul défaut : « Objet: » → « Objet : » (`MISC`) ; « réunion » n'est plus signalé|
+|10|`Super 👍 je vous envoi le raport.`|2 défauts ; le passage découpé avec `offset` et `length` donne exactement « envoi » et « raport »|
+|11|`Test`, sans `language`|HTTP 400, corps en texte brut : `Error: Missing 'language' parameter…`|
+
+Dans l'onglet Réseau, la requête est bien un `POST` vers `https://api.languagetool.org/v2/check`, avec le statut 200 et l'en-tête `Access-Control-Allow-Origin: *`.
+
+Ces tests confirment quatre points :
+
+- **Appels depuis notre site :** le service accepte les requêtes venant d'une autre origine (CORS) ; aucun serveur intermédiaire n'est nécessaire.
+- **Constat I :** `normalize("NFC")` suffit à éviter la fausse faute causée par un accent décomposé (test 9).
+- **Positions et émojis :** les positions renvoyées se comptent comme les indices des chaînes JavaScript ; `substring(offset, offset + length)` retrouve le bon mot même après un émoji (test 10). Le surlignage pourra utiliser ces positions telles quelles.
+- **Constat C :** l'erreur arrive en texte brut, même depuis le navigateur ; le code devra vérifier `reponse.ok` avant d'appeler `reponse.json()` (test 11).
+
 ## 5\. Constats et conséquences pour Alphonse
 
 ### A. Le champ `issueType` ne suffit pas pour classer les défauts
