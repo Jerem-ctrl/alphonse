@@ -1,7 +1,7 @@
 /*
     conversation.js — La page des conversations : la liste des salons, le fil du salon ouvert et l'envoi des messages.
-    On ne parle jamais directement à Supabase ici : on passe par Auth (la session), Data (les requêtes), Local (le stockage du navigateur)
-    et Ecriture (l'indicateur « en train d'écrire »).
+    On ne parle jamais directement à Supabase ici : on passe par Auth (la session), Data (les requêtes), Local (le stockage du navigateur),
+    Ecriture (l'indicateur « en train d'écrire ») et Alerte (la notification des nouveaux messages).
     L'assistant de rédaction, lui, passe par Alphonse : ce fichier se contente d'afficher ce qu'il renvoie.
 */
 
@@ -273,11 +273,15 @@ async function afficherMessage(message) {
 }
 
 // Un message arrive en temps réel : on l'affiche, et on descend si on était déjà en bas (ou si c'est le sien).
+// S'il vient de quelqu'un d'autre, Alerte prévient (titre de l'onglet et son) si l'onglet est caché.
 async function recevoirMessage(message) {
   const suivre = estEnBasDuFil() || message.user_id === monId;
   await afficherMessage(message);
   if (suivre) {
     descendreEnBas();
+  }
+  if (message.user_id !== monId) {
+    Alerte.nouveauMessage();
   }
 }
 
