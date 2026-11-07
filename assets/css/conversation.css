@@ -560,3 +560,11 @@ body > aside {
         --reserve: 23rem;
     }
 }
+
+/* « … est en train d'écrire » : discret, en italique, juste sous le fil des messages */
+#en-train-ecrire {
+    margin: var(--espace-2) 0 0;
+    color: var(--encre-douce);
+    font-size: 0.875rem;
+    font-style: italic;
+}
