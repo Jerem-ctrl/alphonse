@@ -16,6 +16,7 @@
     <script src="../assets/js/spclient.js" defer></script>
     <script src="../assets/js/auth.js" defer></script>
     <script src="../assets/js/parametre.js" defer></script>
+    <script src="../assets/js/theme.js"></script>
 </head>
 
 <body>
@@ -49,6 +50,17 @@
             <p>Email : <strong id="affichage-email">…</strong></p>
         </section>
 
+        <!-- Apparence : le choix est gardé dans le navigateur et appliqué sur toutes les pages par theme.js -->
+        <section>
+            <h2>Apparence</h2>
+            <fieldset>
+                <legend>Thème</legend>
+                <label><input type="radio" name="theme" value="nuit"> Nuit</label>
+                <label><input type="radio" name="theme" value="jour"> Jour</label>
+                <label><input type="radio" name="theme" value="auto"> Comme l'appareil</label>
+            </fieldset>
+        </section>
+        
         <!-- Déconnexion -->
         <button type="button" id="bouton-deconnexion">Se déconnecter</button>
 
