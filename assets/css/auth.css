@@ -1,0 +1,406 @@
+/* Feuille de style de la page de connexion (index.html)
+   Utilise les variables définies dans style.css, chargé avant ce fichier */
+
+
+/* ---- 1. Mise en page ---- */
+
+/* On modifie body ici et pas dans style.css :
+   ce fichier n'est chargé que sur index.html, les autres pages ne sont pas touchées */
+body {
+    /* main et footer se placent l'un sous l'autre */
+    display: flex;
+    flex-direction: column;
+
+    /* Deux grands cercles flous en fond, qui rappellent le point bleu du logo */
+    background-image:
+        radial-gradient(circle at 85% 10%, rgba(31, 96, 244, 0.14), transparent 30rem),
+        radial-gradient(circle at 10% 95%, rgba(17, 20, 24, 0.07), transparent 26rem);
+}
+
+/* Sur téléphone : le titre au-dessus du formulaire, le tout centré */
+main {
+    /* Prend toute la place libre : pousse le footer en bas de l'écran */
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+
+    padding: 2.5rem 1rem 3.5rem;
+}
+
+
+/* ---- 2. Le titre de la page : logo, nom, titre et slogan ---- */
+
+#title-form {
+    /* Même largeur que le formulaire en dessous */
+    width: 100%;
+    max-width: 25rem;
+
+    /* Le logo et le nom côte à côte, le reste passe à la ligne */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* Les fichiers sont grands : on les réduit à l'affichage */
+.logo {
+    width: 2.5rem;
+    height: auto;
+}
+
+.banniere {
+    width: 8.5rem;
+    height: auto;
+    mix-blend-mode: multiply;
+}
+
+/* Titres de la page et de la fenêtre, dans la police du logo */
+#title-form h1,
+#signup-form h2 {
+    width: 100%;
+    margin: 1rem 0 0;
+    font-family: var(--police-titre);
+    font-weight: 800;
+    font-size: 2.25rem;
+    line-height: 1.1;
+}
+
+/* Le point bleu après le titre, comme dans le logo « A. » */
+#title-form h1::after,
+#signup-form h2::after {
+    content: ".";
+    color: var(--couleur-action);
+}
+
+.slogan {
+    margin: 0;
+    color: var(--couleur-texte-secondaire);
+}
+
+
+/* ---- 3. Les formulaires en forme de bulle de message ---- */
+
+/* Même style pour la connexion et pour la fenêtre d'inscription */
+#login-form,
+#signup-form {
+    /* Repère pour placer la pointe de la bulle (::after) */
+    position: relative;
+
+    /* Toute la largeur disponible, mais jamais plus de 25rem */
+    width: 100%;
+    max-width: 25rem;
+
+    padding: 2rem;
+    background-color: var(--couleur-carte);
+
+    /* Coin en bas à gauche presque carré : comme une bulle de conversation */
+    border-radius: 1.5rem 1.5rem 1.5rem 0.3rem;
+
+    /* Ombre douce (drop-shadow ombre aussi la pointe de la bulle) */
+    filter: drop-shadow(0 1.25rem 2rem rgba(17, 20, 24, 0.10));
+}
+
+/* La pointe de la bulle, en bas à gauche : un triangle dessiné avec deux bordures */
+#login-form::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.85rem;
+    border-top: 0.9rem solid var(--couleur-carte);
+    border-right: 1.1rem solid transparent;
+}
+
+/* Le groupe de champs : on enlève le cadre gris par défaut du navigateur */
+#login-form fieldset,
+#signup-form fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+    min-width: 0;
+}
+
+/* Sa légende devient un petit sur-titre discret */
+#login-form legend,
+#signup-form legend {
+    padding: 0;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--couleur-texte-secondaire);
+}
+
+
+/* ---- 4. Champs de saisie ---- */
+
+/* Un champ = un label au-dessus d'une zone de saisie */
+#email-form,
+#mdp-form,
+#signup-form fieldset div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1.1rem;
+}
+
+#login-form label,
+#signup-form label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Toutes les zones de saisie sauf la case à cocher */
+#login-form input:not([type="checkbox"]),
+#signup-form input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font: inherit;              /* même police que la page */
+    color: var(--couleur-texte);
+    background-color: var(--couleur-fond);
+    border: 1.5px solid transparent;
+    border-radius: 0.75rem;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+/* Le texte d'exemple (placeholder), plus clair que le vrai texte */
+#login-form input::placeholder,
+#signup-form input::placeholder {
+    color: #9aa1ab;
+}
+
+/* Survol d'un champ */
+#login-form input:not([type="checkbox"]):hover,
+#signup-form input:hover {
+    border-color: var(--couleur-bordure);
+}
+
+/* Champ actif (on écrit dedans) : bordure bleue et fond blanc */
+#login-form input:focus,
+#signup-form input:focus {
+    outline: none;
+    border-color: var(--couleur-action);
+    background-color: var(--couleur-carte);
+    box-shadow: 0 0 0 4px rgba(31, 96, 244, 0.15);
+}
+
+/* Champ mal rempli (après qu'on a écrit dedans) : bordure rouge */
+#login-form input:user-invalid,
+#signup-form input:user-invalid {
+    border-color: var(--couleur-erreur);
+}
+
+/* Les petites aides sous les champs de l'inscription */
+#signup-form small {
+    font-size: 0.8rem;
+    color: var(--couleur-texte-secondaire);
+}
+
+
+/* ---- 5. « Se souvenir de moi » et messages d'erreur ---- */
+
+#remember-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+#remember-form label {
+    font-weight: 400;
+    color: var(--couleur-texte-secondaire);
+}
+
+#remember-form input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0;
+    accent-color: var(--couleur-action); 
+}
+
+/* Messages d'erreur, cachés tant qu'ils sont vides */
+#message-erreur,
+#message-erreur-inscription {
+    margin: 0 0 1rem;
+    color: var(--couleur-erreur);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+#message-erreur:empty,
+#message-erreur-inscription:empty {
+    display: none;
+}
+
+
+/* ---- 6. Boutons ---- */
+
+/* Bouton principal : « Se connecter » et « S'inscrire » */
+#button-login button,
+#signup-form button[type="submit"] {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    font: inherit;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--couleur-texte);
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+/* Au survol, le bouton prend le bleu du point du logo */
+#button-login button:hover,
+#signup-form button[type="submit"]:hover {
+    background-color: var(--couleur-action);
+}
+
+/* Petit enfoncement au clic */
+#button-login button:active,
+#signup-form button[type="submit"]:active {
+    transform: translateY(1px);
+}
+
+/* « Pas encore de compte ? Créer un compte » */
+#button-register {
+    margin: 1.5rem 0 0;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--couleur-texte-secondaire);
+}
+
+/* Le bouton « Créer un compte » ressemble à un lien */
+#ouvrir-inscription {
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--couleur-action);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+#ouvrir-inscription:hover {
+    text-decoration: underline;
+}
+
+/* Contour bien visible pour la navigation au clavier (touche Tab) */
+button:focus-visible,
+input[type="checkbox"]:focus-visible {
+    outline: 3px solid var(--couleur-action);
+    outline-offset: 2px;
+}
+
+
+/* ---- 7. Fenêtre d'inscription (pop-up) ---- */
+
+/* La fenêtre elle-même : invisible, c'est le formulaire qui fait la carte */
+#dialog-inscription {
+    width: calc(100% - 2rem);
+    max-width: 25rem;
+    padding: 0;
+    background: none;
+    border: none;
+    overflow: visible;
+}
+
+/* Le fond derrière la fenêtre : assombri et flouté */
+#dialog-inscription::backdrop {
+    background-color: rgba(17, 20, 24, 0.45);
+    backdrop-filter: blur(4px);
+}
+
+#signup-form h2 {
+    margin: 0 0 1.5rem;
+}
+
+/* La croix de fermeture, en haut à droite */
+#fermer-inscription {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1rem;
+    color: var(--couleur-texte-secondaire);
+    background-color: var(--couleur-fond);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#fermer-inscription:hover {
+    color: var(--couleur-texte);
+    background-color: var(--couleur-bordure);
+}
+
+
+/* ---- 8. Pied de page ---- */
+
+footer {
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--couleur-texte-secondaire);
+}
+
+footer p {
+    margin: 0;
+}
+
+
+/* ---- 9. Adaptation à la taille de l'écran ---- */
+
+/* Grands écrans : le titre à gauche, le formulaire à droite */
+@media (min-width: 56rem) {
+    main {
+        flex-direction: row;
+        gap: 6rem;
+    }
+
+    #title-form {
+        max-width: 24rem;
+    }
+
+    .logo {
+        width: 3rem;
+    }
+
+    .banniere {
+        width: 10rem;
+    }
+
+    #title-form h1 {
+        margin-top: 2rem;
+        font-size: 3.75rem;
+    }
+
+    .slogan {
+        font-size: 1.1rem;
+    }
+}
+
+/* Très petits écrans : un peu moins d'espace intérieur */
+@media (max-width: 30rem) {
+    #login-form,
+    #signup-form {
+        padding: 1.75rem 1.25rem 1.5rem;
+    }
+
+    #title-form h1,
+    #signup-form h2 {
+        font-size: 1.9rem;
+    }
+}
+
+/* Respecte le réglage « réduire les animations » du système */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}

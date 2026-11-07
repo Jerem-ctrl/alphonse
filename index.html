@@ -8,7 +8,12 @@
     <title>Connexion - Alphonse</title>
     <meta name="description" content="Connectez-vous ou créez un compte pour discuter sur Alphonse.">
     <link rel="icon" type="image/png" href="./assets/img/logo-alphonse.png">
+    <!-- Police des titres (Google Fonts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap">
     <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/auth.css">
     <!-- local.js passe en premier, et sans defer : spclient.js en a besoin pour créer le client. Comme il ne touche pas au document, rien ne l'oblige à attendre que la page soit construite. -->
     <script src="./assets/js/local.js"></script>
     <!-- On a mis les scripts dans le <head> avec defer : le navigateur les télécharge pendant qu'il lit le HTML, mais attend que la page soit construite pour les lancer. Et defer garde l'ordre, ce qui nous arrange : Supabase d'abord, puis notre client, puis Auth, et enfin le script de la page. Chacun a besoin du précédent, comme des dominos. -->
@@ -26,9 +31,7 @@
         <!-- Titre de la page : on l'a sorti du formulaire parce qu'il présente toute la page, pas seulement les champs de connexion. -->
         <div id="title-form">
             <img src="./assets/img/logo-alphonse.png" alt="" width="500" height="500" class="logo">
-            <!-- Deux versions de la bannière, une par thème : style.css n'affiche que celle qui correspond. Même alt sur les deux, puisqu'une seule est visible et lue à la fois. -->
-            <img src="./assets/img/banniere-alphonse-nuit.png" alt="Alphonse" width="1500" height="600" class="banniere banniere-nuit" fetchpriority="high">
-            <img src="./assets/img/banniere-alphonse-jour.png" alt="Alphonse" width="1500" height="600" class="banniere banniere-jour">
+            <img src="./assets/img/banniere-alphonse.png" alt="Alphonse" width="1500" height="600" class="banniere" fetchpriority="high">
             <h1>Connexion</h1>
         </div>
 
