@@ -110,8 +110,12 @@ function afficherSalon(salon) {
     lien.setAttribute("aria-current", "page");
   }
 
-  li.append(lien);
-  listeSalons.append(li);
+    li.append(lien);
+
+  // Un salon créé pendant qu'on est sur la page se range à sa place dans l'ordre alphabétique, comme ceux chargés au départ.
+  // localeCompare compare les noms à la française, accents compris.
+  const suivant = [...listeSalons.children].find((autre) => autre.textContent.localeCompare(salon.nom, "fr") > 0);
+  listeSalons.insertBefore(li, suivant ?? null);
 }
 
 
