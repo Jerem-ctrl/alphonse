@@ -110,7 +110,9 @@ API publique de correction : https://languagetool.org. Le texte du message est e
 # Sécurité
 
 - **Clé publique uniquement** : la clé présente dans `spclient.js` est la clé « publishable » de Supabase, prévue pour être visible. La clé secrète n'apparaît jamais dans le code.
-- **Row Level Security (RLS)** : sur la table `utilisateurs`, une personne connectée peut lire les profils, mais ne peut modifier que le sien. Personne ne peut créer ou supprimer un profil depuis le site.
+- **Row Level Security (RLS)** : sur toutes les tables, seuls les comptes connectés lisent, et chacun n'écrit que ses propres lignes (`WITH CHECK (auth.uid() = user_id)`) ; les listes de contacts sont privées ; les visiteurs non connectés n'ont aucun droit. Le détail, table par table, est dans `docs/bdd/base-de-donnees.md`.
+- **Images** : 2 Mo au plus, en PNG, JPEG, WebP ou GIF, et chaque compte ne dépose et ne supprime que dans son propre dossier.
+- **Suppression du compte** : la fonction `supprimer_mon_compte()` ne supprime que le compte connecté, et la cascade emporte son profil, ses messages, ses lectures et ses contacts.
 - **Création du profil côté serveur** : un trigger (`creation_profil`) crée automatiquement le profil avec le pseudo au moment de l'inscription. Le pseudo ne peut donc pas être falsifié par le navigateur, ce qui corrige une limite relevée dans le projet Webchat.
 - **Filtre des adresses côté serveur** : la fonction `filtre_email` refuse toute adresse qui n'est pas de l'UQAC, même si quelqu'un contourne le formulaire.
 - **Affichage avec `textContent`** : les pseudos et les messages sont affichés comme du texte, jamais comme du HTML, ce qui empêche l'injection de code.
