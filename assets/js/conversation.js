@@ -20,17 +20,20 @@ const salonActif = new URLSearchParams(window.location.search).get("salon");
 // L'identifiant de la personne connectée (pour reconnaître ses propres messages)
 let monId = null;
 
+// Les pseudos déjà connus, pour ne pas redemander à Supabase à chaque message
+const pseudos = {};
+
 // Ajoute un salon à la liste : un <li> contenant un lien vers ?salon=<id>
 function afficherSalon(salon) {
   const li = document.createElement("li");
   const lien = document.createElement("a");
   lien.href = "?salon=" + salon.id;
-  lien.textContent = salon.name;
+  lien.textContent = salon.nom;
 
-  // Le salon ouvert : signalé aux lecteurs d'écran (et surligné par le CSS), et son nom devient le titre
-  if (salon.id === salonActif) {
+  // Le salon ouvert : signalé aux lecteurs d'écran, et son nom devient le titre
+  if (String(salon.id) === salonActif) {
     lien.setAttribute("aria-current", "page");
-    titreSalon.textContent = salon.name;
+    titreSalon.textContent = salon.nom;
   }
 
   li.append(lien);
@@ -38,7 +41,16 @@ function afficherSalon(salon) {
 }
 
 // Ajoute un message au fil : <article> <header>pseudo</header> <p>texte</p> <time>heure</time> </article>
-function afficherMessage(message) {
+async function afficherMessage(message) {
+  // Le pseudo arrive avec les messages chargés (utilisateurs.pseudo),
+  // mais pas avec ceux du temps réel : on le cherche alors une fois, puis on le garde
+  if (message.utilisateurs) {
+    pseudos[message.user_id] = message.utilisateurs.pseudo;
+  } else if (!pseudos[message.user_id]) {
+    const { data } = await Data.fetchPseudo(message.user_id);
+    pseudos[message.user_id] = data ? data.pseudo : "Inconnu";
+  }
+
   const article = document.createElement("article");
 
   // Mes propres messages : à droite, en bleu (classe "envoye" du CSS)
@@ -47,20 +59,32 @@ function afficherMessage(message) {
   }
 
   const auteur = document.createElement("header");
-  auteur.textContent = message.username;
+  auteur.textContent = pseudos[message.user_id];
+  article.append(auteur);
 
-  const texte = document.createElement("p");
-  texte.textContent = message.content;
+  if (message.texte) {
+    const texte = document.createElement("p");
+    texte.textContent = message.texte;
+    article.append(texte);
+  }
 
-  // La date et l'heure dans le fuseau et le format de la personne qui lit (ex. 2026-11-07 14 h 05)
+  // Une image jointe : son lien public est fourni par le stockage Supabase
+  if (message.image) {
+    const image = document.createElement("img");
+    image.src = supabaseClient.storage.from("images").getPublicUrl(message.image).data.publicUrl;
+    image.alt = "Image envoyée par " + pseudos[message.user_id];
+    article.append(image);
+  }
+
+  // La date et l'heure dans le fuseau et le format de la personne qui lit
   const heure = document.createElement("time");
   heure.dateTime = message.created_at;
   heure.textContent = new Date(message.created_at).toLocaleString("fr-CA", {
     dateStyle: "short",
     timeStyle: "short"
   });
+  article.append(heure);
 
-  article.append(auteur, texte, heure);
   filMessages.append(article);
 
   // Fait défiler le fil jusqu'au dernier message
@@ -95,7 +119,12 @@ async function init() {
     console.error(erreurMessages);
     return;
   }
-  messages.reverse().forEach(afficherMessage);
+
+  // for...of + await : on affiche les messages un par un, dans l'ordre
+  for (const message of messages.reverse()) {
+    await afficherMessage(message);
+  }
+
   Data.subscribeToMessages(salonActif, afficherMessage);
 }
 
@@ -139,7 +168,7 @@ formulaireMessage.onsubmit = async (event) => {
     return;
   }
 
-  formulaireMessage.reset(); // vide le champ
+  formulaireMessage.reset();
 }
 
 // Entrée envoie le message, Maj + Entrée passe à la ligne

@@ -1,6 +1,6 @@
 /*
-data.js — Toutes les requêtes vers les tables "channels" (salons) et "messages".
-Les requêtes sont autorisées ou refusées par les règles RLS (voir docs/bdd/schema.sql).
+data.js — Toutes les requêtes vers les tables "salons" et "messages".
+Les requêtes sont autorisées ou refusées par les règles RLS.
 */
 
 const Data = {
@@ -10,40 +10,48 @@ const Data = {
   // Tous les salons, triés par nom
   async fetchChannels() {
     return await supabaseClient
-      .from("channels")
-      .select("*")
-      .order("name");
+      .from("salons")
+      .select("id, nom")
+      .order("nom");
   },
 
   // Crée un salon : on n'envoie que le nom, la base remplit le reste (id, date, créateur)
-  async createChannel(name) {
+  async createChannel(nom) {
     return await supabaseClient
-      .from("channels")
-      .insert({ name })
+      .from("salons")
+      .insert({ nom })
       .select()
       .single();
   },
 
-  // Les 50 derniers messages d'un salon.
-  // On trie du plus récent au plus ancien AVANT de limiter à 50 :
-  // conversation.js les remet ensuite dans l'ordre chronologique avec reverse().
-  async fetchMessages(channelId) {
+  // Les 50 derniers messages d'un salon, avec le pseudo de l'auteur lu dans "utilisateurs"
+  // (utilisateurs(pseudo) suit la clé étrangère user_id, comme une jointure).
+  // On trie du plus récent au plus ancien AVANT de limiter : conversation.js remet l'ordre avec reverse().
+  async fetchMessages(salonId) {
     return await supabaseClient
       .from("messages")
-      .select("id, content, created_at, user_id, username")
-      .eq("channel_id", channelId)
+      .select("id, texte, image, created_at, user_id, utilisateurs(pseudo)")
+      .eq("salon_id", salonId)
       .order("created_at", { ascending: false })
       .limit(50);
   },
 
-  // Envoie un message. On n'envoie ni l'auteur ni le pseudo :
-  // la base remplit user_id (auth.uid()) et username (trigger pseudo_message)
-  async sendMessage(channelId, content) {
+  // Le pseudo d'une personne (pour les messages reçus en temps réel, qui n'ont pas le pseudo)
+  async fetchPseudo(userId) {
+    return await supabaseClient
+      .from("utilisateurs")
+      .select("pseudo")
+      .eq("id", userId)
+      .single();
+  },
+
+  // Envoie un message : la base remplit user_id (auth.uid()) et la date
+  async sendMessage(salonId, texte) {
     return await supabaseClient
       .from("messages")
       .insert({
-        channel_id: channelId,
-        content
+        salon_id: salonId,
+        texte
       });
   },
 
@@ -56,24 +64,23 @@ const Data = {
       .channel("salons-temps-reel")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "channels" },
+        { event: "INSERT", schema: "public", table: "salons" },
         (payload) => onNewChannel(payload.new)
       )
       .subscribe();
   },
 
   // Appelle "onNewMessage" à chaque nouveau message du salon ouvert
-  // (le filtre ne garde que les messages de ce salon)
-  subscribeToMessages(channelId, onNewMessage) {
+  subscribeToMessages(salonId, onNewMessage) {
     supabaseClient
-      .channel("messages-" + channelId)
+      .channel("messages-" + salonId)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: "channel_id=eq." + channelId
+          filter: "salon_id=eq." + salonId
         },
         (payload) => onNewMessage(payload.new)
       )
