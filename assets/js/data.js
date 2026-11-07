@@ -1,13 +1,61 @@
 /*
-data.js — Toutes les requêtes vers les tables "salons" et "messages".
-Les requêtes sont autorisées ou refusées par les règles RLS.
+    data.js — Toutes nos requêtes vers les contacts, les salons et les messages.
+
+    Les pages ne parlent jamais directement à Supabase : elles passent par l'objet Data.
+    Chaque fonction renvoie la réponse de Supabase telle quelle ({ data, error }), et c'est la page qui décide quoi afficher.
+    Ce n'est pas ce fichier qui protège les données : ce sont nos règles RLS. Si une requête demande plus que ce qu'elles autorisent, la base la refuse.
+    On n'envoie donc jamais d'identifiant d'auteur ni de pseudo : la base remplit user_id et created_by avec auth.uid(),
+    et on lit le pseudo dans utilisateurs au moment d'afficher.
 */
 
 const Data = {
 
-  // -- Lectures et écritures --
+  // Nombre de messages chargés à la fois : les plus récents à l'ouverture d'un salon, puis par paquets en remontant.
+  TAILLE_PAQUET: 50,
 
-  // Tous les salons, triés par nom
+
+  // -- Contacts --
+
+  // Tous les profils sauf le sien, triés par pseudo : c'est dans cette liste qu'on choisit qui ajouter.
+  async fetchUsers(monId) {
+    return await supabaseClient
+      .from("utilisateurs")
+      .select("id, pseudo, derniere_activite")
+      .neq("id", monId)
+      .order("pseudo");
+  },
+
+  // Ses propres contacts, avec le profil de chaque personne ajoutée.
+  // contacts a deux liens vers utilisateurs (user_id et contact_id) : on précise !contact_id pour joindre le bon, celui de la personne ajoutée.
+  // Pas besoin de filtrer sur son identifiant : la RLS ne renvoie que les lignes dont on est le propriétaire.
+  async fetchContacts() {
+    return await supabaseClient
+      .from("contacts")
+      .select("id, contact_id, personne:utilisateurs!contact_id(pseudo, derniere_activite)")
+      .order("created_at");
+  },
+
+  // Ajoute quelqu'un à sa liste : on n'envoie que la personne ajoutée, la base remplit le propriétaire.
+  async addContact(contactId) {
+    return await supabaseClient
+      .from("contacts")
+      .insert({ contact_id: contactId })
+      .select()
+      .single();
+  },
+
+  // Retire quelqu'un de sa liste. La RLS limite la suppression à ses propres lignes.
+  async removeContact(contactId) {
+    return await supabaseClient
+      .from("contacts")
+      .delete()
+      .eq("contact_id", contactId);
+  },
+
+
+  // -- Salons --
+
+  // Tous les salons, triés par nom.
   async fetchChannels() {
     return await supabaseClient
       .from("salons")
@@ -15,7 +63,7 @@ const Data = {
       .order("nom");
   },
 
-  // Crée un salon : on n'envoie que le nom, la base remplit le reste (id, date, créateur)
+  // Crée un salon : on n'envoie que le nom, la base remplit le reste (id, date, créateur).
   async createChannel(nom) {
     return await supabaseClient
       .from("salons")
@@ -24,19 +72,37 @@ const Data = {
       .single();
   },
 
-  // Les 50 derniers messages d'un salon, avec le pseudo de l'auteur lu dans "utilisateurs"
-  // (utilisateurs(pseudo) suit la clé étrangère user_id, comme une jointure).
-  // On trie du plus récent au plus ancien AVANT de limiter : conversation.js remet l'ordre avec reverse().
+
+  // -- Messages --
+
+  // Les colonnes qu'on lit pour un message. utilisateurs(pseudo) suit la clé étrangère user_id, comme une jointure :
+  // le pseudo arrive avec le message, sans être recopié dans la table.
+  COLONNES_MESSAGE: "id, texte, image, created_at, user_id, utilisateurs(pseudo)",
+
+  // Les 50 derniers messages d'un salon.
+  // On trie du plus récent au plus ancien AVANT de limiter, sinon on aurait les 50 premiers ; la page remet ensuite l'ordre avec reverse().
   async fetchMessages(salonId) {
     return await supabaseClient
       .from("messages")
-      .select("id, texte, image, created_at, user_id, utilisateurs(pseudo)")
+      .select(Data.COLONNES_MESSAGE)
       .eq("salon_id", salonId)
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(Data.TAILLE_PAQUET);
   },
 
-  // Le pseudo d'une personne (pour les messages reçus en temps réel, qui n'ont pas le pseudo)
+  // Les 50 messages qui précèdent une date : celle du plus ancien message déjà affiché.
+  // .lt() veut dire « strictement avant » : on ne recharge donc jamais un message qu'on a déjà.
+  async fetchOlderMessages(salonId, avantLe) {
+    return await supabaseClient
+      .from("messages")
+      .select(Data.COLONNES_MESSAGE)
+      .eq("salon_id", salonId)
+      .lt("created_at", avantLe)
+      .order("created_at", { ascending: false })
+      .limit(Data.TAILLE_PAQUET);
+  },
+
+  // Le pseudo d'une personne : les messages reçus en temps réel n'ont que user_id, sans le pseudo.
   async fetchPseudo(userId) {
     return await supabaseClient
       .from("utilisateurs")
@@ -45,22 +111,37 @@ const Data = {
       .single();
   },
 
-  // Envoie un message : la base remplit user_id (auth.uid()) et la date
-  async sendMessage(salonId, texte) {
+  // Envoie un message : du texte, une image (son chemin dans le stockage), ou les deux.
+  // Un champ vide devient null, pour que la base applique ses contraintes (message jamais vide, texte jamais blanc).
+  // La base remplit user_id (auth.uid()) et la date : on ne peut pas écrire au nom de quelqu'un d'autre.
+  async sendMessage(salonId, texte, image = null) {
     return await supabaseClient
       .from("messages")
       .insert({
         salon_id: salonId,
-        texte
+        texte: texte || null,
+        image: image || null
       });
+  },
+
+  // Supprime un de ses messages.
+  // La RLS refuse sans erreur les messages des autres : rien n'est supprimé. Avec .select("id"), on récupère les lignes vraiment supprimées,
+  // et la page sait alors si la suppression a eu lieu (data vide = refusée).
+  async deleteMessage(messageId) {
+    return await supabaseClient
+      .from("messages")
+      .delete()
+      .eq("id", messageId)
+      .select("id");
   },
 
 
   // -- Temps réel --
 
-  // Appelle "onNewChannel" à chaque nouveau salon créé (par n'importe qui)
+  // Appelle onNewChannel à chaque nouveau salon créé, par n'importe qui.
+  // On renvoie le canal pour que la page puisse couper l'écoute avec Data.unsubscribe().
   subscribeToChannels(onNewChannel) {
-    supabaseClient
+    return supabaseClient
       .channel("salons-temps-reel")
       .on(
         "postgres_changes",
@@ -70,20 +151,34 @@ const Data = {
       .subscribe();
   },
 
-  // Appelle "onNewMessage" à chaque nouveau message du salon ouvert
-  subscribeToMessages(salonId, onNewMessage) {
-    supabaseClient
+  // Écoute le salon ouvert : onNewMessage pour chaque nouveau message, onDeletedMessage pour chaque message supprimé.
+  // Les nouveaux messages sont filtrés sur salon_id : on ne reçoit pas ceux des autres salons.
+  // Supabase ne sait pas filtrer les suppressions, et ne transmet que l'id du message supprimé :
+  // on reçoit donc toutes les suppressions, et la page retire la bulle seulement si elle l'affiche.
+  subscribeToMessages(salonId, onNewMessage, onDeletedMessage) {
+    const canal = supabaseClient
       .channel("messages-" + salonId)
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: "salon_id=eq." + salonId
-        },
+        { event: "INSERT", schema: "public", table: "messages", filter: "salon_id=eq." + salonId },
         (payload) => onNewMessage(payload.new)
-      )
-      .subscribe();
+      );
+
+    if (onDeletedMessage) {
+      canal.on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "messages" },
+        (payload) => onDeletedMessage(payload.old.id)
+      );
+    }
+
+    return canal.subscribe();
+  },
+
+  // Coupe une écoute : en quittant un salon, on ne veut plus recevoir ses messages.
+  async unsubscribe(canal) {
+    if (canal) {
+      return await supabaseClient.removeChannel(canal);
+    }
   },
 };
