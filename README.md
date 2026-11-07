@@ -42,6 +42,7 @@ Avant l'envoi, le message peut être vérifié par le correcteur **LanguageTool*
 
 - **HTML5** sémantique et accessible (`<header>`, `<nav>`, `<main>`, `<dialog>`, `<fieldset>`, attributs ARIA).
 - **CSS3** : variables, Flexbox, media queries, transitions.
+- **Polices** DM Serif Display (titres) et Inter (texte), hébergées dans `assets/fonts/` sous licence SIL OFL : aucun appel à Google Fonts, donc aucune adresse IP de visiteur transmise à un tiers.
 - **JavaScript** sans framework : DOM, événements, `async` / `await`.
 - **Supabase** : authentification, base de données PostgreSQL, temps réel.
 - **GitHub Pages** pour l'hébergement.
@@ -58,9 +59,9 @@ alphonse/
 │   └── parametre.html          Paramètres du compte
 ├── assets/
 │   ├── css/
-│   │   ├── style.css           Styles communs (couleurs, polices, base)
-│   │   └── auth.css            Page de connexion
-│   ├── img/                    Logo et bannière
+│   │   └── style.css           Charte graphique : couleurs, polices, thèmes nuit et jour
+│   ├── fonts/                  DM Serif Display et Inter, avec leurs licences OFL
+│   ├── img/                    Logo et bannières (nuit et jour)
 │   └── js/
 │       ├── spclient.js         Connexion au projet Supabase
 │       ├── auth.js             Inscription, connexion, déconnexion, session
@@ -104,9 +105,6 @@ Le site fonctionne directement en ligne. Pour le faire tourner sur un autre proj
 
 ## LanguageTool
 API publique de correction : https://languagetool.org. Le texte du message est envoyé à ce service tiers uniquement quand l'utilisateur demande une vérification. L'étude de l'API, ses limites et nos tests sont détaillés dans `docs/api-languagetool.md`.
-
-## Google Fonts
-Police **Playfair Display** pour les titres, choisie pour rappeler le logo.
 
 
 # Sécurité
