@@ -1,6 +1,8 @@
 /*
-    contact.js — La page des contacts : chercher une personne inscrite par son pseudo, l'ajouter à ses contacts ou l'en retirer.
-    Comme sur les autres pages, on passe par Auth (la session) et Data (les requêtes), jamais directement par Supabase.
+    contact.js — La page des contacts : chercher une personne inscrite par son pseudo, l'ajouter à ses contacts ou l'en retirer,
+    et voir qui est en ligne.
+    Comme sur les autres pages, on passe par Auth (la session), Data (les requêtes) et Presence (l'indicateur en ligne),
+    jamais directement par Supabase.
 */
 
 
@@ -64,7 +66,7 @@ function afficherStatut(texte) {
 // -- Mes contacts
 
 
-// Redessine les cartes, triées par pseudo. Chaque carte : <li> <h3>pseudo</h3> <button>Retirer</button> </li>.
+// Redessine les cartes, triées par pseudo. Chaque carte : <li> <h3>pseudo</h3> <p>en ligne / hors ligne</p> <button>Retirer</button> </li>.
 // Les boutons portent un aria-label avec le pseudo : un lecteur d'écran entend « Retirer gigi de mes contacts », pas cinq fois « Retirer ».
 function afficherMesContacts() {
   const contacts = [...mesContacts.entries()].sort((a, b) => a[1].pseudo.localeCompare(b[1].pseudo, "fr"));
@@ -75,6 +77,12 @@ function afficherMesContacts() {
     const pseudo = document.createElement("h3");
     pseudo.textContent = personne.pseudo;
 
+    // « En ligne » ou « Hors ligne », toujours écrit en toutes lettres : la pastille de couleur seule ne suffirait pas
+    const presence = document.createElement("p");
+    const enLigne = Presence.estEnLigne(personne.derniere_activite);
+    presence.className = enLigne ? "presence en-ligne" : "presence";
+    presence.textContent = enLigne ? "En ligne" : "Hors ligne";
+
     const bouton = document.createElement("button");
     bouton.type = "button";
     bouton.dataset.action = "retirer";
@@ -82,7 +90,7 @@ function afficherMesContacts() {
     bouton.textContent = "Retirer";
     bouton.setAttribute("aria-label", "Retirer " + personne.pseudo + " de mes contacts");
 
-    li.append(pseudo, bouton);
+    li.append(pseudo, presence, bouton);
     return li;
   });
 
@@ -198,6 +206,9 @@ async function init() {
   monId = user.id;
 
   await chargerMesContacts();
+
+  // Chaque minute, on recharge les contacts pour mettre à jour « en ligne / hors ligne »
+  setInterval(chargerMesContacts, INTERVALLE_PRESENCE);
 }
 
 init();

@@ -67,3 +67,19 @@
 #statut-contacts:empty {
     margin: 0;
 }
+
+/* « En ligne / hors ligne » sous le pseudo d'un contact : une pastille et le mot, jamais la couleur seule */
+.presence {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--encre-douce);
+}
+
+.presence::before {
+    content: "●";
+    margin-right: var(--espace-1);
+}
+
+.presence.en-ligne::before {
+    color: var(--vert);
+}
