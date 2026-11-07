@@ -9,12 +9,15 @@
     <meta name="description" content="Recherchez une personne inscrite sur Alphonse par son pseudo.">
     <link rel="icon" type="image/png" href="../assets/img/logo-alphonse.png">
     <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- Les styles propres à cette page viennent après les styles communs : ils les complètent sans les répéter. -->
+    <link rel="stylesheet" href="../assets/css/contact.css">
     <!-- local.js passe en premier, et sans defer : spclient.js en a besoin pour créer le client. Comme il ne touche pas au document, rien ne l'oblige à attendre que la page soit construite. -->
     <script src="../assets/js/local.js"></script>
     <!-- On a mis les scripts dans le <head> avec defer : le navigateur les télécharge pendant qu'il lit le HTML, mais attend que la page soit construite pour les lancer. Et defer garde l'ordre, ce qui nous arrange : Supabase d'abord, puis notre client, puis Auth, et enfin le script de la page. Chacun a besoin du précédent, comme des dominos. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="../assets/js/spclient.js" defer></script>
     <script src="../assets/js/auth.js" defer></script>
+    <script src="../assets/js/data.js" defer></script>
     <script src="../assets/js/contact.js" defer></script>
 </head>
 
@@ -42,14 +45,32 @@
 
         <h1>Contacts</h1>
 
-        <!-- Recherche par pseudo -->
-        <div>
-            <label for="recherche-contact">Rechercher un pseudo</label>
-            <input type="search" id="recherche-contact" name="recherche">
-        </div>
+        <!-- Deux zones de message : role="status" annonce calmement ce qui vient de se passer (un contact ajouté ou retiré), role="alert" annonce tout de suite une erreur. Elles restent vides tant qu'il n'y a rien à dire. -->
+        <p id="statut-contacts" role="status"></p>
+        <p id="erreur-contacts" role="alert"></p>
 
-        <!-- Liste des personnes inscrites, remplie par contact.js -->
-        <ul id="liste-contacts"></ul>
+        <!-- Nos contacts, en cartes. tabindex="-1" sur le titre : quand on retire une carte, on y ramène le focus, pour que la navigation au clavier ne se perde pas. -->
+        <section aria-labelledby="titre-mes-contacts">
+            <h2 id="titre-mes-contacts" tabindex="-1">Mes contacts</h2>
+            <p id="aucun-contact" hidden>Vous n'avez encore aucun contact. Cherchez un pseudo ci-dessous pour en ajouter un.</p>
+            <ul id="mes-contacts"></ul>
+        </section>
+
+        <!-- La recherche. role="search" signale le formulaire comme une zone de recherche aux lecteurs d'écran. maxlength="20" et l'aide reprennent la règle des pseudos : chercher autre chose ne trouverait personne. -->
+        <section aria-labelledby="titre-recherche">
+            <h2 id="titre-recherche">Ajouter un contact</h2>
+            <form id="formulaire-recherche" role="search">
+                <label for="recherche-contact">Rechercher un pseudo</label>
+                <input type="search" id="recherche-contact" name="recherche" maxlength="20" autocomplete="off" spellcheck="false" aria-describedby="aide-recherche">
+                <small id="aide-recherche">Lettres sans accent, chiffres, _ ou -, comme dans un pseudo.</small>
+            </form>
+
+            <!-- Le nombre de personnes trouvées, annoncé à chaque recherche. -->
+            <p id="etat-recherche" role="status"></p>
+
+            <!-- Les résultats, remplis par contact.js. -->
+            <ul id="resultats-recherche"></ul>
+        </section>
 
     </main>
 

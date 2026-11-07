@@ -16,13 +16,18 @@ const Data = {
 
   // -- Contacts --
 
-  // Tous les profils sauf le sien, triés par pseudo : c'est dans cette liste qu'on choisit qui ajouter.
-  async fetchUsers(monId) {
+  // Les inscrits dont le pseudo contient le texte cherché, sauf soi-même (.neq()), triés par pseudo, 20 au plus.
+  // .ilike() compare sans tenir compte des majuscules. Dans son motif, % veut dire « n'importe quelle suite de caractères » et _ « n'importe quel caractère » :
+  // on échappe donc les _ et les % du texte tapé (un pseudo peut contenir _), pour chercher le vrai caractère.
+  async searchUsers(texte, monId) {
+    const motif = "%" + texte.replace(/[\\%_]/g, "\\$&") + "%";
     return await supabaseClient
       .from("utilisateurs")
       .select("id, pseudo, derniere_activite")
+      .ilike("pseudo", motif)
       .neq("id", monId)
-      .order("pseudo");
+      .order("pseudo")
+      .limit(20);
   },
 
   // Ses propres contacts, avec le profil de chaque personne ajoutée.

@@ -1,0 +1,69 @@
+/*
+    contact.css — La mise en page de la page des contacts.
+*/
+
+/*
+    Mes contacts, en cartes. repeat(auto-fit, minmax(...)) : la grille place autant de colonnes de 12 rem au moins qu'il en tient dans la largeur,
+    puis les étire pour remplir la ligne. Une colonne sur téléphone, trois ou quatre sur ordinateur, sans aucune media query.
+    min(100%, 12rem) évite qu'une carte déborde sur un écran plus étroit que 12 rem.
+*/
+#mes-contacts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--espace-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Chaque carte : le fond de la page posé sur le panneau, un filet fin, le pseudo en haut et le bouton en bas (Flexbox en colonne). */
+#mes-contacts li {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--espace-4);
+    padding: var(--espace-4);
+    border: var(--filet-fin);
+    background-color: var(--fond);
+}
+
+/* Le pseudo dans la police des titres. overflow-wrap: anywhere coupe un pseudo de 20 caractères plutôt que de le laisser sortir de la carte. */
+#mes-contacts h3 {
+    margin: 0;
+    font-family: var(--police-titre);
+    font-size: 1.375rem;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+}
+
+/* Le bouton garde sa taille naturelle au lieu de prendre toute la largeur de la carte. */
+#mes-contacts button {
+    align-self: flex-start;
+}
+
+/* Les résultats de recherche : une ligne par personne, le pseudo à gauche et le bouton à droite, séparés par un filet comme les lignes d'un sommaire. */
+#resultats-recherche {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#resultats-recherche li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-2) var(--espace-4);
+    padding: var(--espace-3) 0;
+    border-bottom: var(--filet-fin);
+}
+
+/* « Dans vos contacts » : une simple mention, plus discrète qu'un bouton, puisqu'il n'y a rien à faire. */
+#resultats-recherche small {
+    margin: 0;
+}
+
+/* Les deux zones de message du haut ne prennent pas de place tant qu'elles sont vides. */
+#statut-contacts:empty {
+    margin: 0;
+}

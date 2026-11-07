@@ -534,25 +534,13 @@ button:active {
 }
 
 
-/* ---------- 9. Panneaux et listes ---------- */
+/* ---------- 9. Panneaux ---------- */
 
 /* Les sections du contenu principal deviennent des panneaux, comme l'encadré du correcteur dans la charte. */
 main > section {
     margin-bottom: var(--espace-5);
     padding: var(--espace-5);
     background-color: var(--surface);
-}
-
-/* Les résultats de recherche de contacts, séparés par un filet comme les lignes d'un sommaire. */
-#liste-contacts {
-    margin: var(--espace-5) 0 0;
-    padding: 0;
-    list-style: none;
-}
-
-#liste-contacts li {
-    padding: var(--espace-3) 0;
-    border-bottom: var(--filet-fin);
 }
 
 
