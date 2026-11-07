@@ -199,6 +199,16 @@ a:hover {
 }
 
 /*
+    Un lien qui s'ouvre dans un nouvel onglet (target="_blank") est signalé par une petite flèche, pour qu'on ne soit pas surpris.
+    La deuxième ligne ajoute un texte de remplacement pour les lecteurs d'écran, qui annoncent « nouvel onglet » au lieu de lire la flèche ;
+    un navigateur qui ne la comprend pas garde la première.
+*/
+a[target="_blank"]::after {
+    content: " ↗";
+    content: " ↗" / " (nouvel onglet)";
+}
+
+/*
     Le contour bleu n'apparaît qu'au clavier (:focus-visible), pas à chaque clic de souris.
     On ne le supprime jamais : sans lui, naviguer avec Tab revient à chercher dans le noir.
 */
