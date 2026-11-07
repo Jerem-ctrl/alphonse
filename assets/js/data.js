@@ -114,6 +114,7 @@ const Data = {
   // Envoie un message : du texte, une image (son chemin dans le stockage), ou les deux.
   // Un champ vide devient null, pour que la base applique ses contraintes (message jamais vide, texte jamais blanc).
   // La base remplit user_id (auth.uid()) et la date : on ne peut pas écrire au nom de quelqu'un d'autre.
+  // On redemande le message enregistré, pseudo compris : la page l'affiche tout de suite, sans attendre le temps réel.
   async sendMessage(salonId, texte, image = null) {
     return await supabaseClient
       .from("messages")
@@ -121,7 +122,14 @@ const Data = {
         salon_id: salonId,
         texte: texte || null,
         image: image || null
-      });
+      })
+      .select(Data.COLONNES_MESSAGE)
+      .single();
+  },
+
+  // Le lien public d'une image du compartiment images, à partir du chemin gardé dans le message.
+  imageUrl(chemin) {
+    return supabaseClient.storage.from("images").getPublicUrl(chemin).data.publicUrl;
   },
 
   // Supprime un de ses messages.

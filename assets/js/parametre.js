@@ -26,6 +26,8 @@ init();
 // -- Événements
  
 document.getElementById("bouton-deconnexion").onclick = async () => {
+  // On efface d'abord les brouillons et le dernier salon de l'onglet, puis on ferme la session.
+  Local.oublierConversation();
   const { error } = await Auth.signOut();
   if (error) {
     console.error("Impossible de se déconnecter.", error);

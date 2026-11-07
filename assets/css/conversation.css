@@ -1,0 +1,12 @@
+/*
+    conversation.css — La mise en page de la page des conversations.
+*/
+
+/*
+    Le fil a sa propre zone de défilement, limitée à 60 % de la hauteur visible de l'écran (dvh suit la vraie hauteur, même sur téléphone).
+    C'est en remontant tout en haut de cette zone qu'on charge les messages plus anciens.
+*/
+#fil-messages {
+    max-height: 60dvh;
+    overflow-y: auto;
+}

@@ -1,9 +1,11 @@
 /*
-    local.js — Préférences et session gardées dans le navigateur
+    local.js — Préférences, session et brouillons gardés dans le navigateur
 */
 
 // On a rangé ici tout ce qui touche au stockage du navigateur, et chaque accès passe par un try/catch : en navigation privée ou avec le stockage bloqué, localStorage peut lever une erreur, et on refuse qu'un tiroir coincé fasse tomber toute la page.
 const CLE_SE_SOUVENIR = "alphonse-se-souvenir";
+const CLE_BROUILLONS = "alphonse-brouillons";
+const CLE_DERNIER_SALON = "alphonse-dernier-salon";
 
 const Local = {
 
@@ -21,6 +23,76 @@ const Local = {
   enregistrerSeSouvenir(valeur) {
     try {
       localStorage.setItem(CLE_SE_SOUVENIR, JSON.stringify(valeur === true));
+    } catch (erreur) {
+      console.error(erreur);
+    }
+  },
+
+  // Le brouillon et le dernier salon vont dans sessionStorage, pas dans localStorage : ils disparaissent avec l'onglet. Un brouillon peut contenir quelque chose de privé, on ne veut pas qu'il reste sur l'ordinateur.
+
+  // Les brouillons de tous les salons tiennent dans un seul objet { identifiant du salon: texte }, relu avec JSON.parse. Si ce qu'on relit n'est pas un objet, on repart d'un objet vide.
+  lireBrouillons() {
+    try {
+      const brouillons = JSON.parse(sessionStorage.getItem(CLE_BROUILLONS));
+      if (brouillons && typeof brouillons === "object" && !Array.isArray(brouillons)) {
+        return brouillons;
+      }
+    } catch (erreur) {
+      console.error(erreur);
+    }
+    return {};
+  },
+
+  // Le brouillon d'un salon, ou une chaîne vide s'il n'y en a pas (ou si ce qu'on trouve n'est pas du texte).
+  lireBrouillon(salonId) {
+    const texte = Local.lireBrouillons()[salonId];
+    return typeof texte === "string" ? texte : "";
+  },
+
+  // On enregistre le brouillon avec JSON.stringify. Un brouillon vide est retiré de l'objet : on ne garde pas de cases inutiles.
+  enregistrerBrouillon(salonId, texte) {
+    const brouillons = Local.lireBrouillons();
+    if (texte.trim()) {
+      brouillons[salonId] = texte;
+    } else {
+      delete brouillons[salonId];
+    }
+    try {
+      sessionStorage.setItem(CLE_BROUILLONS, JSON.stringify(brouillons));
+    } catch (erreur) {
+      console.error(erreur);
+    }
+  },
+
+  // Le dernier salon ouvert, pour y revenir quand on clique sur « Conversations ». Number() et Number.isInteger écartent tout ce qui n'est pas un identifiant valide.
+  lireDernierSalon() {
+    try {
+      const salonId = Number(sessionStorage.getItem(CLE_DERNIER_SALON));
+      return Number.isInteger(salonId) && salonId > 0 ? salonId : null;
+    } catch (erreur) {
+      console.error(erreur);
+      return null;
+    }
+  },
+
+  // Avec null, on oublie le dernier salon : c'est le cas quand il n'existe plus.
+  enregistrerDernierSalon(salonId) {
+    try {
+      if (salonId) {
+        sessionStorage.setItem(CLE_DERNIER_SALON, String(salonId));
+      } else {
+        sessionStorage.removeItem(CLE_DERNIER_SALON);
+      }
+    } catch (erreur) {
+      console.error(erreur);
+    }
+  },
+
+  // À la déconnexion, on efface les brouillons et le dernier salon : la personne suivante sur le même onglet ne doit rien en retrouver.
+  oublierConversation() {
+    try {
+      sessionStorage.removeItem(CLE_BROUILLONS);
+      sessionStorage.removeItem(CLE_DERNIER_SALON);
     } catch (erreur) {
       console.error(erreur);
     }
