@@ -28,6 +28,26 @@ const Local = {
     }
   },
 
+  // Une préférence d'affichage (analyse automatique, et plus tard le thème ou le son), rangée dans localStorage avec JSON.stringify.
+  // À la relecture, on ne garde la valeur que si elle a le même type que la valeur par défaut : un true reste un booléen, jamais une chaîne bricolée dans la console.
+  lirePreference(nom, valeurParDefaut) {
+    try {
+      const valeur = JSON.parse(localStorage.getItem("alphonse-" + nom));
+      return valeur !== null && typeof valeur === typeof valeurParDefaut ? valeur : valeurParDefaut;
+    } catch (erreur) {
+      console.error(erreur);
+      return valeurParDefaut;
+    }
+  },
+
+  enregistrerPreference(nom, valeur) {
+    try {
+      localStorage.setItem("alphonse-" + nom, JSON.stringify(valeur));
+    } catch (erreur) {
+      console.error(erreur);
+    }
+  },
+
   // Le brouillon et le dernier salon vont dans sessionStorage, pas dans localStorage : ils disparaissent avec l'onglet. Un brouillon peut contenir quelque chose de privé, on ne veut pas qu'il reste sur l'ordinateur.
 
   // Les brouillons de tous les salons tiennent dans un seul objet { identifiant du salon: texte }, relu avec JSON.parse. Si ce qu'on relit n'est pas un objet, on repart d'un objet vide.

@@ -10,3 +10,9 @@
     max-height: 60dvh;
     overflow-y: auto;
 }
+/* Dans l'assistant, on garde les retours à la ligne du message : la reformulation ajoute « Cordialement » sur sa propre ligne. */
+#texte-annote,
+#corrections,
+#reformulation q {
+    white-space: pre-wrap;
+}

@@ -73,11 +73,6 @@
         <!-- role="alert" : on annonce les erreurs tout de suite aux lecteurs d'écran. Le paragraphe reste vide tant que tout va bien (et on espère qu'il le restera longtemps). -->
         <p id="erreur-conversation" role="alert"></p>
 
-        <!-- L'emplacement de l'assistant, qui aidera à relire nos messages avant l'envoi. Il n'a encore rien à dire, mais on lui garde sa place. -->
-        <section id="assistant" aria-labelledby="titre-assistant">
-            <h2 id="titre-assistant">Assistant de rédaction</h2>
-        </section>
-
         <!-- Pas d'action ni de method sur le formulaire : c'est JavaScript qui enverra le message à Supabase. Un <textarea> plutôt qu'un input, parce qu'un message pro tient rarement sur une ligne. accept="image/*" filtre les fichiers proposés, sans remplacer une vraie vérification côté service. -->
         <form id="formulaire-message">
             <label for="message">Votre message</label>
@@ -88,6 +83,93 @@
 
             <button type="submit">Envoyer</button>
         </form>
+
+        <!-- L'assistant de rédaction, juste sous le formulaire : on écrit, puis on lit ce qu'Alphonse en pense, dans l'ordre de lecture de la page. -->
+        <section id="assistant" aria-labelledby="titre-assistant">
+            <h2 id="titre-assistant">Assistant de rédaction</h2>
+
+            <!-- La note, dans une zone role="status" : les lecteurs d'écran l'annoncent quand elle change, sans interrompre la personne.
+                 Le feu porte un title (l'infobulle) et un aria-label, et le libellé est écrit juste à côté : la couleur ne porte jamais seule l'information. -->
+            <p id="note-assistant" role="status">
+                <span id="feu" class="feu" data-couleur="aucune" role="img" aria-label="Feu éteint" title="Pas encore de note">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <span id="texte-note">Écrivez votre message, puis cliquez sur « Analyser ».</span>
+            </p>
+
+            <!-- « Analyser » lance l'analyse à la demande. La case la lance toute seule pendant la frappe ; elle est décochée par défaut, pour que rien ne parte vers LanguageTool sans qu'on l'ait choisi. -->
+            <div id="commandes-assistant">
+                <button type="button" id="bouton-analyser">Analyser</button>
+                <div>
+                    <input type="checkbox" id="analyse-auto">
+                    <label for="analyse-auto">Analyse automatique</label>
+                </div>
+            </div>
+
+            <!-- Le résultat reste caché (hidden) tant qu'aucune analyse n'est faite. -->
+            <div id="resultat-assistant" hidden>
+
+                <h3>Votre message</h3>
+                <!-- Les passages à revoir sont surlignés avec <mark> ; leur explication apparaît au survol (title) et dans la liste juste après. -->
+                <p id="texte-annote"></p>
+
+                <h3>Ce qu'Alphonse a relevé</h3>
+                <ul id="liste-defauts"></ul>
+
+                <h3>Reformulation proposée</h3>
+                <!-- <del> barre ce qu'on retire, <ins> souligne ce qu'on ajoute ; la version complète est citée dans un <q>. -->
+                <p id="corrections"></p>
+                <p id="reformulation"></p>
+
+                <!-- Le détail de la note : <caption> donne son titre au tableau, <thead> les colonnes, <tbody> une ligne par critère et <tfoot> le total. -->
+                <table id="detail-note">
+                    <caption>Détail de la note</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Critère</th>
+                            <th scope="col">Défauts</th>
+                            <th scope="col">Pénalité</th>
+                            <th scope="col">Plafond</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corps-detail"></tbody>
+                    <tfoot>
+                        <tr>
+                            <th scope="row">Note finale</th>
+                            <td id="total-detail" colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- Les deux choix laissés à la personne : Alphonse conseille, il ne décide pas. -->
+                <div id="choix-assistant">
+                    <button type="button" id="bouton-appliquer">Appliquer la reformulation</button>
+                    <button type="button" id="bouton-envoyer-tel-quel">Envoyer tel quel</button>
+                </div>
+            </div>
+
+            <!-- L'aide, repliée dans un <details> : elle ne prend de la place que pour celles et ceux qui l'ouvrent. -->
+            <details>
+                <summary>Comment la note est calculée</summary>
+                <p>Chaque message part de 100 points. Alphonse retire des points pour chaque défaut :</p>
+                <ul>
+                    <li>orthographe : −6 par faute, 40 points au plus ;</li>
+                    <li>grammaire et syntaxe : −8 par faute, 30 points au plus ;</li>
+                    <li>politesse et registre : −10 s'il manque la formule d'appel, −10 s'il manque la formule de clôture, −10 par mot familier ;</li>
+                    <li>clarté et ton : −5 par phrase de plus de 30 mots, −10 pour des mots en majuscules, −5 pour « !!! » ou « ?? ».</li>
+                </ul>
+                <p>Le feu passe au vert à partir de 80 (« Prêt à partir »), à l'orange de 50 à 79 (« Ça passe, mais on peut mieux faire ») et au rouge en dessous de 50 (« À retravailler avant envoi »).</p>
+                <p>L'orthographe et la grammaire sont vérifiées par LanguageTool ; la politesse et la clarté, par nos propres règles. Si LanguageTool ne répond pas, la note ne tient compte que de nos règles.</p>
+            </details>
+
+            <!-- Le texte part chez un service extérieur : on le dit clairement. Le lien vers LanguageTool est exigé par ses conditions d'utilisation ;
+                 target="_blank" l'ouvre dans un nouvel onglet, et rel="noopener noreferrer" empêche ce nouvel onglet d'agir sur notre page ou de savoir d'où l'on vient. -->
+            <p id="avertissement-assistant">
+                <small>Pour être analysé, votre texte est envoyé à <a href="https://languagetool.org" target="_blank" rel="noopener noreferrer">LanguageTool</a>, un service extérieur. Pour une information confidentielle, n'utilisez pas l'analyse : laissez « Analyse automatique » décochée et ne cliquez pas sur « Analyser ».</small>
+            </p>
+        </section>
     </main>
 
     <!-- Pied de page : copyright -->
