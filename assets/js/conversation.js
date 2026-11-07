@@ -1,6 +1,7 @@
 /*
     conversation.js — La page des conversations : la liste des salons, le fil du salon ouvert et l'envoi des messages.
-    On ne parle jamais directement à Supabase ici : on passe par Auth (la session), Data (les requêtes) et Local (le stockage du navigateur).
+    On ne parle jamais directement à Supabase ici : on passe par Auth (la session), Data (les requêtes), Local (le stockage du navigateur)
+    et Ecriture (l'indicateur « en train d'écrire »).
     L'assistant de rédaction, lui, passe par Alphonse : ce fichier se contente d'afficher ce qu'il renvoie.
 */
 
@@ -510,7 +511,8 @@ async function analyserMaintenant() {
 const TAILLE_MAX_IMAGE = 2 * 1024 * 1024; // 2 Mo
 const TYPES_IMAGE = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 
-// Enregistre le message (texte, image, ou les deux), puis vide le champ, le brouillon et l'assistant.
+// Enregistre le message (texte, image, ou les deux), puis vide le champ, le brouillon et l'assistant,
+// et prévient les autres qu'on a fini d'écrire.
 // L'image est d'abord déposée dans le stockage, puis son chemin est enregistré avec le message.
 // Le message enregistré s'affiche tout de suite ; quand le temps réel le renverra, la Map l'ignorera.
 async function enregistrerMessage(texte, fichier) {
@@ -537,6 +539,7 @@ async function enregistrerMessage(texte, fichier) {
   }
 
   formulaireMessage.reset();
+  Ecriture.signalerArret();
   Local.enregistrerBrouillon(salonActif, "");
   Alphonse.annulerAnalyse();
   effacerResultat();
@@ -568,6 +571,7 @@ async function envoyer(avecAssistant) {
   try {
     const assistantConsulte = caseAnalyseAuto.checked || dernierResultat?.texte === texteDuChamp();
 
+    // L'assistant ne relit que du texte : une image seule part directement
     if (avecAssistant && assistantConsulte && texte) {
       const resultat = await analyserMaintenant();
       if (!resultat) {
@@ -665,6 +669,9 @@ async function init() {
   document.title = salon.nom + " - Alphonse";
   Local.enregistrerDernierSalon(salonActif);
 
+  // L'indicateur « en train d'écrire » : on rejoint le canal de ce salon
+  Ecriture.demarrer(salonActif, monId);
+
   // Le brouillon laissé dans ce salon, s'il y en a un. Avec l'analyse automatique, Alphonse le note tout de suite.
   champMessage.value = Local.lireBrouillon(salonActif);
   mettreAJourBoutons();
@@ -727,7 +734,7 @@ boutonRetour.addEventListener("click", () => {
   }
 });
 
-// À chaque frappe : on garde le brouillon, on met à jour les boutons, puis on s'occupe de l'assistant.
+// À chaque frappe : on garde le brouillon, on met à jour les boutons, on prévient les autres qu'on écrit, puis on s'occupe de l'assistant.
 // Avec l'analyse automatique, Alphonse attend 800 ms sans frappe avant d'analyser (anti-rebond).
 // Sans elle, un résultat qui ne correspond plus au texte est retiré : on n'affiche jamais la note d'un autre message.
 champMessage.addEventListener("input", () => {
@@ -735,6 +742,11 @@ champMessage.addEventListener("input", () => {
     Local.enregistrerBrouillon(salonActif, champMessage.value);
   }
   mettreAJourBoutons();
+
+  // On signale aux autres qu'on écrit (au plus une fois toutes les 2 secondes)
+  if (salonActif && champMessage.value.trim()) {
+    Ecriture.signalerFrappe();
+  }
 
   if (caseAnalyseAuto.checked) {
     Alphonse.programmerAnalyse(champMessage.value, (resultat) => {
