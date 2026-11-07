@@ -25,7 +25,7 @@ function afficherContacts(profils) {
 
   profils.forEach((profil) => {
     const li = document.createElement("li");
-    li.textContent = profil.pseudo + (profil.en_ligne ? " (en ligne)" : "");
+    li.textContent = profil.pseudo;
     listeContacts.append(li);
   });
 }
@@ -36,7 +36,7 @@ async function init() {
 
   const { data } = await supabaseClient
     .from("utilisateurs")
-    .select("pseudo, en_ligne")
+    .select("pseudo")
     .neq("id", user.id)
     .order("pseudo");
 

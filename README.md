@@ -99,8 +99,9 @@ Le site fonctionne directement en ligne. Pour le faire tourner sur un autre proj
 
 ## Supabase
 - **Authentification** : les comptes (courriel et mot de passe haché) sont gérés par Supabase Auth. Aucun mot de passe n'est stocké dans nos tables.
-- **Base de données** : la table `utilisateurs` contient les informations publiques de chaque compte (pseudo, statut en ligne). Les tables `channels` et `messages` contiennent les salons et les messages. Le détail est dans `docs/bdd/base-de-donnees.md`.
+- **Base de données** : la table `utilisateurs` contient les informations publiques de chaque compte (pseudo, dernière activité). Les tables `salons`, `messages`, `lectures` et `contacts` contiennent les salons, les messages, l'état de lecture et les listes de contacts. Tout le schéma est dans `docs/bdd/schema.sql`, détaillé dans `docs/bdd/base-de-donnees.md`.
 - **Temps réel** : les nouveaux messages sont reçus sans recharger la page.
+- **Stockage** : le compartiment `images` reçoit les images partagées, 2 Mo au plus, en PNG, JPEG, WebP ou GIF.
 
 ## LanguageTool
 API publique de correction : https://languagetool.org. Le texte du message est envoyé à ce service tiers uniquement quand l'utilisateur demande une vérification. L'étude de l'API, ses limites et nos tests sont détaillés dans `docs/api-languagetool.md`.
