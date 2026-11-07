@@ -128,6 +128,8 @@ formulaireConnexion.addEventListener("submit", async (event) => {
   // On désactive le bouton pendant que Supabase réfléchit : un double clic ne fera pas deux envois. Le finally le réactive quoi qu'il arrive, même quand ça tourne mal.
   try {
     boutonConnexion.disabled = true;
+    // On note le choix de la case juste avant de se connecter : Supabase range ainsi la session dans le bon tiroir dès sa première écriture.
+    Local.enregistrerSeSouvenir(document.getElementById("se-souvenir").checked);
     const { error } = await Auth.signIn(email, password);
 
     if (error) {
@@ -178,6 +180,8 @@ formulaireInscription.addEventListener("submit", async (event) => {
   // Même garde-fou qu'à la connexion : bouton grisé pendant l'attente, et le finally le rend dans tous les cas.
   try {
     boutonInscription.disabled = true;
+    // À l'inscription, pas de case : on enregistre false, le choix par défaut. La session partira avec l'onglet ; on pourra cocher la case à la prochaine connexion.
+    Local.enregistrerSeSouvenir(false);
     const { error } = await Auth.signUp(email, password, pseudo);
 
     if (error) {

@@ -9,6 +9,8 @@
     <meta name="description" content="Recherchez une personne inscrite sur Alphonse par son pseudo.">
     <link rel="icon" type="image/png" href="../assets/img/logo-alphonse.png">
     <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- local.js passe en premier, et sans defer : spclient.js en a besoin pour créer le client. Comme il ne touche pas au document, rien ne l'oblige à attendre que la page soit construite. -->
+    <script src="../assets/js/local.js"></script>
     <!-- On a mis les scripts dans le <head> avec defer : le navigateur les télécharge pendant qu'il lit le HTML, mais attend que la page soit construite pour les lancer. Et defer garde l'ordre, ce qui nous arrange : Supabase d'abord, puis notre client, puis Auth, et enfin le script de la page. Chacun a besoin du précédent, comme des dominos. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="../assets/js/spclient.js" defer></script>
