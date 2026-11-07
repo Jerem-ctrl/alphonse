@@ -109,10 +109,11 @@ function formaterDate(iso) {
   return date.toLocaleDateString("fr-CA", { day: "numeric", month: "short" }) + ", " + heure;
 }
 
-// « Envoyer » et « Analyser » ne sont utilisables que dans un salon ouvert, avec un message non vide, et quand rien n'est en cours.
+// « Envoyer » demande un salon ouvert et un texte OU une image ; « Analyser » demande un texte.
 function mettreAJourBoutons() {
   const vide = champMessage.value.trim() === "";
-  boutonEnvoyer.disabled = !salonActif || envoiEnCours || vide;
+  const sansImage = champImage.files.length === 0;
+  boutonEnvoyer.disabled = !salonActif || envoiEnCours || (vide && sansImage);
   boutonAnalyser.disabled = !salonActif || analyseEnCours || envoiEnCours || vide;
   boutonEnvoyerTelQuel.disabled = envoiEnCours;
 }
@@ -146,7 +147,7 @@ function afficherSalon(salon) {
     lien.setAttribute("aria-current", "page");
   }
 
-    li.append(lien);
+  li.append(lien);
 
   // Un salon créé pendant qu'on est sur la page se range à sa place dans l'ordre alphabétique, comme ceux chargés au départ.
   // localeCompare compare les noms à la française, accents compris.
@@ -505,12 +506,32 @@ async function analyserMaintenant() {
 // -- Envoi
 
 
-// Enregistre le message, puis vide le champ, le brouillon et l'assistant.
+// Les mêmes règles que le compartiment Supabase : on prévient tout de suite, plutôt qu'après un envoi refusé.
+const TAILLE_MAX_IMAGE = 2 * 1024 * 1024; // 2 Mo
+const TYPES_IMAGE = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+
+// Enregistre le message (texte, image, ou les deux), puis vide le champ, le brouillon et l'assistant.
+// L'image est d'abord déposée dans le stockage, puis son chemin est enregistré avec le message.
 // Le message enregistré s'affiche tout de suite ; quand le temps réel le renverra, la Map l'ignorera.
-async function enregistrerMessage(texte) {
-  const { data: message, error } = await Data.sendMessage(salonActif, texte);
+async function enregistrerMessage(texte, fichier) {
+  let chemin = null;
+
+  if (fichier) {
+    const envoi = await Data.uploadImage(fichier, monId);
+    if (envoi.error) {
+      afficherErreur("L'image n'a pas pu être envoyée. Vérifiez son format et sa taille, puis réessayez.", envoi.error);
+      return;
+    }
+    chemin = envoi.chemin;
+  }
+
+  const { data: message, error } = await Data.sendMessage(salonActif, texte, chemin);
 
   if (error) {
+    // Le message n'est pas enregistré : on retire l'image déjà déposée, pour ne pas laisser de fichier orphelin
+    if (chemin) {
+      await Data.deleteImage(chemin);
+    }
     afficherErreur("Le message n'a pas pu être envoyé. Votre texte est toujours là, vous pouvez réessayer.", error);
     return;
   }
@@ -519,6 +540,7 @@ async function enregistrerMessage(texte) {
   Local.enregistrerBrouillon(salonActif, "");
   Alphonse.annulerAnalyse();
   effacerResultat();
+  mettreAJourBoutons();
   await afficherMessage(message);
   descendreEnBas();
 }
@@ -532,7 +554,9 @@ async function enregistrerMessage(texte) {
 */
 async function envoyer(avecAssistant) {
   const texte = champMessage.value.trim();
-  if (!salonActif || !texte || envoiEnCours) {
+  const fichier = champImage.files[0] ?? null;
+  // Il faut au moins un texte ou une image
+  if (!salonActif || (!texte && !fichier) || envoiEnCours) {
     return;
   }
 
@@ -544,7 +568,7 @@ async function envoyer(avecAssistant) {
   try {
     const assistantConsulte = caseAnalyseAuto.checked || dernierResultat?.texte === texteDuChamp();
 
-    if (avecAssistant && assistantConsulte) {
+    if (avecAssistant && assistantConsulte && texte) {
       const resultat = await analyserMaintenant();
       if (!resultat) {
         return;
@@ -556,7 +580,7 @@ async function envoyer(avecAssistant) {
       }
     }
 
-    await enregistrerMessage(texte);
+    await enregistrerMessage(texte, fichier);
   } finally {
     envoiEnCours = false;
     mettreAJourBoutons();
@@ -723,6 +747,22 @@ champMessage.addEventListener("input", () => {
   } else if (dernierResultat && dernierResultat.texte !== texteDuChamp()) {
     effacerResultat();
   }
+});
+
+// Choix d'une image : on vérifie tout de suite le format et la taille, avec les mêmes règles que Supabase
+champImage.addEventListener("change", () => {
+  effacerErreur();
+  const fichier = champImage.files[0];
+
+  if (fichier && !TYPES_IMAGE.includes(fichier.type)) {
+    afficherErreur("Ce format n'est pas accepté : choisissez une image PNG, JPEG, WebP ou GIF.");
+    champImage.value = "";
+  } else if (fichier && fichier.size > TAILLE_MAX_IMAGE) {
+    afficherErreur("Cette image dépasse 2 Mo : choisissez-en une plus légère.");
+    champImage.value = "";
+  }
+
+  mettreAJourBoutons();
 });
 
 // Entrée envoie le message, Maj + Entrée passe à la ligne.

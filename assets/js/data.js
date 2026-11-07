@@ -137,6 +137,25 @@ const Data = {
     return supabaseClient.storage.from("images").getPublicUrl(chemin).data.publicUrl;
   },
 
+  // Dépose une image dans le compartiment "images", dans le dossier de la personne connectée (exigé par la RLS du stockage).
+  // Le nom est rendu unique (date + quelques caractères au hasard) : deux « photo.png » ne s'écrasent jamais.
+  // Renvoie { chemin, error } : le chemin est ce qu'on enregistre ensuite dans messages.image.
+  async uploadImage(fichier, userId) {
+    const extension = fichier.name.split(".").pop().toLowerCase();
+    const chemin = userId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + extension;
+
+    const { error } = await supabaseClient.storage
+      .from("images")
+      .upload(chemin, fichier, { contentType: fichier.type });
+
+    return { chemin, error };
+  },
+
+  // Supprime une image du stockage (si le message n'a pas pu être enregistré, on ne garde pas un fichier orphelin).
+  async deleteImage(chemin) {
+    return await supabaseClient.storage.from("images").remove([chemin]);
+  },
+
   // Supprime un de ses messages.
   // La RLS refuse sans erreur les messages des autres : rien n'est supprimé. Avec .select("id"), on récupère les lignes vraiment supprimées,
   // et la page sait alors si la suppression a eu lieu (data vide = refusée).

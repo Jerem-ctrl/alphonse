@@ -84,10 +84,13 @@
         <!-- Pas d'action ni de method sur le formulaire : c'est JavaScript qui enverra le message à Supabase. Un <textarea> plutôt qu'un input, parce qu'un message pro tient rarement sur une ligne. accept="image/*" filtre les fichiers proposés, sans remplacer une vraie vérification côté service. -->
         <form id="formulaire-message">
             <label for="message">Votre message</label>
-            <textarea id="message" name="message" rows="3" maxlength="2000" required></textarea>
+            <!-- Plus de required : un message peut être une image seule. C'est conversation.js qui vérifie qu'il y a au moins l'un des deux. -->
+            <textarea id="message" name="message" rows="3" maxlength="2000"></textarea>
 
             <label for="image">Joindre une image (facultatif)</label>
-            <input type="file" id="image" name="image" accept="image/*">
+            <!-- accept reprend exactement les formats autorisés par le compartiment Supabase -->
+            <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/webp, image/gif" aria-describedby="aide-image">
+            <small id="aide-image">PNG, JPEG, WebP ou GIF, 2 Mo au plus.</small>
 
             <button type="submit">Envoyer</button>
         </form>
