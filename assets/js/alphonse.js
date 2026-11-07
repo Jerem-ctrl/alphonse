@@ -131,6 +131,9 @@ function lesMots(texte) {
 
 const Alphonse = {
 
+  // Le barème, pour que la page puisse afficher le nom de chaque critère
+  criteres: CRITERES,
+
   // Les derniers résultats, rangés par texte analysé : relancer l'analyse d'un texte déjà vu ne rappelle pas LanguageTool.
   cache: new Map(),
 
@@ -311,24 +314,31 @@ const Alphonse = {
   // -- La reformulation
 
   /*
-      Applique les suggestions de la fin vers le début du texte : modifier la fin ne décale pas les positions du début,
+      Choisit les corrections à appliquer, de la fin vers le début du texte : modifier la fin ne décale pas les positions du début,
       chaque défaut reste donc à sa place. Si deux défauts se chevauchent, on ne garde que le premier rencontré.
       À position égale, le passage le plus long passe d'abord : un ajout en tout début (« Bonjour, ») ne bloque pas la correction du premier mot.
   */
-  reformuler(texte, defauts) {
-    const corrections = defauts
+  choisirCorrections(defauts) {
+    const candidates = defauts
       .filter((defaut) => defaut.suggestion !== null)
       .sort((a, b) => b.debut - a.debut || b.longueur - a.longueur);
 
-    let resultat = texte;
+    const retenues = [];
     let limite = Infinity;
-
-    for (const defaut of corrections) {
-      if (defaut.fin > limite) {
-        continue;
+    for (const defaut of candidates) {
+      if (defaut.fin <= limite) {
+        retenues.push(defaut);
+        limite = defaut.debut;
       }
+    }
+    return retenues;
+  },
+
+  // Applique les corrections choisies, toujours de la fin vers le début.
+  reformuler(texte, corrections) {
+    let resultat = texte;
+    for (const defaut of corrections) {
       resultat = resultat.slice(0, defaut.debut) + defaut.suggestion + resultat.slice(defaut.fin);
-      limite = defaut.debut;
     }
 
     // Retirer un mot familier peut laisser deux espaces côte à côte, ou une espace avant une virgule ou un point : on fait le ménage.
@@ -339,7 +349,7 @@ const Alphonse = {
   // -- L'analyse complète
 
   /*
-      Analyse un texte et renvoie le résultat : la note, le feu, les défauts, le détail par critère et la reformulation.
+      Analyse un texte et renvoie le résultat : la note, le feu, les défauts, le détail par critère, les corrections retenues et la reformulation.
       Le texte est d'abord normalisé en NFC : un « é » collé depuis certains logiciels arrive en deux caractères (« e » + accent),
       et LanguageTool le compterait comme une faute. Toutes les positions renvoyées se rapportent à ce texte normalisé.
   */
@@ -371,7 +381,8 @@ const Alphonse = {
 
     const defauts = [...defautsApiRestants, ...defautsLocaux].sort((a, b) => a.debut - b.debut);
     const { note, detail } = Alphonse.calculerNote(defauts);
-    const reformulation = Alphonse.reformuler(texte, defauts);
+    const corrections = Alphonse.choisirCorrections(defauts);
+    const reformulation = Alphonse.reformuler(texte, corrections);
 
     const resultat = {
       texte,
@@ -379,6 +390,7 @@ const Alphonse = {
       feu: Alphonse.feu(note),
       defauts,
       detail,
+      corrections,
       reformulation: reformulation !== texte ? reformulation : null,
       languageToolDisponible
     };

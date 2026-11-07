@@ -1,6 +1,7 @@
 /*
     conversation.js — La page des conversations : la liste des salons, le fil du salon ouvert et l'envoi des messages.
     On ne parle jamais directement à Supabase ici : on passe par Auth (la session), Data (les requêtes) et Local (le stockage du navigateur).
+    L'assistant de rédaction, lui, passe par Alphonse : ce fichier se contente d'afficher ce qu'il renvoie.
 */
 
 
@@ -18,6 +19,21 @@ const formulaireMessage = document.getElementById("formulaire-message");
 const champMessage = document.getElementById("message");
 const champImage = document.getElementById("image");
 const boutonEnvoyer = formulaireMessage.querySelector("button");
+
+// Les éléments de l'assistant
+const feu = document.getElementById("feu");
+const texteNote = document.getElementById("texte-note");
+const boutonAnalyser = document.getElementById("bouton-analyser");
+const caseAnalyseAuto = document.getElementById("analyse-auto");
+const resultatAssistant = document.getElementById("resultat-assistant");
+const texteAnnote = document.getElementById("texte-annote");
+const listeDefauts = document.getElementById("liste-defauts");
+const zoneCorrections = document.getElementById("corrections");
+const zoneReformulation = document.getElementById("reformulation");
+const corpsDetail = document.getElementById("corps-detail");
+const totalDetail = document.getElementById("total-detail");
+const boutonAppliquer = document.getElementById("bouton-appliquer");
+const boutonEnvoyerTelQuel = document.getElementById("bouton-envoyer-tel-quel");
 
 
 // -- État de la page
@@ -49,6 +65,13 @@ let debutAtteint = false;
 // Pour le bouton « Envoyer », désactivé pendant l'envoi
 let envoiEnCours = false;
 
+// Le dernier résultat affiché par l'assistant, et une analyse à la demande en cours
+let dernierResultat = null;
+let analyseEnCours = false;
+
+// Le message d'invitation affiché tant qu'il n'y a pas de note
+const INVITATION_ASSISTANT = "Écrivez votre message, puis cliquez sur « Analyser ».";
+
 
 // -- Petites fonctions utiles
 
@@ -76,9 +99,12 @@ function formaterDate(iso) {
   return date.toLocaleDateString("fr-CA", { day: "numeric", month: "short" }) + ", " + heure;
 }
 
-// Le bouton « Envoyer » n'est utilisable que dans un salon ouvert, avec un message non vide, et quand aucun envoi n'est en cours.
-function mettreAJourBoutonEnvoyer() {
-  boutonEnvoyer.disabled = !salonActif || envoiEnCours || champMessage.value.trim() === "";
+// « Envoyer » et « Analyser » ne sont utilisables que dans un salon ouvert, avec un message non vide, et quand rien n'est en cours.
+function mettreAJourBoutons() {
+  const vide = champMessage.value.trim() === "";
+  boutonEnvoyer.disabled = !salonActif || envoiEnCours || vide;
+  boutonAnalyser.disabled = !salonActif || analyseEnCours || envoiEnCours || vide;
+  boutonEnvoyerTelQuel.disabled = envoiEnCours;
 }
 
 // Faut-il suivre le bas du fil ? Oui si on y est déjà (à 100 px près) : on ne fait pas sauter la lecture de quelqu'un qui est remonté.
@@ -271,10 +297,252 @@ async function chargerPlusAnciens() {
 }
 
 
+// -- Assistant de rédaction
+
+
+// Le texte du champ tel qu'Alphonse l'analyse (normalisé en NFC, sans espaces autour) : c'est ce qui permet de savoir si un résultat correspond encore au champ.
+function texteDuChamp() {
+  return champMessage.value.normalize("NFC").trim();
+}
+
+// Le signe moins typographique (−) plutôt que le tiret : « −6 » se lit mieux que « -6 ».
+function enPoints(penalite) {
+  return penalite > 0 ? "−" + penalite : "0";
+}
+
+// Le message surligné : chaque passage à revoir dans un <mark>, avec son explication en infobulle (title).
+// On construit des nœuds de texte et des éléments, jamais du HTML : le message de la personne ne peut pas s'exécuter.
+function afficherTexteAnnote(resultat) {
+  const passages = resultat.defauts.filter((defaut) => defaut.longueur > 0);
+  const morceaux = [];
+  let position = 0;
+
+  for (const defaut of passages) {
+    // Un passage qui en chevauche un autre déjà surligné est seulement listé plus bas
+    if (defaut.debut < position) {
+      continue;
+    }
+    morceaux.push(document.createTextNode(resultat.texte.slice(position, defaut.debut)));
+    const mark = document.createElement("mark");
+    mark.textContent = resultat.texte.slice(defaut.debut, defaut.fin);
+    mark.title = defaut.message;
+    morceaux.push(mark);
+    position = defaut.fin;
+  }
+  morceaux.push(document.createTextNode(resultat.texte.slice(position)));
+
+  texteAnnote.replaceChildren(...morceaux);
+}
+
+// La liste des défauts : le critère, l'explication et ce qu'il coûte.
+function afficherListeDefauts(resultat) {
+  if (resultat.defauts.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "Rien à signaler : votre message est prêt.";
+    listeDefauts.replaceChildren(li);
+    return;
+  }
+
+  const lignes = resultat.defauts.map((defaut) => {
+    const li = document.createElement("li");
+    const critere = document.createElement("strong");
+    critere.textContent = Alphonse.criteres[defaut.critere].nom + " : ";
+    const cout = defaut.penalite > 0 ? " (" + enPoints(defaut.penalite) + ")" : " (déjà compté)";
+    li.append(critere, defaut.message + cout);
+    return li;
+  });
+  listeDefauts.replaceChildren(...lignes);
+}
+
+// La reformulation : d'abord les corrections dans le texte (<del> pour ce qu'on retire, <ins> pour ce qu'on ajoute), puis la version complète dans un <q>.
+// Alphonse renvoie les corrections de la fin vers le début ; pour les montrer dans l'ordre de lecture, on les reprend à l'envers.
+function afficherReformulation(resultat) {
+  if (!resultat.reformulation) {
+    zoneCorrections.textContent = "Alphonse n'a pas de correction à proposer.";
+    zoneReformulation.replaceChildren();
+    return;
+  }
+
+  const morceaux = [];
+  let position = 0;
+  for (const correction of [...resultat.corrections].reverse()) {
+    morceaux.push(document.createTextNode(resultat.texte.slice(position, correction.debut)));
+    if (correction.longueur > 0) {
+      const retrait = document.createElement("del");
+      retrait.textContent = resultat.texte.slice(correction.debut, correction.fin);
+      morceaux.push(retrait);
+    }
+    if (correction.suggestion) {
+      const ajout = document.createElement("ins");
+      ajout.textContent = correction.suggestion;
+      morceaux.push(ajout);
+    }
+    position = correction.fin;
+  }
+  morceaux.push(document.createTextNode(resultat.texte.slice(position)));
+  zoneCorrections.replaceChildren(...morceaux);
+
+  const citation = document.createElement("q");
+  citation.textContent = resultat.reformulation;
+  zoneReformulation.replaceChildren("Version complète : ", citation);
+}
+
+// Le tableau : une ligne par critère dans le <tbody>, le calcul final dans le <tfoot>.
+function afficherDetail(resultat) {
+  const lignes = resultat.detail.map((ligne) => {
+    const tr = document.createElement("tr");
+    const critere = document.createElement("th");
+    critere.scope = "row";
+    critere.textContent = ligne.critere;
+    const nombre = document.createElement("td");
+    nombre.textContent = ligne.nombre;
+    const penalite = document.createElement("td");
+    penalite.textContent = enPoints(ligne.penalite);
+    const plafond = document.createElement("td");
+    plafond.textContent = ligne.plafond === null ? "aucun" : enPoints(ligne.plafond);
+    tr.append(critere, nombre, penalite, plafond);
+    return tr;
+  });
+  corpsDetail.replaceChildren(...lignes);
+
+  const totalPenalites = resultat.detail.reduce((somme, ligne) => somme + ligne.penalite, 0);
+  totalDetail.textContent = "100 " + enPoints(totalPenalites) + " = " + resultat.note + " / 100";
+}
+
+// Affiche tout le résultat. Le feu change de couleur par son attribut data-couleur, que le CSS lit ; title et aria-label disent la même chose en mots.
+function afficherResultat(resultat) {
+  dernierResultat = resultat;
+
+  feu.dataset.couleur = resultat.feu.couleur;
+  feu.title = "Feu " + resultat.feu.couleur + " : " + resultat.feu.libelle;
+  feu.setAttribute("aria-label", "Feu " + resultat.feu.couleur);
+
+  let phrase = "Note : " + resultat.note + " / 100. " + resultat.feu.libelle + ".";
+  if (!resultat.languageToolDisponible) {
+    phrase += " LanguageTool ne répond pas : la note ne tient compte que de nos propres règles.";
+  }
+  texteNote.textContent = phrase;
+
+  afficherTexteAnnote(resultat);
+  afficherListeDefauts(resultat);
+  afficherReformulation(resultat);
+  afficherDetail(resultat);
+
+  boutonAppliquer.disabled = !resultat.reformulation;
+  resultatAssistant.hidden = false;
+}
+
+// Remet l'assistant à zéro : feu éteint, résultat caché.
+function effacerResultat() {
+  dernierResultat = null;
+  feu.dataset.couleur = "aucune";
+  feu.title = "Pas encore de note";
+  feu.setAttribute("aria-label", "Feu éteint");
+  texteNote.textContent = INVITATION_ASSISTANT;
+  resultatAssistant.hidden = true;
+}
+
+// Analyse le texte du champ maintenant et affiche le résultat. Renvoie le résultat, ou null si le texte a changé pendant l'attente.
+async function analyserMaintenant() {
+  if (!salonActif || !texteDuChamp()) {
+    return null;
+  }
+
+  Alphonse.annulerAnalyse();
+  analyseEnCours = true;
+  mettreAJourBoutons();
+  texteNote.textContent = "Analyse en cours…";
+
+  try {
+    const resultat = await Alphonse.analyser(champMessage.value);
+    // Pendant l'attente, la personne a pu continuer d'écrire : un résultat périmé n'est pas affiché.
+    if (!resultat || resultat.texte !== texteDuChamp()) {
+      texteNote.textContent = dernierResultat ? texteNote.textContent : INVITATION_ASSISTANT;
+      return null;
+    }
+    afficherResultat(resultat);
+    return resultat;
+  } finally {
+    analyseEnCours = false;
+    mettreAJourBoutons();
+  }
+}
+
+
+// -- Envoi
+
+
+// Enregistre le message, puis vide le champ, le brouillon et l'assistant.
+// Le message enregistré s'affiche tout de suite ; quand le temps réel le renverra, la Map l'ignorera.
+async function enregistrerMessage(texte) {
+  const { data: message, error } = await Data.sendMessage(salonActif, texte);
+
+  if (error) {
+    afficherErreur("Le message n'a pas pu être envoyé. Votre texte est toujours là, vous pouvez réessayer.", error);
+    return;
+  }
+
+  formulaireMessage.reset();
+  Local.enregistrerBrouillon(salonActif, "");
+  Alphonse.annulerAnalyse();
+  effacerResultat();
+  await afficherMessage(message);
+  descendreEnBas();
+}
+
+/*
+    Envoie le message. Avec avecAssistant, Alphonse est consulté d'abord, si la personne l'utilise :
+    analyse automatique cochée, ou analyse demandée pour ce texte précis. Sous 80, le message ne part pas :
+    on montre la note et on place le focus sur « Envoyer tel quel ». La personne choisit : corriger, appliquer la reformulation, ou envoyer quand même.
+    Sans analyse demandée, rien n'est envoyé à LanguageTool : c'est ce qui permet d'écrire une information confidentielle.
+    envoiEnCours bloque un deuxième envoi pendant toute l'opération, analyse comprise ; le finally le relâche, même en cas d'erreur.
+*/
+async function envoyer(avecAssistant) {
+  const texte = champMessage.value.trim();
+  if (!salonActif || !texte || envoiEnCours) {
+    return;
+  }
+
+  effacerErreur();
+  envoiEnCours = true;
+  mettreAJourBoutons();
+  let focusSurEnvoyerTelQuel = false;
+
+  try {
+    const assistantConsulte = caseAnalyseAuto.checked || dernierResultat?.texte === texteDuChamp();
+
+    if (avecAssistant && assistantConsulte) {
+      const resultat = await analyserMaintenant();
+      if (!resultat) {
+        return;
+      }
+      if (resultat.note < 80) {
+        texteNote.textContent += " Appliquez la reformulation, corrigez votre texte, ou choisissez « Envoyer tel quel ».";
+        focusSurEnvoyerTelQuel = true;
+        return;
+      }
+    }
+
+    await enregistrerMessage(texte);
+  } finally {
+    envoiEnCours = false;
+    mettreAJourBoutons();
+    if (focusSurEnvoyerTelQuel) {
+      boutonEnvoyerTelQuel.focus();
+    } else {
+      champMessage.focus();
+    }
+  }
+}
+
+
 // -- Ouverture de la page
 
 
 async function init() {
+  // La case « Analyse automatique » reprend le choix fait la dernière fois, gardé par Local (décochée par défaut).
+  caseAnalyseAuto.checked = Local.lirePreference("analyse-auto", false);
+
   // Garde de session : sans session, on repart vers la connexion avant de charger quoi que ce soit.
   const { user } = await Auth.getUser();
   if (!user) {
@@ -327,7 +595,8 @@ async function init() {
   if (!salonActif) {
     champMessage.disabled = true;
     champImage.disabled = true;
-    mettreAJourBoutonEnvoyer();
+    caseAnalyseAuto.disabled = true;
+    mettreAJourBoutons();
     return;
   }
 
@@ -335,9 +604,12 @@ async function init() {
   document.title = salon.nom + " - Alphonse";
   Local.enregistrerDernierSalon(salonActif);
 
-  // Le brouillon laissé dans ce salon, s'il y en a un
+  // Le brouillon laissé dans ce salon, s'il y en a un. Avec l'analyse automatique, Alphonse le note tout de suite.
   champMessage.value = Local.lireBrouillon(salonActif);
-  mettreAJourBoutonEnvoyer();
+  mettreAJourBoutons();
+  if (caseAnalyseAuto.checked && texteDuChamp()) {
+    analyserMaintenant();
+  }
 
   if (reponseMessages.error) {
     afficherErreur("Impossible de charger les messages.", reponseMessages.error);
@@ -385,12 +657,26 @@ formulaireSalon.addEventListener("submit", async (event) => {
   }
 });
 
-// À chaque frappe : on garde le brouillon et on met à jour le bouton « Envoyer ».
+// À chaque frappe : on garde le brouillon, on met à jour les boutons, puis on s'occupe de l'assistant.
+// Avec l'analyse automatique, Alphonse attend 800 ms sans frappe avant d'analyser (anti-rebond).
+// Sans elle, un résultat qui ne correspond plus au texte est retiré : on n'affiche jamais la note d'un autre message.
 champMessage.addEventListener("input", () => {
   if (salonActif) {
     Local.enregistrerBrouillon(salonActif, champMessage.value);
   }
-  mettreAJourBoutonEnvoyer();
+  mettreAJourBoutons();
+
+  if (caseAnalyseAuto.checked) {
+    Alphonse.programmerAnalyse(champMessage.value, (resultat) => {
+      if (!resultat) {
+        effacerResultat();
+      } else if (resultat.texte === texteDuChamp()) {
+        afficherResultat(resultat);
+      }
+    });
+  } else if (dernierResultat && dernierResultat.texte !== texteDuChamp()) {
+    effacerResultat();
+  }
 });
 
 // Entrée envoie le message, Maj + Entrée passe à la ligne.
@@ -402,37 +688,40 @@ champMessage.addEventListener("keydown", (event) => {
   }
 });
 
-// Envoi d'un message, au clic sur « Envoyer » ou avec Entrée.
-// Le bouton reste désactivé pendant l'envoi : deux clics rapides n'envoient pas deux fois le même message. Le finally le rétablit, même en cas d'erreur.
-formulaireMessage.addEventListener("submit", async (event) => {
+// « Envoyer » et la touche Entrée passent par l'assistant (s'il est utilisé) ; « Envoyer tel quel » envoie sans le consulter.
+formulaireMessage.addEventListener("submit", (event) => {
   event.preventDefault();
-  const texte = champMessage.value.trim();
-  if (!salonActif || !texte || envoiEnCours) {
+  envoyer(true);
+});
+
+boutonEnvoyerTelQuel.addEventListener("click", () => {
+  envoyer(false);
+});
+
+// « Analyser » : l'analyse à la demande.
+boutonAnalyser.addEventListener("click", () => {
+  analyserMaintenant();
+});
+
+// La case « Analyse automatique » : on mémorise le choix, et si on vient de la cocher, on analyse le texte déjà écrit.
+caseAnalyseAuto.addEventListener("change", () => {
+  Local.enregistrerPreference("analyse-auto", caseAnalyseAuto.checked);
+  if (caseAnalyseAuto.checked) {
+    analyserMaintenant();
+  } else {
+    Alphonse.annulerAnalyse();
+  }
+});
+
+// « Appliquer la reformulation » remplace le texte du champ, garde le brouillon, puis fait noter la nouvelle version.
+boutonAppliquer.addEventListener("click", () => {
+  if (!dernierResultat || !dernierResultat.reformulation) {
     return;
   }
-
-  effacerErreur();
-  envoiEnCours = true;
-  mettreAJourBoutonEnvoyer();
-
-  try {
-    const { data: message, error } = await Data.sendMessage(salonActif, texte);
-
-    if (error) {
-      afficherErreur("Le message n'a pas pu être envoyé. Votre texte est toujours là, vous pouvez réessayer.", error);
-      return;
-    }
-
-    // Le message enregistré s'affiche tout de suite ; quand le temps réel le renverra, la Map l'ignorera.
-    formulaireMessage.reset();
-    Local.enregistrerBrouillon(salonActif, "");
-    await afficherMessage(message);
-    descendreEnBas();
-  } finally {
-    envoiEnCours = false;
-    mettreAJourBoutonEnvoyer();
-    champMessage.focus();
-  }
+  champMessage.value = dernierResultat.reformulation;
+  Local.enregistrerBrouillon(salonActif, champMessage.value);
+  champMessage.focus();
+  analyserMaintenant();
 });
 
 // Un seul écouteur pour tous les boutons « Supprimer » du fil : event.target dit sur quoi on a cliqué, closest() remonte jusqu'au bouton.
