@@ -13,6 +13,8 @@ const titreSalon = document.getElementById("titre-salon");
 const filMessages = document.getElementById("fil-messages");
 const zoneErreur = document.getElementById("erreur-conversation");
 const formulaireSalon = document.getElementById("formulaire-salon");
+const zoneErreurSalon = document.getElementById("erreur-salon");
+const boutonRetour = document.getElementById("bouton-retour");
 const champNomSalon = document.getElementById("nom-salon");
 const boutonCreerSalon = formulaireSalon.querySelector("button");
 const formulaireMessage = document.getElementById("formulaire-message");
@@ -86,6 +88,14 @@ function afficherErreur(texte, erreur) {
 
 function effacerErreur() {
   zoneErreur.textContent = "";
+}
+
+// Les erreurs de création d'un salon ont leur propre zone, sous le formulaire des salons.
+function afficherErreurSalon(texte, erreur) {
+  zoneErreurSalon.textContent = texte;
+  if (erreur) {
+    console.error(erreur);
+  }
 }
 
 // L'heure à la manière de l'appareil qui lit (fuseau local) : juste l'heure pour aujourd'hui, la date en plus pour les jours précédents.
@@ -169,6 +179,7 @@ function creerArticle(message, pseudo) {
   const article = document.createElement("article");
   article.dataset.id = message.id;
   article.dataset.temps = Date.parse(message.created_at);
+  article.dataset.auteur = message.user_id;
 
   // Ses propres messages ont la classe « envoye », pour les placer à droite
   const estAMoi = message.user_id === monId;
@@ -220,6 +231,21 @@ function rangerDansLeFil(article) {
   filMessages.insertBefore(article, suivant ?? null);
 }
 
+// Proximité de la Gestalt : un message qui suit de près (moins de cinq minutes) un message du même auteur reçoit la classe « suite ».
+// Le CSS le rapproche du précédent et cache son pseudo : l'œil lit les deux comme un seul bloc.
+const ECART_REGROUPEMENT = 5 * 60 * 1000;
+
+function regrouper(article) {
+  if (!article) {
+    return;
+  }
+  const precedent = article.previousElementSibling;
+  const memeAuteur = precedent !== null
+    && precedent.dataset.auteur === article.dataset.auteur
+    && Number(article.dataset.temps) - Number(precedent.dataset.temps) < ECART_REGROUPEMENT;
+  article.classList.toggle("suite", memeAuteur);
+}
+
 // Affiche un message, sauf s'il est déjà dans la Map.
 // On réserve sa place dans la Map AVANT d'attendre le pseudo : si la même ligne arrive deux fois presque en même temps, la deuxième est ignorée.
 async function afficherMessage(message) {
@@ -238,6 +264,10 @@ async function afficherMessage(message) {
   const article = creerArticle(message, pseudo);
   messagesAffiches.set(message.id, article);
   rangerDansLeFil(article);
+
+  // Un message inséré change aussi le regroupement de celui qui le suit
+  regrouper(article);
+  regrouper(article.nextElementSibling);
 }
 
 // Un message arrive en temps réel : on l'affiche, et on descend si on était déjà en bas (ou si c'est le sien).
@@ -253,7 +283,10 @@ async function recevoirMessage(message) {
 function retirerMessage(messageId) {
   const article = messagesAffiches.get(Number(messageId));
   if (article) {
+    // Le message suivant prend sa place : son regroupement est à refaire
+    const suivant = article.nextElementSibling;
     article.remove();
+    regrouper(suivant);
   }
   messagesAffiches.delete(Number(messageId));
 }
@@ -591,6 +624,10 @@ async function init() {
 
   reponseSalons.data.forEach(afficherSalon);
 
+  // Sur téléphone, un seul panneau à la fois : la classe open sur <body> montre la conversation au lieu de la liste des salons.
+  // On l'ajoute quand un salon est ouvert, ou quand l'adresse en demandait un qui n'existe pas (pour qu'on voie l'erreur).
+  document.body.classList.toggle("open", salonActif !== null || parametre !== null);
+
   // Aucun salon ouvert : on désactive l'écriture, le reste de la page reste utilisable.
   if (!salonActif) {
     champMessage.disabled = true;
@@ -635,11 +672,11 @@ formulaireSalon.addEventListener("submit", async (event) => {
   event.preventDefault();
   const nom = champNomSalon.value.trim();
   if (!nom) {
-    afficherErreur("Donnez un nom au salon.");
+    afficherErreurSalon("Donnez un nom au salon.");
     return;
   }
 
-  effacerErreur();
+  zoneErreurSalon.textContent = "";
   boutonCreerSalon.disabled = true;
 
   try {
@@ -647,13 +684,22 @@ formulaireSalon.addEventListener("submit", async (event) => {
 
     if (error) {
       // 23505 = le code d'erreur de PostgreSQL pour « valeur déjà existante » : le nom d'un salon est unique.
-      afficherErreur(error.code === "23505" ? "Un salon porte déjà ce nom." : "Impossible de créer le salon.", error);
+      afficherErreurSalon(error.code === "23505" ? "Un salon porte déjà ce nom." : "Impossible de créer le salon.", error);
       return;
     }
 
     window.location.href = "?salon=" + salon.id;
   } finally {
     boutonCreerSalon.disabled = false;
+  }
+});
+
+// « Retour aux salons » (téléphone) : on retire la classe open pour revenir à la liste, et on place le focus sur le salon ouvert.
+boutonRetour.addEventListener("click", () => {
+  document.body.classList.remove("open");
+  const salonOuvert = listeSalons.querySelector("[aria-current='page']") ?? listeSalons.querySelector("a");
+  if (salonOuvert) {
+    salonOuvert.focus();
   }
 });
 

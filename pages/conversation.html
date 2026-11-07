@@ -19,7 +19,6 @@
     <script src="../assets/js/alphonse.js" defer></script>
     <script src="../assets/js/conversation.js" defer></script>
     <script src="../assets/js/theme.js"></script>
-    <script src="../assets/js/presence.js" defer></script>
 </head>
 
 <body>
@@ -56,6 +55,9 @@
             <button type="submit">Créer le salon</button>
         </form>
 
+        <!-- Les erreurs de création d'un salon s'affichent ici, juste sous le formulaire : sur téléphone, la conversation est cachée pendant qu'on regarde la liste, une erreur affichée là-bas passerait inaperçue. -->
+        <p id="erreur-salon" role="alert"></p>
+
         <!-- La liste reste vide : c'est JavaScript qui la remplit. Chaque salon y devient un lien conversation.html?salon=…, une seule page pour tous les salons. Pratique, et pas de copier-coller ! -->
         <nav aria-label="Salons">
             <ul id="liste-salons"></ul>
@@ -64,6 +66,9 @@
 
     <!-- <main> = le cœur de notre page. Une messagerie sans conversation, c'est un peu comme une table sans chaise. Le <h1> affiche le nom du salon ouvert ; en attendant, on invite à en choisir un. -->
     <main>
+        <!-- Sur téléphone, on montre un seul panneau à la fois : ce bouton ramène à la liste des salons. Sur grand écran, les deux panneaux sont côte à côte et le CSS le cache. -->
+        <button type="button" id="bouton-retour">Retour aux salons</button>
+
         <h1 id="titre-salon">Choisissez un salon</h1>
 
         <!-- role="log" : on dit aux lecteurs d'écran que de nouveaux messages vont s'ajouter au fil, et qu'il faut les annoncer. tabindex="-1" permet au lien d'évitement d'y poser le focus. Chaque message y sera un <article>. -->

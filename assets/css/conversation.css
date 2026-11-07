@@ -1,18 +1,293 @@
 /*
     conversation.css — La mise en page de la page des conversations.
+
+    On l'a pensée d'abord pour le téléphone : sans media query, tout tient sur une colonne, et on ne montre qu'un panneau à la fois.
+    À partir de 768 px de large, une seule media query passe à une grille à deux colonnes : les salons à gauche, la conversation à droite.
 */
 
+
+/* ---------- 1. Un seul panneau à la fois sur téléphone ---------- */
+
 /*
-    Le fil a sa propre zone de défilement, limitée à 60 % de la hauteur visible de l'écran (dvh suit la vraie hauteur, même sur téléphone).
-    C'est en remontant tout en haut de cette zone qu'on charge les messages plus anciens.
+    Sur un petit écran, on montre soit la liste des salons, soit la conversation, jamais les deux.
+    conversation.js ajoute la classe open au <body> quand un salon est ouvert ; le bouton « Retour aux salons » la retire.
+*/
+body.open > aside,
+body:not(.open) > main {
+    display: none;
+}
+
+#bouton-retour {
+    margin-bottom: var(--espace-2);
+}
+
+/* Sur téléphone, chaque pixel de hauteur compte : on resserre le haut de la conversation. */
+main {
+    padding-top: var(--espace-4);
+}
+
+
+/* ---------- 2. Les salons ---------- */
+
+/* Sur téléphone, quand la liste est seule à l'écran, elle prend toute la hauteur libre : le pied de page reste en bas. */
+body > aside {
+    flex: 1;
+    padding-bottom: var(--espace-6);
+}
+
+/* Un peu d'air entre le champ du nom et le bouton, qui sinon se collent au filet du champ. */
+#formulaire-salon button {
+    margin-top: var(--espace-3);
+}
+
+/* clamp() : le titre grandit avec l'écran, sans descendre sous 22 px ni dépasser 26 px. */
+#titre-salons {
+    font-size: clamp(1.375rem, 1.125rem + 1vw, 1.625rem);
+}
+
+#liste-salons {
+    margin: var(--espace-5) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Chaque salon occupe toute la ligne et fait au moins 44 px de haut : facile à viser au doigt. */
+#liste-salons a {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: var(--espace-2) var(--espace-3);
+    border-bottom: var(--filet-fin);
+    border-left: 0.25rem solid transparent;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+/* Le salon ouvert : un trait bleu à gauche et le texte en gras. Le gras dit la même chose que la couleur, pour qui ne la voit pas. */
+#liste-salons a[aria-current="page"] {
+    border-left-color: var(--bleu);
+    font-weight: 600;
+}
+
+
+/* ---------- 3. Le titre du salon ---------- */
+
+/* clamp() : de 28 px sur téléphone à 40 px sur grand écran. Un nom de salon très long passe à la ligne au lieu de déborder. */
+#titre-salon {
+    font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
+    overflow-wrap: anywhere;
+}
+
+
+/* ---------- 4. Le fil des messages ---------- */
+
+/*
+    La hauteur du fil part de la hauteur visible de l'écran, moins la place de l'en-tête, du titre et du formulaire d'envoi (--reserve) :
+    le formulaire reste visible sous le fil dès l'ouverture du salon.
+    dvh suit la vraie hauteur visible sur téléphone (barre d'adresse, clavier ouvert) ; la ligne en vh juste avant sert aux navigateurs qui ne connaissent pas dvh.
+    min-height empêche le fil de devenir minuscule sur un écran très bas.
+    Le fil a sa propre barre de défilement : c'est en remontant tout en haut qu'on charge les messages plus anciens.
 */
 #fil-messages {
-    max-height: 60dvh;
+    --reserve: 30rem;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--reserve));
+    height: calc(100dvh - var(--reserve));
+    min-height: 12rem;
+    padding: 0 var(--espace-1) var(--espace-3);
     overflow-y: auto;
+    border-bottom: var(--filet-fin);
 }
-/* Dans l'assistant, on garde les retours à la ligne du message : la reformulation ajoute « Cordialement » sur sa propre ligne. */
+
+/*
+    Chaque message est une bulle : Flexbox en colonne pour empiler le pseudo, le texte, l'image et l'heure.
+    Les messages reçus restent à gauche, sur le gris des panneaux, avec un coin pointu en bas à gauche, du côté de leur auteur.
+    max-width laisse toujours voir de quel côté penche la bulle.
+*/
+#fil-messages article {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espace-1);
+    align-self: flex-start;
+    max-width: min(80%, 36rem);
+    margin-top: var(--espace-4);
+    padding: var(--espace-2) var(--espace-3);
+    border-radius: 1rem 1rem 1rem 0.25rem;
+    background-color: var(--surface);
+    overflow-wrap: anywhere;
+}
+
+/*
+    Ses propres messages : à droite, sur le bleu de la charte, avec le coin pointu en bas à droite.
+    Le texte prend la couleur du fond : environ 6:1 la nuit et 4,9:1 le jour, au-dessus du minimum AA de 4,5:1.
+*/
+#fil-messages article.envoye {
+    align-self: flex-end;
+    border-radius: 1rem 1rem 0.25rem 1rem;
+    background-color: var(--bleu);
+    color: var(--fond);
+}
+
+/* Proximité (Gestalt) : un message qui suit de près un message du même auteur se colle au précédent. */
+#fil-messages article.suite {
+    margin-top: var(--espace-1);
+}
+
+/* Le pseudo, en petites capitales comme les étiquettes de la charte. */
+#fil-messages article > header {
+    color: var(--encre-douce);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+#fil-messages article.envoye > header,
+#fil-messages article.envoye time {
+    color: inherit;
+}
+
+/*
+    Dans un bloc, on ne répète pas le pseudo à chaque bulle. On le cache seulement à l'écran :
+    les lecteurs d'écran le lisent toujours, pour que chaque message garde son auteur.
+*/
+#fil-messages article.suite > header {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* pre-wrap garde les retours à la ligne faits avec Maj + Entrée. */
+#fil-messages article p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+#fil-messages article img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+}
+
+#fil-messages article time {
+    align-self: flex-end;
+    color: var(--encre-douce);
+    font-size: 0.75rem;
+}
+
+/*
+    « Supprimer » devient un petit lien discret dans la bulle, plutôt qu'un gros bouton.
+    min-height: 1.5rem garde une cible de 24 px, le minimum demandé par les règles d'accessibilité (WCAG 2.2).
+*/
+#fil-messages article button {
+    align-self: flex-end;
+    min-height: 1.5rem;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    color: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+#fil-messages article button:hover {
+    color: inherit;
+    text-decoration-thickness: 0.125rem;
+}
+
+/* Le contour de focus est bleu : sur une bulle bleue, il disparaîtrait. On le passe à la couleur du fond. */
+#fil-messages article.envoye :focus-visible {
+    outline-color: var(--fond);
+}
+
+
+/* ---------- 5. Le formulaire d'envoi ---------- */
+
+/*
+    Une grille à deux colonnes : le libellé et la zone de texte sur toute la largeur, puis l'image à gauche et « Envoyer » à droite.
+    padding-bottom avec env(safe-area-inset-bottom) : sur un téléphone à encoche, le formulaire ne passe pas sous la barre d'accueil.
+*/
+#formulaire-message {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--espace-2) var(--espace-4);
+    margin-top: var(--espace-4);
+    padding-bottom: calc(var(--espace-4) + env(safe-area-inset-bottom));
+}
+
+#formulaire-message label,
+#formulaire-message textarea {
+    grid-column: 1 / -1;
+}
+
+#formulaire-message label {
+    margin-bottom: 0;
+}
+
+/* Une hauteur fixe plutôt que les 3 lignes de rows="3", trop hautes avec notre police : on peut toujours l'agrandir à la main (resize). */
+#formulaire-message textarea {
+    height: 4.5rem;
+    min-height: 3rem;
+}
+
+
+/* ---------- 6. L'assistant ---------- */
+
+/* On garde les retours à la ligne du message : la reformulation ajoute « Cordialement » sur sa propre ligne. */
 #texte-annote,
 #corrections,
 #reformulation q {
     white-space: pre-wrap;
+}
+
+
+/* ---------- 7. Grand écran : deux colonnes ---------- */
+
+/*
+    À partir de 768 px, le <body> devient une grille : l'en-tête et le pied de page sur toute la largeur,
+    les salons dans une colonne de 14 à 20 rem, et la conversation dans tout le reste (minmax(0, 1fr) l'empêche de déborder).
+    Les deux panneaux sont visibles en même temps : la classe open ne change plus rien, et le bouton « Retour » disparaît.
+*/
+@media (min-width: 768px) {
+    body {
+        display: grid;
+        grid-template-columns: minmax(14rem, 20rem) minmax(0, 1fr);
+        grid-template-rows: auto 1fr auto;
+    }
+
+    body > header,
+    body > footer {
+        grid-column: 1 / -1;
+    }
+
+    body.open > aside,
+    body:not(.open) > main {
+        display: block;
+    }
+
+    main {
+        padding-top: var(--espace-6);
+    }
+
+    body > aside {
+        max-width: none;
+        margin: 0;
+        padding: var(--espace-6) var(--espace-4);
+        border-right: var(--filet-fin);
+    }
+
+    #bouton-retour {
+        display: none;
+    }
+
+    /* Sans le bouton « Retour » et avec un en-tête sur une seule ligne, il faut moins de place autour du fil. */
+    #fil-messages {
+        --reserve: 23rem;
+    }
 }
