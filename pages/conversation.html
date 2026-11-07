@@ -134,25 +134,29 @@
                 <p id="corrections"></p>
                 <p id="reformulation"></p>
 
-                <!-- Le détail de la note : <caption> donne son titre au tableau, <thead> les colonnes, <tbody> une ligne par critère et <tfoot> le total. -->
-                <table id="detail-note">
-                    <caption>Détail de la note</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">Critère</th>
-                            <th scope="col">Défauts</th>
-                            <th scope="col">Pénalité</th>
-                            <th scope="col">Plafond</th>
-                        </tr>
-                    </thead>
-                    <tbody id="corps-detail"></tbody>
-                    <tfoot>
-                        <tr>
-                            <th scope="row">Note finale</th>
-                            <td id="total-detail" colspan="3"></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <!-- Sur un très petit écran, le tableau peut être plus large que le panneau : ce conteneur défile alors de côté, au lieu de faire déborder toute la page.
+                     tabindex="0" permet de le faire défiler au clavier, et role="region" avec son nom l'annonce aux lecteurs d'écran. -->
+                <div class="tableau-defilant" role="region" aria-label="Détail de la note" tabindex="0">
+                    <!-- Le détail de la note : <caption> donne son titre au tableau, <thead> les colonnes, <tbody> une ligne par critère et <tfoot> le total. -->
+                    <table id="detail-note">
+                        <caption>Détail de la note</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Critère</th>
+                                <th scope="col">Défauts</th>
+                                <th scope="col">Pénalité</th>
+                                <th scope="col">Plafond</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corps-detail"></tbody>
+                        <tfoot>
+                            <tr>
+                                <th scope="row">Note finale</th>
+                                <td id="total-detail" colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
 
                 <!-- Les deux choix laissés à la personne : Alphonse conseille, il ne décide pas. -->
                 <div id="choix-assistant">

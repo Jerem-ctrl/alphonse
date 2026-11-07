@@ -239,11 +239,275 @@ body > aside {
 
 /* ---------- 6. L'assistant ---------- */
 
+/*
+    Le panneau de l'assistant se détache du formulaire. Il reprend le fond des panneaux (main > section, dans style.css),
+    avec des marges intérieures plus étroites sur téléphone : le tableau a besoin de toute la largeur.
+*/
+#assistant {
+    margin-top: var(--espace-5);
+    padding: var(--espace-4) var(--espace-3);
+}
+
+/* La note et le feu côte à côte, alignés au centre (Flexbox). */
+#note-assistant {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espace-3);
+    font-weight: 600;
+}
+
+/*
+    Le feu tricolore : trois pastilles dans un petit boîtier sombre, à la façon d'un vrai feu couché.
+    Éteintes, elles restent visibles mais pâles ; une seule s'allume, selon l'attribut data-couleur que conversation.js met à jour.
+*/
+.feu {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: var(--espace-1);
+    padding: var(--espace-1) var(--espace-2);
+    border: var(--filet-fin);
+    border-radius: 1rem;
+    background-color: var(--fond);
+}
+
+/*
+    transition : quand la note change, l'ancienne pastille s'éteint et la nouvelle s'allume en douceur (0,4 s), au lieu de sauter d'une couleur à l'autre.
+    Comme partout, prefers-reduced-motion (dans style.css) coupe la transition pour qui l'a demandé.
+*/
+.feu span {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: var(--encre-douce);
+    opacity: 0.25;
+    transition: background-color 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
+}
+
+/* Dans l'ordre du boîtier : rouge, orange, vert. La pastille allumée prend sa couleur et un léger halo. */
+.feu[data-couleur="rouge"] span:nth-child(1) {
+    background-color: var(--rouge);
+    box-shadow: 0 0 0.5rem var(--rouge);
+    opacity: 1;
+}
+
+.feu[data-couleur="orange"] span:nth-child(2) {
+    background-color: var(--orange);
+    box-shadow: 0 0 0.5rem var(--orange);
+    opacity: 1;
+}
+
+.feu[data-couleur="vert"] span:nth-child(3) {
+    background-color: var(--vert);
+    box-shadow: 0 0 0.5rem var(--vert);
+    opacity: 1;
+}
+
+/* « Analyser » et la case « Analyse automatique » sur une ligne, qui passe à la ligne si l'écran est étroit. */
+#commandes-assistant {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espace-3) var(--espace-5);
+    margin-bottom: var(--espace-4);
+}
+
+/* Les intertitres du résultat reprennent le style des étiquettes de la charte : petits, en capitales espacées. */
+#resultat-assistant h3 {
+    margin: var(--espace-5) 0 var(--espace-2);
+    color: var(--encre-douce);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.125em;
+    text-transform: uppercase;
+}
+
 /* On garde les retours à la ligne du message : la reformulation ajoute « Cordialement » sur sa propre ligne. */
 #texte-annote,
 #corrections,
 #reformulation q {
     white-space: pre-wrap;
+}
+
+/*
+    Les fautes surlignées : un fond orangé léger et un soulignement ondulé, comme le correcteur d'un traitement de texte.
+    Le jaune par défaut de <mark> criait trop sur notre fond sombre. color-mix() mélange l'orange de la charte avec du transparent ;
+    la première ligne sert aux navigateurs qui ne connaissent pas color-mix().
+*/
+#texte-annote mark {
+    background-color: transparent;
+    background-color: color-mix(in srgb, var(--orange) 25%, transparent);
+    color: inherit;
+    text-decoration: underline wavy var(--rouge);
+    text-decoration-thickness: 0.0625rem;
+    text-underline-offset: 0.2em;
+    cursor: help;
+}
+
+/* Ce qu'on retire est barré en rouge et pâli ; ce qu'on ajoute est souligné en vert. Barré et souligné disent la même chose que les couleurs. */
+#corrections del {
+    color: var(--encre-douce);
+    text-decoration-color: var(--rouge);
+    text-decoration-thickness: 0.125rem;
+}
+
+#corrections ins {
+    text-decoration-color: var(--vert);
+    text-decoration-thickness: 0.125rem;
+    text-underline-offset: 0.2em;
+}
+
+/* La reformulation complète, citée en guillemets français, dans la police des titres. */
+#reformulation q {
+    quotes: "« " " »";
+    font-family: var(--police-titre);
+    font-size: 1.125rem;
+}
+
+/* ::marker : la puce de chaque défaut devient un tiret bleu, la couleur d'accent de la charte. */
+#liste-defauts {
+    margin: 0;
+    padding-left: var(--espace-5);
+}
+
+#liste-defauts li {
+    margin-bottom: var(--espace-2);
+}
+
+#liste-defauts li::marker {
+    content: "– ";
+    color: var(--bleu);
+    font-weight: 600;
+}
+
+/*
+    Le tableau du détail de la note. border-collapse fusionne les bordures des cellules.
+    :nth-child(even) colore une ligne sur deux du <tbody> : l'œil suit plus facilement une ligne d'un bout à l'autre.
+    Les chiffres sont alignés à droite et de même largeur (tabular-nums), pour se lire en colonne.
+*/
+/* Le conteneur du tableau ne défile de côté que si le tableau ne tient pas en largeur (overflow-x: auto). */
+.tableau-defilant {
+    margin-top: var(--espace-5);
+    overflow-x: auto;
+}
+
+#detail-note {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+}
+
+#detail-note caption {
+    margin-bottom: var(--espace-2);
+    color: var(--encre-douce);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.125em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+#detail-note th,
+#detail-note td {
+    padding: var(--espace-2);
+    text-align: left;
+}
+
+#detail-note td {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+#detail-note thead th {
+    border-bottom: var(--filet);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+#detail-note thead th:not(:first-child) {
+    text-align: right;
+}
+
+#detail-note tbody th {
+    font-weight: 500;
+}
+
+#detail-note tbody tr:nth-child(even) {
+    background-color: var(--fond);
+}
+
+/* Le total, séparé par un double filet comme le bas d'une addition. */
+#detail-note tfoot th,
+#detail-note tfoot td {
+    border-top: var(--filet-double);
+    font-weight: 700;
+}
+
+/*
+    Les deux choix de l'assistant. « Appliquer la reformulation » est le choix conseillé : il prend le style du bouton principal (plein d'encre).
+    « Envoyer tel quel » garde le style secondaire (un simple contour) : on peut le choisir, mais on ne le met pas en avant.
+*/
+#choix-assistant {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-3);
+    margin-top: var(--espace-5);
+}
+
+#bouton-appliquer {
+    border-color: var(--encre);
+    background-color: var(--encre);
+    color: var(--fond);
+}
+
+#bouton-appliquer:hover {
+    border-color: var(--bleu);
+    background-color: var(--bleu);
+    color: var(--fond);
+}
+
+/* Un bouton désactivé pâlit et montre un curseur d'interdiction : on comprend qu'il n'y a rien à faire pour l'instant. */
+#assistant button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+#assistant button:disabled:hover {
+    border-color: var(--encre);
+    color: inherit;
+}
+
+#bouton-appliquer:disabled:hover {
+    background-color: var(--encre);
+    color: var(--fond);
+}
+
+/* « Comment la note est calculée » : le résumé se repère au triangle bleu (::marker) et au curseur en forme de main. */
+#assistant details {
+    margin-top: var(--espace-5);
+    padding-top: var(--espace-4);
+    border-top: var(--filet-fin);
+}
+
+#assistant summary {
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#assistant summary::marker {
+    color: var(--bleu);
+}
+
+#assistant details[open] summary {
+    margin-bottom: var(--espace-3);
+}
+
+/* L'avertissement sur LanguageTool, en bas du panneau, séparé par un filet. */
+#avertissement-assistant {
+    margin: var(--espace-4) 0 0;
+    padding-top: var(--espace-3);
+    border-top: var(--filet-fin);
 }
 
 
@@ -284,6 +548,11 @@ body > aside {
 
     #bouton-retour {
         display: none;
+    }
+
+    /* Sur grand écran, le panneau de l'assistant retrouve les marges des autres panneaux. */
+    #assistant {
+        padding: var(--espace-5);
     }
 
     /* Sans le bouton « Retour » et avec un en-tête sur une seule ligne, il faut moins de place autour du fil. */
