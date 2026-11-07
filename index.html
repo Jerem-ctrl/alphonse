@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap">
     <link rel="stylesheet" href="./assets/css/style.css">
     <link rel="stylesheet" href="./assets/css/auth.css">
+    <!-- local.js passe en premier, et sans defer : spclient.js en a besoin pour créer le client. Comme il ne touche pas au document, rien ne l'oblige à attendre que la page soit construite. -->
+    <script src="./assets/js/local.js"></script>
     <!-- On a mis les scripts dans le <head> avec defer : le navigateur les télécharge pendant qu'il lit le HTML, mais attend que la page soit construite pour les lancer. Et defer garde l'ordre, ce qui nous arrange : Supabase d'abord, puis notre client, puis Auth, et enfin le script de la page. Chacun a besoin du précédent, comme des dominos. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="./assets/js/spclient.js" defer></script>
@@ -55,10 +57,10 @@
                 </div>
             </fieldset>
 
-            <!-- Se souvenir de moi -->
+            <!-- Se souvenir de moi : la case reste décochée par défaut. Sur un poste partagé, on préfère que la session s'en aille avec l'onglet ; c'est à la personne de cocher si l'appareil est le sien. -->
             <div id="remember-form">
-                <input type="checkbox" name="choix" id="mon-choix" value="oui">
-                <label for="mon-choix">Se souvenir de moi</label>
+                <input type="checkbox" name="se-souvenir" id="se-souvenir" value="oui">
+                <label for="se-souvenir">Se souvenir de moi</label>
             </div>
 
             <!-- Zone d'erreur de la connexion : role="alert" fait annoncer le message tout de suite par les lecteurs d'écran, comme le suggère le webchat. -->
