@@ -246,6 +246,30 @@ const Data = {
   },
 
 
+  // -- Compte --
+
+  // Supprime toutes les images du dossier de la personne connectée dans le compartiment images.
+  // La RLS du stockage n'autorise la liste et la suppression que dans son propre dossier.
+  async deleteMyImages(userId) {
+    const { data: fichiers, error } = await supabaseClient.storage
+      .from("images")
+      .list(userId, { limit: 1000 });
+
+    if (error || !fichiers || fichiers.length === 0) {
+      return { error };
+    }
+
+    const chemins = fichiers.map((fichier) => userId + "/" + fichier.name);
+    return await supabaseClient.storage.from("images").remove(chemins);
+  },
+
+  // Supprime le compte de la personne connectée avec la fonction supprimer_mon_compte de la base.
+  // La cascade efface ensuite son profil, ses messages, ses lectures et ses contacts.
+  async deleteAccount() {
+    return await supabaseClient.rpc("supprimer_mon_compte");
+  },
+
+
   // -- Temps réel --
 
   // Appelle onNewChannel à chaque nouveau salon créé, par n'importe qui.
