@@ -1,48 +1,50 @@
 /*
-    ecriture.js — L'indicateur « … est en train d'écrire ».
+    ecriture.js
+    Indicateur « … est en train d'écrire ».
 
-    Pendant la saisie (événement input), on diffuse un signal « ecrit » sur le canal du salon ouvert.
-    Après 3 secondes sans frappe (setTimeout), on diffuse « arrete » : l'indicateur s'efface chez les autres.
-    Comme Alphonse et Presence, Ecriture ne touche pas au document : elle donne la liste des pseudos, et conversation.js l'affiche.
+    Pendant la saisie (événement input), un signal « ecrit » est diffusé sur le canal du salon ouvert.
+    Après 3 secondes sans frappe (setTimeout), un signal « arrete » est diffusé et l'indicateur disparaît chez les autres.
+    Comme Alphonse et Presence, l'objet Ecriture ne modifie pas la page. Il fournit la liste des pseudos, et conversation.js se charge de l'affichage.
+    Nécessite spclient.js et data.js, chargés avant ce fichier.
 */
 
-// On n'envoie pas un signal à chaque lettre : au plus un toutes les 2 secondes
+// Intervalle minimal entre deux signaux « ecrit » (2 secondes), pour ne pas en envoyer un à chaque lettre
 const INTERVALLE_SIGNAL = 2000;
 
-// 3 secondes sans frappe : on prévient qu'on a arrêté d'écrire
+// Délai sans frappe (3 secondes) au-delà duquel le signal « arrete » est envoyé
 const DELAI_ARRET = 3000;
 
-// Filet de sécurité chez celui qui reçoit : si le signal « arrete » se perd (onglet fermé brutalement), l'indicateur s'efface quand même
+// Sécurité côté réception. Si le signal « arrete » se perd (onglet fermé brusquement), l'indicateur s'efface tout de même après 4 secondes.
 const DUREE_AFFICHAGE = 4000;
 
 const Ecriture = {
 
-  // Le canal de diffusion du salon ouvert, et notre identifiant
+  // Canal de diffusion du salon ouvert et identifiant de la personne connectée
   canal: null,
   monId: null,
 
-  // L'heure du dernier signal envoyé, et le minuteur des 3 secondes sans frappe
+  // Heure du dernier signal envoyé, et minuteur du délai sans frappe
   dernierEnvoi: 0,
   minuteurArret: null,
 
-  // Les personnes en train d'écrire : identifiant → { pseudo, minuteur qui la retirera }
+  // Personnes en train d'écrire, indexées par identifiant ({ pseudo, minuteur de retrait })
   personnes: new Map(),
 
-  // Les pseudos déjà retrouvés, pour ne pas les redemander à chaque signal
+  // Pseudos déjà retrouvés, conservés pour éviter de les redemander à chaque signal
   pseudos: new Map(),
 
-  // La fonction de la page qui affiche la liste des pseudos
+  // Fonction de la page chargée d'afficher la liste des pseudos
   rappel: null,
 
-  // Rejoint le canal du salon. rappel(pseudos) est appelée chaque fois que la liste change.
+  // Rejoint le canal du salon. La fonction rappel(pseudos) est appelée à chaque changement de la liste.
   demarrer(salonId, monId, rappel) {
     Ecriture.monId = monId;
     Ecriture.rappel = rappel;
     Ecriture.canal = Data.subscribeToTyping(salonId, Ecriture.recevoir, Ecriture.retirer);
   },
 
-  // Appelée à chaque frappe : « j'écris », au plus une fois toutes les 2 secondes.
-  // Chaque frappe relance aussi le minuteur : c'est 3 secondes après la dernière lettre qu'on envoie « arrete ».
+  // Appelée à chaque frappe. Envoie le signal « ecrit », au plus une fois toutes les 2 secondes.
+  // Chaque frappe relance aussi le minuteur, si bien que le signal « arrete » part 3 secondes après la dernière lettre.
   signalerFrappe() {
     if (!Ecriture.canal) {
       return;
@@ -58,7 +60,8 @@ const Ecriture = {
     }
   },
 
-  // « J'ai arrêté » : après 3 secondes sans frappe, quand le champ est vidé, ou quand le message est envoyé.
+  // Envoie le signal « arrete » après 3 secondes sans frappe, lorsque le champ est vidé ou lorsque le message est envoyé.
+  // Aucun signal n'est envoyé si la personne n'avait pas signalé qu'elle écrivait.
   signalerArret() {
     clearTimeout(Ecriture.minuteurArret);
     if (!Ecriture.canal || Ecriture.dernierEnvoi === 0) {
@@ -68,8 +71,8 @@ const Ecriture = {
     Data.sendTyping(Ecriture.canal, "arrete", Ecriture.monId);
   },
 
-  // Quelqu'un écrit : on retrouve son pseudo, on l'ajoute (ou on relance son minuteur), puis on prévient la page.
-  // Un identifiant qui ne correspond à aucun profil est ignoré.
+  // Traite le signal d'une personne qui écrit. Son pseudo est retrouvé, puis elle est ajoutée à la liste (ou son minuteur est relancé),
+  // et la page est prévenue. Un identifiant sans profil correspondant est ignoré.
   async recevoir(id) {
     if (!id || id === Ecriture.monId) {
       return;
@@ -91,7 +94,7 @@ const Ecriture = {
     Ecriture.prevenir();
   },
 
-  // Quelqu'un a arrêté d'écrire (signal « arrete », ou plus de nouvelles depuis 4 secondes)
+  // Retire une personne de la liste, à la réception du signal « arrete » ou faute de nouveau signal depuis 4 secondes
   retirer(id) {
     if (!Ecriture.personnes.has(id)) {
       return;
@@ -101,14 +104,14 @@ const Ecriture = {
     Ecriture.prevenir();
   },
 
-  // Donne à la page la liste des pseudos en train d'écrire
+  // Transmet à la page la liste des pseudos en train d'écrire
   prevenir() {
     if (Ecriture.rappel) {
       Ecriture.rappel([...Ecriture.personnes.values()].map((personne) => personne.pseudo));
     }
   },
 
-  // En quittant le salon, on prévient qu'on n'écrit plus et on coupe le canal.
+  // À la sortie du salon, signale l'arrêt de la saisie et ferme le canal
   arreter() {
     Ecriture.signalerArret();
     Data.unsubscribe(Ecriture.canal);
