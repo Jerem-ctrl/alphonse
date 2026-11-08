@@ -68,18 +68,32 @@
     margin: 0;
 }
 
-/* « En ligne / hors ligne » sous le pseudo d'un contact : une pastille et le mot, jamais la couleur seule */
+/*
+    « En ligne / hors ligne » sous le pseudo d'un contact : un point en ::before, gris par défaut, vert quand la personne est en ligne,
+    et toujours le mot écrit à côté : la couleur ne porte jamais seule l'information.
+    Le point est un simple rond dessiné en CSS (content vide) : un lecteur d'écran n'a rien à lire, il entend seulement « En ligne » ou « Hors ligne ».
+*/
 .presence {
     margin: 0;
-    font-size: 0.85rem;
     color: var(--encre-douce);
+    font-size: 0.875rem;
 }
 
 .presence::before {
-    content: "●";
-    margin-right: var(--espace-1);
+    content: "";
+    display: inline-block;
+    width: 0.625rem;
+    height: 0.625rem;
+    margin-right: var(--espace-2);
+    border-radius: 50%;
+    background-color: var(--encre-douce);
+    transition: background-color 0.4s ease;
+}
+
+.presence.en-ligne {
+    color: var(--encre);
 }
 
 .presence.en-ligne::before {
-    color: var(--vert);
+    background-color: var(--vert);
 }

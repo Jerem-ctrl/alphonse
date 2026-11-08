@@ -82,7 +82,8 @@ const Data = {
 
   // Les colonnes qu'on lit pour un message. utilisateurs(pseudo) suit la clé étrangère user_id, comme une jointure :
   // le pseudo arrive avec le message, sans être recopié dans la table.
-  COLONNES_MESSAGE: "id, texte, image, created_at, user_id, utilisateurs(pseudo)",
+  // On prend aussi la dernière activité de l'auteur : elle dit s'il est en ligne.
+  COLONNES_MESSAGE: "id, texte, image, created_at, user_id, utilisateurs(pseudo, derniere_activite)",
 
   // Les 50 derniers messages d'un salon.
   // On trie du plus récent au plus ancien AVANT de limiter, sinon on aurait les 50 premiers ; la page remet ensuite l'ordre avec reverse().
@@ -111,7 +112,7 @@ const Data = {
   async fetchPseudo(userId) {
     return await supabaseClient
       .from("utilisateurs")
-      .select("pseudo")
+      .select("pseudo, derniere_activite")
       .eq("id", userId)
       .single();
   },
@@ -168,6 +169,18 @@ const Data = {
   },
 
 
+  // -- Présence
+
+  // Enregistre maintenant comme dernière activité de la personne connectée.
+  // La RLS n'autorise que cette colonne, et seulement sur sa propre ligne : on ne peut faire passer personne d'autre « en ligne ».
+  async updateActivity(monId) {
+    return await supabaseClient
+      .from("utilisateurs")
+      .update({ derniere_activite: new Date().toISOString() })
+      .eq("id", monId);
+  },
+
+
   // -- Temps réel --
 
   // Appelle onNewChannel à chaque nouveau salon créé, par n'importe qui.
@@ -205,6 +218,19 @@ const Data = {
     }
 
     return canal.subscribe();
+  },
+
+  // Appelle onActivity(profil) à chaque mise à jour d'un profil (UPDATE sur utilisateurs) :
+  // c'est ainsi qu'une page ouverte voit quelqu'un passer en ligne, sans recharger.
+  subscribeToPresence(onActivity) {
+    return supabaseClient
+      .channel("presence-utilisateurs")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "utilisateurs" },
+        (payload) => onActivity(payload.new)
+      )
+      .subscribe();
   },
 
   // Coupe une écoute : en quittant un salon, on ne veut plus recevoir ses messages.

@@ -66,6 +66,18 @@ function afficherStatut(texte) {
 // -- Mes contacts
 
 
+// Met à jour l'indicateur d'une carte : la classe en-ligne (le point vert, en CSS) et le mot.
+function afficherPresence(element) {
+  const enLigne = Presence.personneEnLigne(element.dataset.id);
+  element.classList.toggle("en-ligne", enLigne);
+  element.textContent = enLigne ? "En ligne" : "Hors ligne";
+}
+
+// Met à jour toutes les cartes sur place, sans les redessiner : le focus reste là où il est, sur un bouton « Retirer » par exemple.
+function mettreAJourPresences() {
+  listeMesContacts.querySelectorAll(".presence").forEach(afficherPresence);
+}
+
 // Redessine les cartes, triées par pseudo. Chaque carte : <li> <h3>pseudo</h3> <p>en ligne / hors ligne</p> <button>Retirer</button> </li>.
 // Les boutons portent un aria-label avec le pseudo : un lecteur d'écran entend « Retirer gigi de mes contacts », pas cinq fois « Retirer ».
 function afficherMesContacts() {
@@ -79,9 +91,9 @@ function afficherMesContacts() {
 
     // « En ligne » ou « Hors ligne », toujours écrit en toutes lettres : la pastille de couleur seule ne suffirait pas
     const presence = document.createElement("p");
-    const enLigne = Presence.estEnLigne(personne.derniere_activite);
-    presence.className = enLigne ? "presence en-ligne" : "presence";
-    presence.textContent = enLigne ? "En ligne" : "Hors ligne";
+    presence.className = "presence";
+    presence.dataset.id = id;
+    afficherPresence(presence);
 
     const bouton = document.createElement("button");
     bouton.type = "button";
@@ -107,7 +119,10 @@ async function chargerMesContacts() {
   }
 
   mesContacts.clear();
-  data.forEach((contact) => mesContacts.set(contact.contact_id, contact.personne));
+  data.forEach((contact) => {
+    mesContacts.set(contact.contact_id, contact.personne);
+    Presence.noter(contact.contact_id, contact.personne.derniere_activite);
+  });
   afficherMesContacts();
 }
 
@@ -207,8 +222,8 @@ async function init() {
 
   await chargerMesContacts();
 
-  // Chaque minute, on recharge les contacts pour mettre à jour « en ligne / hors ligne »
-  setInterval(chargerMesContacts, INTERVALLE_PRESENCE);
+  // « En ligne / hors ligne » : mis à jour en temps réel, et recalculé toutes les 30 secondes
+  Presence.suivre(mettreAJourPresences);
 }
 
 init();
@@ -254,6 +269,7 @@ resultatsRecherche.addEventListener("click", async (event) => {
       await chargerMesContacts();
     } else {
       mesContacts.set(profil.id, { pseudo: profil.pseudo, derniere_activite: profil.derniere_activite });
+      Presence.noter(profil.id, profil.derniere_activite);
       afficherMesContacts();
     }
 

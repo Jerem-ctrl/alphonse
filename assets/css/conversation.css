@@ -89,7 +89,7 @@ body > aside {
     Le fil a sa propre barre de défilement : c'est en remontant tout en haut qu'on charge les messages plus anciens.
 */
 #fil-messages {
-    --reserve: 30rem;
+    --reserve: 31.5rem;
     display: flex;
     flex-direction: column;
     height: calc(100vh - var(--reserve));
@@ -141,6 +141,22 @@ body > aside {
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+}
+
+/* La présence de l'auteur d'un message reçu : un point gris en ::before, vert quand il est en ligne, avec « en ligne » écrit à la suite. */
+#fil-messages header[data-auteur]::before {
+    content: "";
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: var(--espace-1);
+    border-radius: 50%;
+    background-color: var(--encre-douce);
+    transition: background-color 0.4s ease;
+}
+
+#fil-messages header.en-ligne::before {
+    background-color: var(--vert);
 }
 
 #fil-messages article.envoye > header,
@@ -228,6 +244,17 @@ body > aside {
 
 #formulaire-message label {
     margin-bottom: 0;
+}
+
+/* « Envoyer » reste sur la ligne du choix de l'image ; l'aide sur les formats passe juste en dessous. */
+#formulaire-message button {
+    grid-column: 2;
+    grid-row: 4;
+}
+
+#aide-image {
+    grid-column: 1;
+    margin-top: calc(-1 * var(--espace-1));
 }
 
 /* Une hauteur fixe plutôt que les 3 lignes de rows="3", trop hautes avec notre police : on peut toujours l'agrandir à la main (resize). */
@@ -557,7 +584,7 @@ body > aside {
 
     /* Sans le bouton « Retour » et avec un en-tête sur une seule ligne, il faut moins de place autour du fil. */
     #fil-messages {
-        --reserve: 23rem;
+        --reserve: 24.5rem;
     }
 }
 

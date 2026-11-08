@@ -163,13 +163,16 @@ function afficherSalon(salon) {
 // Le pseudo de l'auteur : il arrive avec les messages chargés (utilisateurs.pseudo), mais pas avec ceux du temps réel.
 // Dans ce cas, on le demande une seule fois à Data, puis on le garde dans la Map.
 async function trouverPseudo(message) {
+  // On en profite pour retenir la dernière activité de l'auteur : elle dit s'il est en ligne.
   if (message.utilisateurs) {
     pseudos.set(message.user_id, message.utilisateurs.pseudo);
+    Presence.noter(message.user_id, message.utilisateurs.derniere_activite);
   }
 
   if (!pseudos.has(message.user_id)) {
     const { data } = await Data.fetchPseudo(message.user_id);
     pseudos.set(message.user_id, data ? data.pseudo : "Compte supprimé");
+    Presence.noter(message.user_id, data?.derniere_activite);
   }
 
   return pseudos.get(message.user_id);
@@ -189,8 +192,16 @@ function creerArticle(message, pseudo) {
     article.classList.add("envoye");
   }
 
+  // Sur les messages reçus, le pseudo est suivi de l'indicateur de présence : un point (en CSS) et le mot « en ligne » quand c'est le cas.
   const auteur = document.createElement("header");
   auteur.textContent = pseudo;
+  if (!estAMoi) {
+    auteur.dataset.auteur = message.user_id;
+    const presence = document.createElement("span");
+    presence.className = "presence";
+    auteur.append(presence);
+    afficherPresence(auteur);
+  }
   article.append(auteur);
 
   if (message.texte) {
@@ -223,6 +234,19 @@ function creerArticle(message, pseudo) {
   }
 
   return article;
+}
+
+// L'indicateur de présence d'un message reçu : la classe en-ligne colore le point, et le mot est écrit à côté.
+// Hors ligne, le point reste gris et le mot disparaît : ce n'est pas la couleur seule qui porte l'information.
+function afficherPresence(entete) {
+  const enLigne = Presence.personneEnLigne(entete.dataset.auteur);
+  entete.classList.toggle("en-ligne", enLigne);
+  entete.querySelector(".presence").textContent = enLigne ? " · en ligne" : "";
+}
+
+// Met à jour tous les messages reçus affichés, appelé par Presence à chaque changement.
+function mettreAJourPresences() {
+  filMessages.querySelectorAll("header[data-auteur]").forEach(afficherPresence);
 }
 
 // Range un article à sa place dans le fil, selon sa date : avant le premier message plus récent que lui.
@@ -630,6 +654,7 @@ async function init() {
     canalMessages = Data.subscribeToMessages(salonActif, recevoirMessage, retirerMessage);
   }
   Data.subscribeToChannels(afficherSalon);
+  Presence.suivre(mettreAJourPresences);
 
   // Les salons et les messages se chargent en même temps avec Promise.all : on attend la plus lente des deux requêtes, pas leur somme.
   const [reponseSalons, reponseMessages] = await Promise.all([
