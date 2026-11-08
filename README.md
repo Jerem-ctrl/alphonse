@@ -117,6 +117,8 @@ API publique de correction : https://languagetool.org. Le texte du message est e
 - **Filtre des adresses côté serveur** : la fonction `filtre_email` refuse toute adresse qui n'est pas de l'UQAC, même si quelqu'un contourne le formulaire.
 - **Affichage avec `textContent`** : les pseudos et les messages sont affichés comme du texte, jamais comme du HTML, ce qui empêche l'injection de code.
 - **Validation en deux couches** : les règles du formulaire (`required`, `pattern`, `minlength`) servent au confort de l'utilisateur ; les vraies vérifications sont faites par Supabase.
+- **Politique de sécurité du contenu (CSP)** : chaque page déclare, dans une balise `<meta http-equiv="Content-Security-Policy">`, les seules sources autorisées. Les scripts ne viennent que du site et de jsDelivr (supabase-js), sans aucun script ni attribut `onclick` écrit dans le HTML : un script injecté serait bloqué même s'il atteignait la page. La page ne peut appeler que Supabase et LanguageTool, et `object-src 'none'`, `base-uri` et `form-action` ferment les autres portes. GitHub Pages ne permettant pas d'envoyer d'en-têtes HTTP, la balise `<meta>` est la seule solution ; elle ne couvre donc pas `frame-ancestors` (protection contre l'affichage du site dans un cadre).
+- **Formats d'image** : la liste est précise (PNG, JPEG, WebP, GIF) plutôt que `image/*`, qui laisserait passer le SVG, un format pouvant contenir du script. Chaque fichier est aussi décodé avant l'envoi : un fichier qui n'est pas une vraie image est refusé.
 
 
 # Limites

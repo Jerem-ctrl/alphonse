@@ -529,9 +529,11 @@ dd {
     text-align: left;
 }
 
+/* hyphens: auto coupe un mot long (« Reformulations ») avec un trait d'union sur un écran étroit en très grand texte, au lieu de faire déborder le tableau. */
 #tableau-statistiques th,
 #tableau-statistiques td {
-    padding: var(--espace-2);
+    padding: var(--espace-2) var(--espace-1);
+    hyphens: auto;
     border-bottom: var(--filet-fin);
     text-align: left;
 }

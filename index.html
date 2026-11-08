@@ -3,6 +3,18 @@
 
 <head>
     <meta charset="UTF-8">
+
+    <!--
+        La politique de sécurité du contenu (CSP) : la liste des seules sources que le navigateur accepte pour cette page.
+        - script-src : nos fichiers et supabase-js sur jsDelivr, rien d'autre ; aucun script écrit dans la page, aucun attribut onclick :
+          un script injecté (par un message piégé, par exemple) serait bloqué même s'il arrivait dans le document.
+        - connect-src : les seuls serveurs que la page peut appeler sont Supabase (https et wss pour le temps réel) et LanguageTool.
+        - img-src : nos images, et celles du stockage Supabase (data: et blob: pour l'aperçu d'un fichier choisi).
+        - object-src 'none', base-uri et form-action 'self' : pas de plugin, pas de détournement des liens ni des formulaires.
+        GitHub Pages ne permet pas d'envoyer d'en-têtes HTTP : la politique est donc donnée dans cette balise <meta>, placée tout en haut,
+        avant le premier script.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; font-src 'self'; media-src 'self'; img-src 'self' data: blob: https://nsncedqaecfkgijeulyz.supabase.co; connect-src 'self' https://nsncedqaecfkgijeulyz.supabase.co wss://nsncedqaecfkgijeulyz.supabase.co https://api.languagetool.org; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
     <!--
         viewport-fit=cover et interactive-widget=resizes-content permettent à la page d'occuper tout l'écran sur téléphone, encoche comprise,
         et de se réajuster à l'ouverture du clavier au lieu de masquer le champ de saisie. Le zoom reste autorisé, car le bloquer pénaliserait les personnes qui en ont besoin.
