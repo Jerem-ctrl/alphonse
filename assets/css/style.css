@@ -825,12 +825,14 @@ dialog::backdrop {
 }
 
 /* Le bouton qui supprime pour de bon est en rouge : on voit tout de suite que c'est l'action dangereuse. Le texte, lui, le dit aussi. */
-#confirmer-suppression {
+#confirmer-suppression,
+#confirmer-suppression-message {
     border-color: var(--rouge);
     color: var(--rouge);
 }
 
-#confirmer-suppression:hover {
+#confirmer-suppression:hover,
+#confirmer-suppression-message:hover {
     background-color: var(--rouge);
     color: var(--fond);
 }

@@ -35,7 +35,9 @@
         Cet ordre est nécessaire, car chaque script utilise le précédent (Supabase, puis le client, puis Auth, puis le script de la page).
     -->
     <script src="../assets/js/theme.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <!-- supabase-js, figé à une version précise (2.118.0). integrity donne l'empreinte attendue du fichier : si jsDelivr servait un fichier modifié,
+         le navigateur refuserait de l'exécuter. crossorigin="anonymous" est nécessaire pour que cette vérification soit possible. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous" defer></script>
     <script src="../assets/js/spclient.js" defer></script>
     <script src="../assets/js/auth.js" defer></script>
     <script src="../assets/js/data.js" defer></script>
@@ -159,7 +161,7 @@
 
         <!-- Déconnexion -->
         <button type="button" id="bouton-deconnexion">Se déconnecter</button>
-                
+
         <!-- Suppression du compte, placée en dernier car l'action est définitive -->
         <section>
             <h2>Supprimer mon compte</h2>
@@ -183,7 +185,7 @@
                 </div>
             </form>
         </dialog>
-        
+
     </main>
 
     <!-- Pied de page -->

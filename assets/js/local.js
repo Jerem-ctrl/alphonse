@@ -29,7 +29,7 @@ const Local = {
     }
   },
 
-  // Une préférence d'affichage (analyse automatique, et plus tard le thème ou le son), rangée dans localStorage avec JSON.stringify.
+  // Une préférence (analyse automatique, thème, taille du texte, son), rangée dans localStorage avec JSON.stringify.
   // À la relecture, on ne garde la valeur que si elle a le même type que la valeur par défaut : un true reste un booléen, jamais une chaîne bricolée dans la console.
   lirePreference(nom, valeurParDefaut) {
     try {
