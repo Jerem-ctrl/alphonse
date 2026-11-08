@@ -1,8 +1,11 @@
 /*
-    local.js — Préférences, session et brouillons gardés dans le navigateur
+    local.js
+    Préférences, session et brouillons conservés dans le navigateur.
+    Chargé sans defer, car spclient.js en a besoin pour créer le client Supabase.
 */
 
-// On a rangé ici tout ce qui touche au stockage du navigateur, et chaque accès passe par un try/catch : en navigation privée ou avec le stockage bloqué, localStorage peut lever une erreur, et on refuse qu'un tiroir coincé fasse tomber toute la page.
+// Tout ce qui concerne le stockage du navigateur est regroupé ici, et chaque accès passe par un bloc try/catch.
+// En navigation privée ou avec un stockage bloqué, localStorage peut lever une erreur, qui ne doit pas interrompre la page.
 const CLE_SE_SOUVENIR = "alphonse-se-souvenir";
 const CLE_BROUILLONS = "alphonse-brouillons";
 const CLE_DERNIER_SALON = "alphonse-dernier-salon";
@@ -10,7 +13,8 @@ const CLE_NON_LUS = "alphonse-non-lus";
 
 const Local = {
 
-  // On relit la préférence avec JSON.parse, mais sans la croire sur parole : tout ce qui n'est pas exactement true compte comme false. N'importe qui peut modifier le stockage dans la console, autant prévoir le coup.
+  // La préférence est relue avec JSON.parse, puis vérifiée. Toute valeur différente de true est traitée comme false,
+  // car le stockage peut être modifié depuis la console.
   lireSeSouvenir() {
     try {
       return JSON.parse(localStorage.getItem(CLE_SE_SOUVENIR)) === true;
@@ -20,7 +24,7 @@ const Local = {
     }
   },
 
-  // On enregistre l'état de la case avec JSON.stringify, comme dans la fiche. Si le stockage refuse, tant pis : on retombera sur false, le choix le plus discret.
+  // L'état de la case est enregistré avec JSON.stringify. Si le stockage refuse l'écriture, la valeur false s'applique par défaut.
   enregistrerSeSouvenir(valeur) {
     try {
       localStorage.setItem(CLE_SE_SOUVENIR, JSON.stringify(valeur === true));
@@ -29,8 +33,9 @@ const Local = {
     }
   },
 
-  // Une préférence (analyse automatique, thème, taille du texte, son), rangée dans localStorage avec JSON.stringify.
-  // À la relecture, on ne garde la valeur que si elle a le même type que la valeur par défaut : un true reste un booléen, jamais une chaîne bricolée dans la console.
+  // Préférence d'affichage ou de fonctionnement (analyse automatique, thème, taille du texte, son), enregistrée dans localStorage avec JSON.stringify
+  // À la relecture, la valeur n'est conservée que si son type correspond à celui de la valeur par défaut.
+  // Un booléen reste ainsi un booléen, même si une chaîne a été saisie dans la console.
   lirePreference(nom, valeurParDefaut) {
     try {
       const valeur = JSON.parse(localStorage.getItem("alphonse-" + nom));
@@ -50,12 +55,12 @@ const Local = {
   },
 
   /*
-      Les statistiques de l'assistant, gardées dans ce navigateur (localStorage, en JSON) : ce sont les résultats attendus de la fiche d'analyse.
-      - relus : messages envoyés après une analyse d'Alphonse ;
-      - sommeNotes : la somme de leurs notes, pour calculer la moyenne ;
-      - appliquees : reformulations appliquées ;
-      - telQuel : messages envoyés avec « Envoyer tel quel ».
-      On ne relit que des nombres entiers positifs : un objet bricolé dans la console repart de zéro.
+      Statistiques de l'assistant, conservées dans ce navigateur (localStorage, au format JSON). Elles correspondent aux résultats attendus de la fiche d'analyse.
+      - relus, nombre de messages envoyés après une analyse d'Alphonse
+      - sommeNotes, somme de leurs notes, pour calculer la moyenne
+      - appliquees, nombre de reformulations appliquées
+      - telQuel, nombre de messages envoyés avec « Envoyer tel quel »
+      Seuls des entiers positifs sont relus, et un objet modifié dans la console est remis à zéro.
   */
   lireStatistiques() {
     const zero = { relus: 0, sommeNotes: 0, appliquees: 0, telQuel: 0 };
@@ -67,16 +72,18 @@ const Local = {
     return statistiques;
   },
 
-  // Ajoute 1 (ou la valeur donnée) à une statistique
+  // Ajoute 1 (ou la valeur indiquée) à une statistique
   compter(cle, valeur = 1) {
     const statistiques = Local.lireStatistiques();
     statistiques[cle] += valeur;
     Local.enregistrerPreference("statistiques", statistiques);
   },
 
-  // Le brouillon et le dernier salon vont dans sessionStorage, pas dans localStorage : ils disparaissent avec l'onglet. Un brouillon peut contenir quelque chose de privé, on ne veut pas qu'il reste sur l'ordinateur.
+  // Le brouillon et le dernier salon sont conservés dans sessionStorage et non dans localStorage, afin de disparaître avec l'onglet.
+  // Un brouillon peut contenir une information privée qui ne doit pas rester sur l'ordinateur.
 
-  // Les brouillons de tous les salons tiennent dans un seul objet { identifiant du salon: texte }, relu avec JSON.parse. Si ce qu'on relit n'est pas un objet, on repart d'un objet vide.
+  // Les brouillons de tous les salons sont regroupés dans un seul objet ({ identifiant du salon: texte }), relu avec JSON.parse.
+  // Si la valeur relue n'est pas un objet, un objet vide est utilisé.
   lireBrouillons() {
     try {
       const brouillons = JSON.parse(sessionStorage.getItem(CLE_BROUILLONS));
@@ -89,13 +96,13 @@ const Local = {
     return {};
   },
 
-  // Le brouillon d'un salon, ou une chaîne vide s'il n'y en a pas (ou si ce qu'on trouve n'est pas du texte).
+  // Brouillon d'un salon, ou chaîne vide s'il n'y en a pas ou si la valeur trouvée n'est pas du texte
   lireBrouillon(salonId) {
     const texte = Local.lireBrouillons()[salonId];
     return typeof texte === "string" ? texte : "";
   },
 
-  // On enregistre le brouillon avec JSON.stringify. Un brouillon vide est retiré de l'objet : on ne garde pas de cases inutiles.
+  // Enregistre le brouillon avec JSON.stringify. Un brouillon vide est retiré de l'objet pour ne pas conserver d'entrée inutile.
   enregistrerBrouillon(salonId, texte) {
     const brouillons = Local.lireBrouillons();
     if (texte.trim()) {
@@ -110,7 +117,8 @@ const Local = {
     }
   },
 
-  // Le dernier salon ouvert, pour y revenir quand on clique sur « Conversations ». Number() et Number.isInteger écartent tout ce qui n'est pas un identifiant valide.
+  // Dernier salon ouvert, rouvert lors d'un clic sur « Conversations ».
+  // Number() et Number.isInteger écartent toute valeur qui n'est pas un identifiant valide.
   lireDernierSalon() {
     try {
       const salonId = Number(sessionStorage.getItem(CLE_DERNIER_SALON));
@@ -121,7 +129,7 @@ const Local = {
     }
   },
 
-  // Avec null, on oublie le dernier salon : c'est le cas quand il n'existe plus.
+  // La valeur null efface le dernier salon, par exemple lorsqu'il n'existe plus
   enregistrerDernierSalon(salonId) {
     try {
       if (salonId) {
@@ -134,8 +142,8 @@ const Local = {
     }
   },
 
-  // Les messages non lus de chaque salon, gardés le temps de l'onglet. Une Map ne passe pas telle quelle par JSON :
-  // on la range sous forme de liste de paires [salon, nombre], et on ne relit que des paires de deux nombres entiers positifs.
+  // Messages non lus de chaque salon, conservés pendant la durée de l'onglet. Une Map ne peut pas être convertie directement en JSON,
+  // elle est donc enregistrée sous forme de liste de paires [salon, nombre], et seules les paires de deux entiers positifs sont relues.
   lireNonLus() {
     try {
       const paires = JSON.parse(sessionStorage.getItem(CLE_NON_LUS));
@@ -157,7 +165,8 @@ const Local = {
     }
   },
 
-  // À la déconnexion, on efface les brouillons, le dernier salon et les messages non lus : la personne suivante sur le même onglet ne doit rien en retrouver.
+  // À la déconnexion, les brouillons, le dernier salon et les messages non lus sont effacés,
+  // afin que la personne suivante utilisant le même onglet n'y ait pas accès.
   oublierConversation() {
     try {
       sessionStorage.removeItem(CLE_BROUILLONS);
@@ -168,7 +177,8 @@ const Local = {
     }
   },
 
-  // L'adaptateur pour Supabase. Selon la préférence, la session dort dans localStorage (elle survit à la fermeture du navigateur) ou dans sessionStorage (elle s'en va avec l'onglet). Seule la session de Supabase passe par ici, jamais le mot de passe.
+  // Adaptateur de stockage fourni à Supabase. Selon la préférence, la session est conservée dans localStorage (elle survit à la fermeture du navigateur)
+  // ou dans sessionStorage (elle disparaît avec l'onglet). Seule la session Supabase transite ici, jamais le mot de passe.
   stockageSession: {
 
     getItem(cle) {
@@ -183,7 +193,7 @@ const Local = {
       }
     },
 
-    // Quand on écrit dans un stockage, on efface la copie de l'autre : une seule session à la fois, pas de jumelle oubliée dans un coin.
+    // Une écriture dans un stockage efface la copie présente dans l'autre, afin qu'une seule session existe à la fois
     setItem(cle, valeur) {
       try {
         if (Local.lireSeSouvenir()) {
@@ -198,7 +208,8 @@ const Local = {
       }
     },
 
-    // À la déconnexion, on vide les deux tiroirs, chacun dans son try/catch : si l'un est bloqué, l'autre se vide quand même. Mieux vaut un coup de balai de trop qu'une session qui traîne.
+    // À la déconnexion, les deux stockages sont vidés, chacun dans son propre try/catch.
+    // Si l'un est bloqué, l'autre est tout de même vidé.
     removeItem(cle) {
       try {
         localStorage.removeItem(cle);
