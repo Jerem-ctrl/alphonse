@@ -3,13 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- On a ajouté viewport-fit=cover et interactive-widget=resizes-content : sur téléphone, la page occupe tout l'écran, encoche comprise, et se réajuste quand le clavier s'ouvre au lieu de cacher le champ de saisie. En revanche, on laisse zoomer : bloquer le zoom, c'est fermer la porte à celles et ceux qui en ont besoin. -->
+    <!--
+        viewport-fit=cover et interactive-widget=resizes-content permettent à la page d'occuper tout l'écran sur téléphone, encoche comprise,
+        et de se réajuster à l'ouverture du clavier au lieu de masquer le champ de saisie. Le zoom reste autorisé, car le bloquer pénaliserait les personnes qui en ont besoin.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
     <title>Conversation - Alphonse</title>
     <meta name="description" content="Retrouvez vos conversations et échangez des messages sur Alphonse.">
     <link rel="icon" type="image/png" href="../assets/img/logo-alphonse.png">
     <link rel="stylesheet" href="../assets/css/style.css">
-    <!-- Les styles propres à cette page viennent après les styles communs : ils les complètent sans les répéter. -->
+    <!-- Les styles propres à cette page sont chargés après les styles communs, qu'ils complètent sans les répéter. -->
     <link rel="stylesheet" href="../assets/css/conversation.css">
     <script src="../assets/js/local.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
@@ -26,20 +29,23 @@
 
 <body>
 
-    <!-- Le lien d'évitement : les personnes qui naviguent au clavier (touche Tab) sautent directement au fil des messages, sans repasser par tout le menu. Un raccourci, en somme. -->
+    <!-- Lien d'évitement. Il permet aux personnes qui naviguent au clavier (touche Tab) d'accéder directement au fil des messages sans repasser par le menu. -->
     <a href="#fil-messages" class="lien-evitement">Aller à la conversation</a>
 
-    <!-- <header> : l'en-tête commun à nos trois pages, avec le logo et la navigation principale. Même place et mêmes liens partout : personne ne devrait avoir à chercher le menu. -->
+    <!-- En-tête commun aux trois pages, avec le logo et la navigation principale, toujours au même emplacement. -->
     <header>
-        <!-- Le logo et le nom ramènent aux conversations, comme on s'y attend sur la plupart des sites. On laisse alt="" parce que le nom est écrit juste à côté : inutile que le lecteur d'écran dise « Alphonse » deux fois. Ce n'est pas un titre, chaque page garde son propre <h1>. -->
+        <!--
+            Le logo et le nom ramènent aux conversations, comme sur la plupart des sites. L'attribut alt reste vide,
+            car le nom est écrit juste à côté et un lecteur d'écran l'annoncerait deux fois. Chaque page conserve son propre <h1>.
+        -->
         <a href="conversation.html" class="marque">
             <img src="../assets/img/logo-alphonse.png" alt="" width="500" height="500">
             <span>Alphonse</span>
         </a>
-        <!-- <nav> = un bloc de liens de navigation. aria-label lui donne un nom : sur la page des conversations, il le distingue du menu des salons, et ailleurs, il aide quand même les lecteurs d'écran à s'y retrouver. -->
+        <!-- Bloc de navigation nommé par aria-label. Sur la page des conversations, ce nom le distingue de la liste des salons. -->
         <nav aria-label="Navigation principale">
             <ul>
-                <!-- aria-current="page" : on signale aux lecteurs d'écran la page sur laquelle on se trouve déjà. -->
+                <!-- aria-current="page" signale aux lecteurs d'écran la page actuellement affichée. -->
                 <li><a href="conversation.html" aria-current="page">Conversations</a></li>
                 <li><a href="contact.html">Contacts</a></li>
                 <li><a href="parametre.html">Paramètres</a></li>
@@ -47,50 +53,68 @@
         </nav>
     </header>
 
-    <!-- <aside> pour les salons : on a jugé que c'était du contenu complémentaire à la conversation, toujours là sur le côté, mais pas le cœur de la page. -->
+    <!-- Les salons sont placés dans un <aside>, car ils complètent la conversation sans en être le contenu principal. -->
     <aside aria-labelledby="titre-salons">
         <h2 id="titre-salons">Salons</h2>
 
-        <!-- On crée un salon sans changer de page. maxlength="40" et required évitent les noms vides ou interminables ; on revérifiera quand même côté Supabase, parce qu'un navigateur, ça se contourne. -->
+        <!--
+            Création d'un salon sans changer de page. maxlength="40" et required évitent les noms vides ou trop longs,
+            une vérification étant aussi faite par Supabase, car le navigateur peut être contourné.
+        -->
         <form id="formulaire-salon">
             <label for="nom-salon">Nom du nouveau salon</label>
             <input type="text" id="nom-salon" name="nom" maxlength="40" autocomplete="off" required>
             <button type="submit">Créer le salon</button>
         </form>
 
-        <!-- Les erreurs de création d'un salon s'affichent ici, juste sous le formulaire : sur téléphone, la conversation est cachée pendant qu'on regarde la liste, une erreur affichée là-bas passerait inaperçue. -->
+        <!--
+            Les erreurs de création d'un salon s'affichent sous le formulaire. Sur téléphone, la conversation est masquée
+            pendant la consultation de la liste, et une erreur affichée ailleurs passerait inaperçue.
+        -->
         <p id="erreur-salon" role="alert"></p>
 
-        <!-- La liste reste vide : c'est JavaScript qui la remplit. Chaque salon y devient un lien conversation.html?salon=…, une seule page pour tous les salons. Pratique, et pas de copier-coller ! -->
+        <!-- Liste remplie par JavaScript. Chaque salon devient un lien conversation.html?salon=…, ce qui permet d'utiliser une seule page pour tous les salons. -->
         <nav aria-label="Salons">
             <ul id="liste-salons"></ul>
         </nav>
     </aside>
 
-    <!-- <main> = le cœur de notre page. Une messagerie sans conversation, c'est un peu comme une table sans chaise. Le <h1> affiche le nom du salon ouvert ; en attendant, on invite à en choisir un. -->
+    <!-- Contenu principal de la page. Le <h1> affiche le nom du salon ouvert, ou invite à en choisir un. -->
     <main>
-        <!-- Sur téléphone, on montre un seul panneau à la fois : ce bouton ramène à la liste des salons. Sur grand écran, les deux panneaux sont côte à côte et le CSS le cache. -->
+        <!--
+            Sur téléphone, un seul panneau est affiché à la fois, et ce bouton ramène à la liste des salons.
+            Sur grand écran, les deux panneaux sont côte à côte et le CSS masque ce bouton.
+        -->
         <button type="button" id="bouton-retour">Retour aux salons</button>
 
         <h1 id="titre-salon">Choisissez un salon</h1>
 
-        <!-- role="log" : on dit aux lecteurs d'écran que de nouveaux messages vont s'ajouter au fil, et qu'il faut les annoncer. tabindex="-1" permet au lien d'évitement d'y poser le focus. Chaque message y sera un <article>. -->
+        <!--
+            role="log" indique aux lecteurs d'écran que de nouveaux messages s'ajoutent au fil et doivent être annoncés.
+            tabindex="-1" permet au lien d'évitement d'y placer le focus. Chaque message y est un <article>.
+        -->
         <div id="fil-messages" role="log" aria-labelledby="titre-salon" tabindex="-1"></div>
 
-        <!-- La petite zone « en train d'écrire… » : cachée avec hidden tant que personne ne tape. On n'en fait pas une zone annoncée, sinon le lecteur d'écran parlerait à chaque frappe, et ça deviendrait vite pénible.
-             Les trois points animés sont décoratifs : aria-hidden les cache aux lecteurs d'écran. -->
+        <!--
+            Zone « en train d'écrire… », masquée avec hidden tant que personne ne saisit de texte.
+            Elle n'est pas annoncée par les lecteurs d'écran, qui parleraient sinon à chaque frappe.
+            Les trois points animés sont décoratifs et masqués aux lecteurs d'écran par aria-hidden.
+        -->
         <p id="en-train-ecrire" hidden>
             <span id="texte-ecriture"></span>
             <span class="points" aria-hidden="true"><span></span><span></span><span></span></span>
         </p>
 
-        <!-- role="alert" : on annonce les erreurs tout de suite aux lecteurs d'écran. Le paragraphe reste vide tant que tout va bien (et on espère qu'il le restera longtemps). -->
+        <!-- role="alert" fait annoncer les erreurs immédiatement par les lecteurs d'écran. Le paragraphe reste vide en l'absence d'erreur. -->
         <p id="erreur-conversation" role="alert"></p>
 
-        <!-- Pas d'action ni de method sur le formulaire : c'est JavaScript qui enverra le message à Supabase. Un <textarea> plutôt qu'un input, parce qu'un message pro tient rarement sur une ligne. accept="image/*" filtre les fichiers proposés, sans remplacer une vraie vérification côté service. -->
+        <!--
+            Le formulaire n'a ni action ni method, car c'est JavaScript qui envoie le message à Supabase.
+            Un <textarea> est utilisé plutôt qu'un input, un message professionnel tenant rarement sur une ligne.
+        -->
         <form id="formulaire-message">
             <label for="message">Votre message</label>
-            <!-- Plus de required : un message peut être une image seule. C'est conversation.js qui vérifie qu'il y a au moins l'un des deux. -->
+            <!-- Pas d'attribut required, car un message peut se limiter à une image. conversation.js vérifie qu'il y a au moins un texte ou une image. -->
             <textarea id="message" name="message" rows="3" maxlength="2000"></textarea>
 
             <label for="image">Joindre une image (facultatif)</label>
@@ -101,12 +125,14 @@
             <button type="submit">Envoyer</button>
         </form>
 
-        <!-- L'assistant de rédaction, juste sous le formulaire : on écrit, puis on lit ce qu'Alphonse en pense, dans l'ordre de lecture de la page. -->
+        <!-- Assistant de rédaction, placé sous le formulaire pour suivre l'ordre de lecture de la page -->
         <section id="assistant" aria-labelledby="titre-assistant">
             <h2 id="titre-assistant">Assistant de rédaction</h2>
 
-            <!-- La note, dans une zone role="status" : les lecteurs d'écran l'annoncent quand elle change, sans interrompre la personne.
-                 Le feu porte un title (l'infobulle) et un aria-label, et le libellé est écrit juste à côté : la couleur ne porte jamais seule l'information. -->
+            <!--
+                La note est placée dans une zone role="status", que les lecteurs d'écran annoncent à chaque changement sans interrompre la personne.
+                Le feu porte un title (infobulle) et un aria-label, et le libellé est écrit juste à côté, afin que la couleur ne porte jamais seule l'information.
+            -->
             <p id="note-assistant" role="status">
                 <span id="feu" class="feu" data-couleur="aucune" role="img" aria-label="Feu éteint" title="Pas encore de note">
                     <span></span>
@@ -116,7 +142,10 @@
                 <span id="texte-note">Écrivez votre message, puis cliquez sur « Analyser ».</span>
             </p>
 
-            <!-- « Analyser » lance l'analyse à la demande. La case la lance toute seule pendant la frappe ; elle est décochée par défaut, pour que rien ne parte vers LanguageTool sans qu'on l'ait choisi. -->
+            <!--
+                « Analyser » lance l'analyse à la demande. La case la déclenche automatiquement pendant la frappe.
+                Elle est décochée par défaut, pour que rien ne soit envoyé à LanguageTool sans accord.
+            -->
             <div id="commandes-assistant">
                 <button type="button" id="bouton-analyser">Analyser</button>
                 <div>
@@ -125,25 +154,27 @@
                 </div>
             </div>
 
-            <!-- Le résultat reste caché (hidden) tant qu'aucune analyse n'est faite. -->
+            <!-- Résultat masqué (hidden) tant qu'aucune analyse n'a été faite -->
             <div id="resultat-assistant" hidden>
 
                 <h3>Votre message</h3>
-                <!-- Les passages à revoir sont surlignés avec <mark> ; leur explication apparaît au survol (title) et dans la liste juste après. -->
+                <!-- Passages à revoir surlignés avec <mark>, avec une explication au survol (title) et dans la liste qui suit -->
                 <p id="texte-annote"></p>
 
                 <h3>Ce qu'Alphonse a relevé</h3>
                 <ul id="liste-defauts"></ul>
 
                 <h3>Reformulation proposée</h3>
-                <!-- <del> barre ce qu'on retire, <ins> souligne ce qu'on ajoute ; la version complète est citée dans un <q>. -->
+                <!-- <del> barre les retraits et <ins> souligne les ajouts. La version complète est citée dans un <q>. -->
                 <p id="corrections"></p>
                 <p id="reformulation"></p>
 
-                <!-- Sur un très petit écran, le tableau peut être plus large que le panneau : ce conteneur défile alors de côté, au lieu de faire déborder toute la page.
-                     tabindex="0" permet de le faire défiler au clavier, et role="region" avec son nom l'annonce aux lecteurs d'écran. -->
+                <!--
+                    Sur un très petit écran, le tableau peut dépasser la largeur du panneau. Ce conteneur défile alors horizontalement au lieu de faire déborder la page.
+                    tabindex="0" permet de le faire défiler au clavier, et role="region" avec son nom l'annonce aux lecteurs d'écran.
+                -->
                 <div class="tableau-defilant" role="region" aria-label="Détail de la note" tabindex="0">
-                    <!-- Le détail de la note : <caption> donne son titre au tableau, <thead> les colonnes, <tbody> une ligne par critère et <tfoot> le total. -->
+                    <!-- Détail de la note. <caption> donne son titre au tableau, <thead> les colonnes, <tbody> une ligne par critère et <tfoot> le total. -->
                     <table id="detail-note">
                         <caption>Détail de la note</caption>
                         <thead>
@@ -164,14 +195,14 @@
                     </table>
                 </div>
 
-                <!-- Les deux choix laissés à la personne : Alphonse conseille, il ne décide pas. -->
+                <!-- Deux choix laissés à la personne, Alphonse conseillant sans décider -->
                 <div id="choix-assistant">
                     <button type="button" id="bouton-appliquer">Appliquer la reformulation</button>
                     <button type="button" id="bouton-envoyer-tel-quel">Envoyer tel quel</button>
                 </div>
             </div>
 
-            <!-- L'aide, repliée dans un <details> : elle ne prend de la place que pour celles et ceux qui l'ouvrent. -->
+            <!-- Aide repliée dans un <details>, qui n'occupe de place que lorsqu'elle est ouverte -->
             <details>
                 <summary>Comment la note est calculée</summary>
                 <p>Chaque message part de 100 points. Alphonse retire des points pour chaque défaut :</p>
@@ -185,14 +216,18 @@
                 <p>L'orthographe et la grammaire sont vérifiées par LanguageTool ; la politesse et la clarté, par nos propres règles. Si LanguageTool ne répond pas, la note ne tient compte que de nos règles.</p>
             </details>
 
-            <!-- Le texte part chez un service extérieur : on le dit clairement. Le lien vers LanguageTool est exigé par ses conditions d'utilisation ;
-                 target="_blank" l'ouvre dans un nouvel onglet, et rel="noopener noreferrer" empêche ce nouvel onglet d'agir sur notre page ou de savoir d'où l'on vient. -->
+            <!--
+                Le texte est envoyé à un service extérieur, ce qui est indiqué clairement. Le lien vers LanguageTool est exigé par ses conditions d'utilisation.
+                target="_blank" l'ouvre dans un nouvel onglet, et rel="noopener noreferrer" empêche ce nouvel onglet d'agir sur la page ou d'en connaître l'origine.
+            -->
             <p id="avertissement-assistant">
                 <small>Pour être analysé, votre texte est envoyé à <a href="https://languagetool.org" target="_blank" rel="noopener noreferrer">LanguageTool</a>, un service extérieur. Pour une information confidentielle, n'utilisez pas l'analyse : laissez « Analyse automatique » décochée et ne cliquez pas sur « Analyser ».</small>
             </p>
         </section>
-        <!-- Le son de notification. Sans l'attribut controls, le lecteur reste invisible : c'est notification.js qui le lance avec play(), si l'option est cochée dans les paramètres.
-             Deux formats avec <source> : le navigateur prend le premier qu'il sait lire. -->
+        <!--
+            Son de notification. Sans l'attribut controls, le lecteur reste invisible, et notification.js le déclenche avec play() si l'option est activée.
+            Deux formats sont proposés avec <source>, et le navigateur utilise le premier qu'il sait lire.
+        -->
         <audio id="son-notification" preload="auto">
             <source src="../assets/sons/notification.ogg" type="audio/ogg">
             <source src="../assets/sons/notification.mp3" type="audio/mpeg">
@@ -200,7 +235,7 @@
 
     </main>
 
-    <!-- Pied de page : copyright -->
+    <!-- Pied de page -->
     <footer>
         <p>© 2026-2027 Alphonse. Tous droits réservés.</p>
     </footer>

@@ -3,17 +3,27 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- On a ajouté viewport-fit=cover et interactive-widget=resizes-content : sur téléphone, la page occupe tout l'écran, encoche comprise, et se réajuste quand le clavier s'ouvre au lieu de cacher le champ de saisie. En revanche, on laisse zoomer : bloquer le zoom, c'est fermer la porte à celles et ceux qui en ont besoin. -->
+    <!--
+        viewport-fit=cover et interactive-widget=resizes-content permettent à la page d'occuper tout l'écran sur téléphone, encoche comprise,
+        et de se réajuster à l'ouverture du clavier au lieu de masquer le champ de saisie. Le zoom reste autorisé, car le bloquer pénaliserait les personnes qui en ont besoin.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
     <title>Contacts - Alphonse</title>
     <meta name="description" content="Recherchez une personne inscrite sur Alphonse par son pseudo.">
     <link rel="icon" type="image/png" href="../assets/img/logo-alphonse.png">
     <link rel="stylesheet" href="../assets/css/style.css">
-    <!-- Les styles propres à cette page viennent après les styles communs : ils les complètent sans les répéter. -->
+    <!-- Les styles propres à cette page sont chargés après les styles communs, qu'ils complètent sans les répéter. -->
     <link rel="stylesheet" href="../assets/css/contact.css">
-    <!-- local.js passe en premier, et sans defer : spclient.js en a besoin pour créer le client. Comme il ne touche pas au document, rien ne l'oblige à attendre que la page soit construite. -->
+    <!--
+        local.js est chargé en premier et sans defer, car spclient.js en a besoin pour créer le client.
+        Il ne modifie pas la page et n'a donc pas besoin d'attendre sa construction.
+    -->
     <script src="../assets/js/local.js"></script>
-    <!-- On a mis les scripts dans le <head> avec defer : le navigateur les télécharge pendant qu'il lit le HTML, mais attend que la page soit construite pour les lancer. Et defer garde l'ordre, ce qui nous arrange : Supabase d'abord, puis notre client, puis Auth, et enfin le script de la page. Chacun a besoin du précédent, comme des dominos. -->
+    <!--
+        Les scripts sont placés dans le <head> avec l'attribut defer. Le navigateur les télécharge pendant la lecture du HTML
+        et ne les exécute qu'une fois la page construite, dans l'ordre d'écriture.
+        Cet ordre est nécessaire, car chaque script utilise le précédent (Supabase, puis le client, puis Auth, puis le script de la page).
+    -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="../assets/js/spclient.js" defer></script>
     <script src="../assets/js/auth.js" defer></script>
@@ -25,17 +35,20 @@
 
 <body>
 
-    <!-- <header> : l'en-tête commun à nos trois pages, avec le logo et la navigation principale. Même place et mêmes liens partout : personne ne devrait avoir à chercher le menu. -->
+    <!-- En-tête commun aux trois pages, avec le logo et la navigation principale, toujours au même emplacement. -->
     <header>
-        <!-- Le logo et le nom ramènent aux conversations, comme on s'y attend sur la plupart des sites. On laisse alt="" parce que le nom est écrit juste à côté : inutile que le lecteur d'écran dise « Alphonse » deux fois. Ce n'est pas un titre, chaque page garde son propre <h1>. -->
+        <!--
+            Le logo et le nom ramènent aux conversations, comme sur la plupart des sites. L'attribut alt reste vide,
+            car le nom est écrit juste à côté et un lecteur d'écran l'annoncerait deux fois. Chaque page conserve son propre <h1>.
+        -->
         <a href="conversation.html" class="marque">
             <img src="../assets/img/logo-alphonse.png" alt="" width="500" height="500">
             <span>Alphonse</span>
         </a>
-        <!-- <nav> = un bloc de liens de navigation. aria-label lui donne un nom : sur la page des conversations, il le distingue du menu des salons, et ailleurs, il aide quand même les lecteurs d'écran à s'y retrouver. -->
+        <!-- Bloc de navigation nommé par aria-label. Sur la page des conversations, ce nom le distingue de la liste des salons. -->
         <nav aria-label="Navigation principale">
             <ul>
-                <!-- aria-current="page" : on signale aux lecteurs d'écran la page sur laquelle on se trouve déjà. -->
+                <!-- aria-current="page" signale aux lecteurs d'écran la page actuellement affichée. -->
                 <li><a href="conversation.html">Conversations</a></li>
                 <li><a href="contact.html" aria-current="page">Contacts</a></li>
                 <li><a href="parametre.html">Paramètres</a></li>
@@ -47,18 +60,27 @@
 
         <h1>Contacts</h1>
 
-        <!-- Deux zones de message : role="status" annonce calmement ce qui vient de se passer (un contact ajouté ou retiré), role="alert" annonce tout de suite une erreur. Elles restent vides tant qu'il n'y a rien à dire. -->
+        <!--
+            Deux zones de message. role="status" annonce calmement le résultat d'une action (contact ajouté ou retiré),
+            et role="alert" annonce immédiatement une erreur. Elles restent vides tant qu'il n'y a rien à signaler.
+        -->
         <p id="statut-contacts" role="status"></p>
         <p id="erreur-contacts" role="alert"></p>
 
-        <!-- Nos contacts, en cartes. tabindex="-1" sur le titre : quand on retire une carte, on y ramène le focus, pour que la navigation au clavier ne se perde pas. -->
+        <!--
+            Contacts affichés en cartes. tabindex="-1" sur le titre permet d'y ramener le focus après le retrait d'une carte,
+            afin que la navigation au clavier ne se perde pas.
+        -->
         <section aria-labelledby="titre-mes-contacts">
             <h2 id="titre-mes-contacts" tabindex="-1">Mes contacts</h2>
             <p id="aucun-contact" hidden>Vous n'avez encore aucun contact. Cherchez un pseudo ci-dessous pour en ajouter un.</p>
             <ul id="mes-contacts"></ul>
         </section>
 
-        <!-- La recherche. role="search" signale le formulaire comme une zone de recherche aux lecteurs d'écran. maxlength="20" et l'aide reprennent la règle des pseudos : chercher autre chose ne trouverait personne. -->
+        <!--
+            Recherche. role="search" signale le formulaire comme zone de recherche aux lecteurs d'écran.
+            maxlength="20" et l'aide reprennent la règle des pseudos, car chercher d'autres caractères ne donnerait aucun résultat.
+        -->
         <section aria-labelledby="titre-recherche">
             <h2 id="titre-recherche">Ajouter un contact</h2>
             <form id="formulaire-recherche" role="search">
@@ -67,16 +89,16 @@
                 <small id="aide-recherche">Lettres sans accent, chiffres, _ ou -, comme dans un pseudo.</small>
             </form>
 
-            <!-- Le nombre de personnes trouvées, annoncé à chaque recherche. -->
+            <!-- Nombre de personnes trouvées, annoncé à chaque recherche -->
             <p id="etat-recherche" role="status"></p>
 
-            <!-- Les résultats, remplis par contact.js. -->
+            <!-- Résultats, remplis par contact.js -->
             <ul id="resultats-recherche"></ul>
         </section>
 
     </main>
 
-    <!-- Pied de page : copyright -->
+    <!-- Pied de page -->
     <footer>
         <p>© 2026-2027 Alphonse. Tous droits réservés.</p>
     </footer>

@@ -3,15 +3,25 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- On a ajouté viewport-fit=cover et interactive-widget=resizes-content : sur téléphone, la page occupe tout l'écran, encoche comprise, et se réajuste quand le clavier s'ouvre au lieu de cacher le champ de saisie. En revanche, on laisse zoomer : bloquer le zoom, c'est fermer la porte à celles et ceux qui en ont besoin. -->
+    <!--
+        viewport-fit=cover et interactive-widget=resizes-content permettent à la page d'occuper tout l'écran sur téléphone, encoche comprise,
+        et de se réajuster à l'ouverture du clavier au lieu de masquer le champ de saisie. Le zoom reste autorisé, car le bloquer pénaliserait les personnes qui en ont besoin.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
     <title>Connexion - Alphonse</title>
     <meta name="description" content="Connectez-vous ou créez un compte pour discuter sur Alphonse.">
     <link rel="icon" type="image/png" href="./assets/img/logo-alphonse.png">
     <link rel="stylesheet" href="./assets/css/style.css">
-    <!-- local.js passe en premier, et sans defer : spclient.js en a besoin pour créer le client. Comme il ne touche pas au document, rien ne l'oblige à attendre que la page soit construite. -->
+    <!--
+        local.js est chargé en premier et sans defer, car spclient.js en a besoin pour créer le client.
+        Il ne modifie pas la page et n'a donc pas besoin d'attendre sa construction.
+    -->
     <script src="./assets/js/local.js"></script>
-    <!-- On a mis les scripts dans le <head> avec defer : le navigateur les télécharge pendant qu'il lit le HTML, mais attend que la page soit construite pour les lancer. Et defer garde l'ordre, ce qui nous arrange : Supabase d'abord, puis notre client, puis Auth, et enfin le script de la page. Chacun a besoin du précédent, comme des dominos. -->
+    <!--
+        Les scripts sont placés dans le <head> avec l'attribut defer. Le navigateur les télécharge pendant la lecture du HTML
+        et ne les exécute qu'une fois la page construite, dans l'ordre d'écriture.
+        Cet ordre est nécessaire, car chaque script utilise le précédent (Supabase, puis le client, puis Auth, puis le script de la page).
+    -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="./assets/js/spclient.js" defer></script>
     <script src="./assets/js/auth.js" defer></script>
@@ -24,10 +34,13 @@
     <!-- Formulaire de connexion -->
     <main>
 
-        <!-- Titre de la page : on l'a sorti du formulaire parce qu'il présente toute la page, pas seulement les champs de connexion. -->
+        <!-- Titre de la page, placé hors du formulaire car il présente l'ensemble de la page et pas seulement les champs de connexion -->
         <div id="title-form">
             <img src="./assets/img/logo-alphonse.png" alt="" width="500" height="500" class="logo">
-            <!-- Deux versions de la bannière, une par thème : style.css n'affiche que celle qui correspond. Même alt sur les deux, puisqu'une seule est visible et lue à la fois. -->
+            <!--
+                Deux versions de la bannière, une par thème, dont style.css n'affiche que la version correspondante.
+                Le même texte alternatif est utilisé, puisqu'une seule bannière est visible et lue à la fois.
+            -->
             <img src="./assets/img/banniere-alphonse-nuit.png" alt="Alphonse" width="1500" height="600" class="banniere banniere-nuit" fetchpriority="high">
             <img src="./assets/img/banniere-alphonse-jour.png" alt="Alphonse" width="1500" height="600" class="banniere banniere-jour">
             <h1>Connexion</h1>
@@ -35,19 +48,25 @@
 
         <form id="login-form">
 
-            <!-- On a regroupé les champs dans un fieldset : sa légende est annoncée par les lecteurs d'écran avant le premier champ, ça évite de se demander où on a atterri. -->
+            <!-- Champs regroupés dans un fieldset, dont la légende est annoncée par les lecteurs d'écran avant le premier champ -->
             <fieldset>
                 <legend>Vos identifiants</legend>
 
-                <!-- Champ courriel : le pattern reprend le filtre d'adresses de Supabase, seules @uqac.ca et @etu.uqac.ca passent. Autant prévenir dès la saisie plutôt que d'attendre le refus du serveur. -->
+                <!--
+                    Champ courriel. Le pattern reprend le filtre d'adresses de Supabase, qui n'accepte que @uqac.ca et @etu.uqac.ca.
+                    La personne est ainsi prévenue dès la saisie, sans attendre le refus du serveur.
+                -->
                 <div id="email-form">
                     <label for="email">Adresse courriel</label>
                     <input type="email" id="email" name="email" required autocomplete="email" placeholder="jdupont12@etu.uqac.ca" pattern=".+@(etu\.)?uqac\.ca" title="Adresse de l'UQAC uniquement : elle se termine par @uqac.ca ou @etu.uqac.ca" aria-describedby="message-courriel">
-                    <!-- Ce paragraphe vide attend le verdict de connexion.js. On l'a relié au champ avec aria-describedby : un lecteur d'écran lit le message en même temps que le champ, pas besoin d'aller le chercher. -->
+                    <!-- Paragraphe rempli par connexion.js. aria-describedby le relie au champ, afin qu'un lecteur d'écran lise le message avec le champ. -->
                     <p id="message-courriel"></p>
                 </div>
 
-                <!-- Champ mot de passe : ni minlength ni pattern, et c'est voulu. Les comptes créés avant le nouveau réglage peuvent avoir un mot de passe plus court ; on ne va pas leur claquer la porte au nez. C'est Supabase qui juge. -->
+                <!--
+                    Champ mot de passe, volontairement sans minlength ni pattern. Les comptes créés avant le réglage actuel peuvent avoir
+                    un mot de passe plus court, et c'est Supabase qui valide le mot de passe.
+                -->
                 <div id="mdp-form">
                     <label for="password">Mot de passe</label>
                     <input type="password" id="password" name="password" required autocomplete="current-password" aria-describedby="message-mot-de-passe">
@@ -55,13 +74,16 @@
                 </div>
             </fieldset>
 
-            <!-- Se souvenir de moi : la case reste décochée par défaut. Sur un poste partagé, on préfère que la session s'en aille avec l'onglet ; c'est à la personne de cocher si l'appareil est le sien. -->
+            <!--
+                Case « Se souvenir de moi », décochée par défaut. Sur un poste partagé, la session doit disparaître avec l'onglet,
+                et la case n'est à cocher que sur un appareil personnel.
+            -->
             <div id="remember-form">
                 <input type="checkbox" name="se-souvenir" id="se-souvenir" value="oui">
                 <label for="se-souvenir">Se souvenir de moi</label>
             </div>
 
-            <!-- Zone d'erreur de la connexion : role="alert" fait annoncer le message tout de suite par les lecteurs d'écran, comme le suggère le webchat. -->
+            <!-- Zone d'erreur de la connexion. role="alert" fait annoncer le message immédiatement par les lecteurs d'écran. -->
             <p id="message-erreur" role="alert"></p>
 
             <!-- Bouton de connexion -->
@@ -89,27 +111,34 @@
 
             <h2>Créer un compte</h2>
 
-            <!-- Même idée qu'à la connexion : un fieldset pour que la légende annonce le groupe avant le premier champ. -->
+            <!-- Comme pour la connexion, un fieldset permet d'annoncer la légende du groupe avant le premier champ. -->
             <fieldset>
                 <legend>Vos informations</legend>
 
-                <!-- Champ pseudo : lettres sans accent, chiffres, _ ou -, de 3 à 20 caractères. L'aide reste affichée sous le champ, et aria-describedby la fait lire aux lecteurs d'écran : mieux vaut voir la règle que la deviner. -->
+                <!--
+                    Champ pseudo, de 3 à 20 caractères parmi les lettres sans accent, les chiffres, _ et -.
+                    L'aide reste affichée sous le champ, et aria-describedby la fait lire par les lecteurs d'écran.
+                -->
                 <div>
                     <label for="signup-pseudo">Pseudo</label>
                     <input type="text" id="signup-pseudo" name="pseudo" minlength="3" maxlength="20" required autocomplete="nickname" placeholder="Ex. : alpha_42" pattern="[A-Za-z0-9_\-]{3,20}" title="De 3 à 20 caractères : lettres sans accent, chiffres, _ ou -" aria-describedby="aide-pseudo message-pseudo-inscription">
                     <small id="aide-pseudo">3 à 20 caractères : lettres sans accent, chiffres, _ ou -</small>
-                    <!-- Même principe qu'à la connexion : chaque champ a son paragraphe de message, lu après l'aide grâce à aria-describedby. -->
+                    <!-- Comme pour la connexion, chaque champ possède son paragraphe de message, lu après l'aide grâce à aria-describedby. -->
                     <p id="message-pseudo-inscription"></p>
                 </div>
 
-                <!-- Champ courriel : même pattern qu'à la connexion, calqué sur le filtre de Supabase. Une seule règle, deux formulaires qui disent la même chose. -->
+                <!-- Champ courriel, avec le même pattern qu'à la connexion, calqué sur le filtre de Supabase -->
                 <div>
                     <label for="signup-email">Adresse courriel UQAC</label>
                     <input type="email" id="signup-email" name="email" required autocomplete="email" placeholder="jdupont12@etu.uqac.ca" pattern=".+@(etu\.)?uqac\.ca" title="Adresse de l'UQAC uniquement : elle se termine par @uqac.ca ou @etu.uqac.ca" aria-describedby="message-courriel-inscription">
                     <p id="message-courriel-inscription"></p>
                 </div>
 
-                <!-- Champ mot de passe : 8 caractères minimum, au moins une lettre et un chiffre, exactement comme dans Supabase Auth. Si le navigateur et le serveur avaient chacun leur règle, on collectionnerait les refus incompréhensibles. Le pattern reste un confort : Supabase a le dernier mot. -->
+                <!--
+                    Champ mot de passe, avec au moins 8 caractères dont une lettre et un chiffre, comme dans Supabase Auth.
+                    Des règles identiques côté navigateur et côté serveur évitent des refus incompréhensibles.
+                    Le pattern reste un confort de saisie, et Supabase garde le dernier mot.
+                -->
                 <div>
                     <label for="signup-password">Mot de passe</label>
                     <input type="password" id="signup-password" name="password" minlength="8" required autocomplete="new-password" pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,}" title="Au moins 8 caractères, dont une lettre et un chiffre" aria-describedby="aide-mot-de-passe message-mot-de-passe-inscription">
@@ -118,7 +147,7 @@
                 </div>
             </fieldset>
 
-            <!-- Zone d'erreur de l'inscription : role="alert", pour la même raison qu'à la connexion. -->
+            <!-- Zone d'erreur de l'inscription, avec role="alert" pour la même raison qu'à la connexion -->
             <p id="message-erreur-inscription" role="alert"></p>
 
             <button type="submit">S'inscrire</button>
@@ -127,7 +156,7 @@
 
     </dialog>
 
-    <!-- Pied de page : copyright -->
+    <!-- Pied de page -->
     <footer>
         <p>© 2026-2027 Alphonse. Tous droits réservés.</p>
     </footer>
