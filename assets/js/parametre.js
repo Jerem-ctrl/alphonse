@@ -37,6 +37,13 @@ document.querySelectorAll('input[name="theme"]').forEach((bouton) => {
   };
 });
 
+// Le son des notifications : la case reprend le choix enregistré, et chaque changement est gardé par Local
+const caseSon = document.getElementById("option-son");
+caseSon.checked = Local.lirePreference("son", false);
+caseSon.addEventListener("change", () => {
+  Local.enregistrerPreference("son", caseSon.checked);
+});
+
 // Déconnexion : on efface d'abord les brouillons et le dernier salon de l'onglet, puis on ferme la session
 document.getElementById("bouton-deconnexion").onclick = async () => {
   Local.oublierConversation();

@@ -196,6 +196,19 @@ const Data = {
       .subscribe();
   },
 
+  // Écoute les nouveaux messages de TOUS les salons, sans filtre : c'est ce qui allume la pastille d'un salon qu'on n'a pas ouvert.
+  // La RLS laisse lire tous les messages aux comptes connectés, le temps réel aussi.
+  subscribeToAllMessages(onNewMessage) {
+    return supabaseClient
+      .channel("messages-tous-les-salons")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => onNewMessage(payload.new)
+      )
+      .subscribe();
+  },
+
   // Écoute le salon ouvert : onNewMessage pour chaque nouveau message, onDeletedMessage pour chaque message supprimé.
   // Les nouveaux messages sont filtrés sur salon_id : on ne reçoit pas ceux des autres salons.
   // Supabase ne sait pas filtrer les suppressions, et ne transmet que l'id du message supprimé :

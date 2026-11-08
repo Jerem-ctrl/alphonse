@@ -6,6 +6,7 @@
 const CLE_SE_SOUVENIR = "alphonse-se-souvenir";
 const CLE_BROUILLONS = "alphonse-brouillons";
 const CLE_DERNIER_SALON = "alphonse-dernier-salon";
+const CLE_NON_LUS = "alphonse-non-lus";
 
 const Local = {
 
@@ -108,11 +109,35 @@ const Local = {
     }
   },
 
-  // À la déconnexion, on efface les brouillons et le dernier salon : la personne suivante sur le même onglet ne doit rien en retrouver.
+  // Les messages non lus de chaque salon, gardés le temps de l'onglet. Une Map ne passe pas telle quelle par JSON :
+  // on la range sous forme de liste de paires [salon, nombre], et on ne relit que des paires de deux nombres entiers positifs.
+  lireNonLus() {
+    try {
+      const paires = JSON.parse(sessionStorage.getItem(CLE_NON_LUS));
+      if (Array.isArray(paires)) {
+        return new Map(paires.filter((paire) => Array.isArray(paire)
+          && Number.isInteger(paire[0]) && Number.isInteger(paire[1]) && paire[1] > 0));
+      }
+    } catch (erreur) {
+      console.error(erreur);
+    }
+    return new Map();
+  },
+
+  enregistrerNonLus(nonLus) {
+    try {
+      sessionStorage.setItem(CLE_NON_LUS, JSON.stringify([...nonLus]));
+    } catch (erreur) {
+      console.error(erreur);
+    }
+  },
+
+  // À la déconnexion, on efface les brouillons, le dernier salon et les messages non lus : la personne suivante sur le même onglet ne doit rien en retrouver.
   oublierConversation() {
     try {
       sessionStorage.removeItem(CLE_BROUILLONS);
       sessionStorage.removeItem(CLE_DERNIER_SALON);
+      sessionStorage.removeItem(CLE_NON_LUS);
     } catch (erreur) {
       console.error(erreur);
     }

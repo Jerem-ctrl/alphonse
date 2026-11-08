@@ -154,6 +154,9 @@ function afficherSalon(salon) {
   // localeCompare compare les noms à la française, accents compris.
   const suivant = [...listeSalons.children].find((autre) => autre.textContent.localeCompare(salon.nom, "fr") > 0);
   listeSalons.insertBefore(li, suivant ?? null);
+
+  // Les messages non lus de ce salon, s'il y en a
+  afficherPastille(salon.id);
 }
 
 
@@ -296,17 +299,56 @@ async function afficherMessage(message) {
   regrouper(article.nextElementSibling);
 }
 
-// Un message arrive en temps réel : on l'affiche, et on descend si on était déjà en bas (ou si c'est le sien).
-// S'il vient de quelqu'un d'autre, Alerte prévient (titre de l'onglet et son) si l'onglet est caché.
+// Un message arrive en temps réel dans le salon ouvert : on l'affiche, et on descend si on était déjà en bas (ou si c'est le sien).
 async function recevoirMessage(message) {
   const suivre = estEnBasDuFil() || message.user_id === monId;
   await afficherMessage(message);
   if (suivre) {
     descendreEnBas();
   }
-  if (message.user_id !== monId) {
-    Alerte.nouveauMessage();
+}
+
+// -- Notifications
+
+
+// La pastille d'un salon : le nombre de messages non lus, suivi d'un texte caché à l'écran, pour que le lecteur d'écran dise « 3 nouveaux messages ».
+// On recrée la pastille à chaque nouveau message : son animation repart, et l'œil la remarque.
+function afficherPastille(salonId) {
+  const lien = listeSalons.querySelector("a[href='?salon=" + salonId + "']");
+  if (!lien) {
+    return;
   }
+
+  lien.querySelector(".pastille")?.remove();
+  const nombre = Alerte.nombre(salonId);
+  if (nombre === 0) {
+    return;
+  }
+
+  const pastille = document.createElement("span");
+  pastille.className = "pastille";
+  pastille.textContent = nombre;
+  const explication = document.createElement("span");
+  explication.className = "visuellement-cache";
+  explication.textContent = nombre === 1 ? " nouveau message" : " nouveaux messages";
+  pastille.append(explication);
+  lien.append(pastille);
+}
+
+// Un message vient d'arriver dans n'importe quel salon (écoute sans filtre).
+// On ne prévient pas pour ses propres messages, ni pour le salon qu'on a sous les yeux.
+// Sinon : un message non lu de plus (pastille et titre de l'onglet), et le son si l'option est cochée.
+function signalerMessage(message) {
+  if (message.user_id === monId) {
+    return;
+  }
+  if (message.salon_id === salonActif && !document.hidden) {
+    return;
+  }
+
+  Alerte.ajouter(message.salon_id);
+  afficherPastille(message.salon_id);
+  Alerte.jouerSon();
 }
 
 // Un message a été supprimé (par nous ou depuis un autre appareil) : on retire sa bulle si on l'affiche.
@@ -679,6 +721,13 @@ async function init() {
     canalMessages = Data.subscribeToMessages(salonActif, recevoirMessage, retirerMessage);
   }
   Data.subscribeToChannels(afficherSalon);
+  Data.subscribeToAllMessages(signalerMessage);
+
+  // Les compteurs de messages non lus gardés pendant la visite. Le salon qu'on ouvre est lu, sa pastille disparaît.
+  Alerte.charger();
+  if (salonActif) {
+    Alerte.lire(salonActif);
+  }
   Presence.suivre(mettreAJourPresences);
 
   // Les salons et les messages se chargent en même temps avec Promise.all : on attend la plus lente des deux requêtes, pas leur somme.
@@ -720,7 +769,7 @@ async function init() {
   }
 
   titreSalon.textContent = salon.nom;
-  document.title = salon.nom + " - Alphonse";
+  Alerte.definirTitre(salon.nom + " - Alphonse");
   Local.enregistrerDernierSalon(salonActif);
 
   // L'indicateur « en train d'écrire » : on rejoint le canal de ce salon
@@ -917,6 +966,14 @@ filMessages.addEventListener("click", async (event) => {
 filMessages.addEventListener("scroll", () => {
   if (filMessages.scrollTop < 50) {
     chargerPlusAnciens();
+  }
+});
+
+// De retour sur l'onglet : les messages du salon ouvert sont sous les yeux, ils ne sont plus « non lus ».
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && salonActif) {
+    Alerte.lire(salonActif);
+    afficherPastille(salonActif);
   }
 });
 

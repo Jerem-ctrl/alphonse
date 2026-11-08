@@ -187,6 +187,16 @@ h2::after {
 
 /* ---------- 5. Liens et focus ---------- */
 
+/* Un texte caché à l'écran mais lu par les lecteurs d'écran (par exemple « nouveaux messages » à côté d'un simple chiffre). */
+.visuellement-cache {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 a {
     color: var(--encre);
     text-decoration-thickness: 0.0625rem;

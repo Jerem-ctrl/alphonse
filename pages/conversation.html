@@ -191,6 +191,13 @@
                 <small>Pour être analysé, votre texte est envoyé à <a href="https://languagetool.org" target="_blank" rel="noopener noreferrer">LanguageTool</a>, un service extérieur. Pour une information confidentielle, n'utilisez pas l'analyse : laissez « Analyse automatique » décochée et ne cliquez pas sur « Analyser ».</small>
             </p>
         </section>
+        <!-- Le son de notification. Sans l'attribut controls, le lecteur reste invisible : c'est notification.js qui le lance avec play(), si l'option est cochée dans les paramètres.
+             Deux formats avec <source> : le navigateur prend le premier qu'il sait lire. -->
+        <audio id="son-notification" preload="auto">
+            <source src="../assets/sons/notification.ogg" type="audio/ogg">
+            <source src="../assets/sons/notification.mp3" type="audio/mpeg">
+        </audio>
+
     </main>
 
     <!-- Pied de page : copyright -->

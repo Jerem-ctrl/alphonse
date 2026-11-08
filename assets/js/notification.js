@@ -1,86 +1,83 @@
 /*
-notification.js — Prévenir d'un nouveau message quand l'onglet n'est pas affiché.
-Visuel : le titre de l'onglet affiche le nombre de messages non lus, « (2) général - Alphonse ».
-Sonore : un petit « ding » à deux notes, fabriqué par le navigateur (API Web Audio), sans fichier son.
-L'objet s'appelle Alerte et non Notification : Notification est déjà un nom réservé par le navigateur.
-Utilisé par conversation.js.
+    notification.js — Prévenir des nouveaux messages.
+
+    - Une pastille sur chaque salon qui a reçu des messages qu'on n'a pas encore vus (le CSS l'anime).
+    - Un compteur dans le titre de l'onglet : « (3) Général - Alphonse ».
+    - Un son, joué avec l'élément <audio> de la page, seulement si l'option est cochée dans les paramètres.
+    Les messages non lus sont comptés dans une Map (identifiant du salon → nombre). Local la garde le temps de l'onglet :
+    changer de salon recharge la page, et les compteurs des autres salons ne doivent pas se perdre en route.
+    L'objet s'appelle Alerte et non Notification : Notification est déjà un nom réservé par le navigateur.
 */
 
 const Alerte = {
 
-  // Le nombre de messages arrivés pendant que l'onglet était caché
-  nonLus: 0,
+  // Les messages non lus, rangés par salon
+  nonLus: new Map(),
 
-  // Le « haut-parleur » du navigateur, créé à la première action de la personne (voir plus bas)
-  contexteAudio: null,
+  // Le titre de la page sans le compteur (« Général - Alphonse »)
+  titre: document.title,
 
-  // Appelée par conversation.js à chaque message reçu d'une autre personne.
-  // Si on regarde déjà la page, pas besoin de prévenir.
-  nouveauMessage() {
-    if (!document.hidden) {
-      return;
-    }
-    Alerte.nonLus += 1;
-    document.title = "(" + Alerte.nonLus + ") " + Alerte.titreSansCompteur();
-    Alerte.jouerSon();
+  // Reprend les compteurs gardés par Local
+  charger() {
+    Alerte.nonLus = Local.lireNonLus();
+    Alerte.mettreAJourTitre();
   },
 
-  // Le titre de l'onglet sans le compteur : « (3) général - Alphonse » devient « général - Alphonse »
-  titreSansCompteur() {
-    return document.title.replace(/^\(\d+\) /, "");
+  // Un message de plus dans un salon
+  ajouter(salonId) {
+    Alerte.nonLus.set(salonId, (Alerte.nonLus.get(salonId) ?? 0) + 1);
+    Local.enregistrerNonLus(Alerte.nonLus);
+    Alerte.mettreAJourTitre();
   },
 
-  // On revient sur l'onglet : les messages sont vus, on retire le compteur
-  reinitialiser() {
-    Alerte.nonLus = 0;
-    document.title = Alerte.titreSansCompteur();
-  },
-
-  // Les navigateurs n'autorisent le son qu'après une action de la personne (clic ou touche).
-  // On prépare donc le haut-parleur à la première action ; avant, la notification reste seulement visuelle.
-  preparerSon() {
-    try {
-      Alerte.contexteAudio = new AudioContext();
-    } catch (erreur) {
-      Alerte.contexteAudio = null;
+  // Les messages d'un salon sont vus : on retire son compteur
+  lire(salonId) {
+    if (Alerte.nonLus.delete(salonId)) {
+      Local.enregistrerNonLus(Alerte.nonLus);
+      Alerte.mettreAJourTitre();
     }
   },
 
-  // Deux notes courtes et douces (la puis mi), qui montent puis s'éteignent en un quart de seconde
+  // Le nombre de messages non lus d'un salon (0 s'il n'y en a pas)
+  nombre(salonId) {
+    return Alerte.nonLus.get(salonId) ?? 0;
+  },
+
+  // Le total, tous salons confondus
+  total() {
+    return [...Alerte.nonLus.values()].reduce((somme, nombre) => somme + nombre, 0);
+  },
+
+  // La page change de titre (par exemple en ouvrant un salon) : on garde ce titre, et on y remet le compteur.
+  definirTitre(titre) {
+    Alerte.titre = titre;
+    Alerte.mettreAJourTitre();
+  },
+
+  // « (3) Général - Alphonse » s'il y a des messages non lus, le titre seul sinon
+  mettreAJourTitre() {
+    const total = Alerte.total();
+    document.title = total > 0 ? "(" + total + ") " + Alerte.titre : Alerte.titre;
+  },
+
+  /*
+      Le son, si l'option est cochée dans les paramètres. play() renvoie une Promise :
+      un navigateur refuse souvent de jouer un son tant que la personne n'a pas encore cliqué ou tapé sur la page.
+      Ce refus arrive dans le .catch() : on le note dans la console, et la pastille et le titre suffisent à prévenir.
+  */
   jouerSon() {
-    const contexte = Alerte.contexteAudio;
-    if (!contexte) {
+    const son = document.getElementById("son-notification");
+    if (!son || !Local.lirePreference("son", false)) {
       return;
     }
-    // Un onglet caché peut mettre le son en pause : on le relance
-    contexte.resume();
 
-    const maintenant = contexte.currentTime;
-    [880, 1320].forEach((frequence, numero) => {
-      const oscillateur = contexte.createOscillator();
-      const volume = contexte.createGain();
-      const debut = maintenant + numero * 0.12;
-
-      oscillateur.type = "sine";
-      oscillateur.frequency.value = frequence;
-      volume.gain.setValueAtTime(0.0001, debut);
-      volume.gain.exponentialRampToValueAtTime(0.15, debut + 0.02);
-      volume.gain.exponentialRampToValueAtTime(0.0001, debut + 0.25);
-
-      oscillateur.connect(volume).connect(contexte.destination);
-      oscillateur.start(debut);
-      oscillateur.stop(debut + 0.3);
-    });
+    son.currentTime = 0;
+    son.play()
+      .then(() => {
+        // Le son est parti : rien d'autre à faire
+      })
+      .catch((erreur) => {
+        console.info("Son de notification refusé par le navigateur :", erreur.name);
+      });
   },
 };
-
-// Retour sur l'onglet : on retire le compteur du titre
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    Alerte.reinitialiser();
-  }
-});
-
-// Première action de la personne sur la page : on prépare le son (once: true = une seule fois)
-document.addEventListener("pointerdown", Alerte.preparerSon, { once: true });
-document.addEventListener("keydown", Alerte.preparerSon, { once: true });
