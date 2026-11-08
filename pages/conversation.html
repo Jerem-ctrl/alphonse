@@ -77,8 +77,12 @@
         <!-- role="log" : on dit aux lecteurs d'écran que de nouveaux messages vont s'ajouter au fil, et qu'il faut les annoncer. tabindex="-1" permet au lien d'évitement d'y poser le focus. Chaque message y sera un <article>. -->
         <div id="fil-messages" role="log" aria-labelledby="titre-salon" tabindex="-1"></div>
 
-        <!-- La petite zone « en train d'écrire… » : cachée avec hidden tant que personne ne tape. On n'en fait pas une zone annoncée, sinon le lecteur d'écran parlerait à chaque frappe, et ça deviendrait vite pénible. -->
-        <p id="en-train-ecrire" hidden></p>
+        <!-- La petite zone « en train d'écrire… » : cachée avec hidden tant que personne ne tape. On n'en fait pas une zone annoncée, sinon le lecteur d'écran parlerait à chaque frappe, et ça deviendrait vite pénible.
+             Les trois points animés sont décoratifs : aria-hidden les cache aux lecteurs d'écran. -->
+        <p id="en-train-ecrire" hidden>
+            <span id="texte-ecriture"></span>
+            <span class="points" aria-hidden="true"><span></span><span></span><span></span></span>
+        </p>
 
         <!-- role="alert" : on annonce les erreurs tout de suite aux lecteurs d'écran. Le paragraphe reste vide tant que tout va bien (et on espère qu'il le restera longtemps). -->
         <p id="erreur-conversation" role="alert"></p>

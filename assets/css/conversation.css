@@ -89,7 +89,7 @@ body > aside {
     Le fil a sa propre barre de défilement : c'est en remontant tout en haut qu'on charge les messages plus anciens.
 */
 #fil-messages {
-    --reserve: 31.5rem;
+    --reserve: 33rem;
     display: flex;
     flex-direction: column;
     height: calc(100vh - var(--reserve));
@@ -584,14 +584,69 @@ body > aside {
 
     /* Sans le bouton « Retour » et avec un en-tête sur une seule ligne, il faut moins de place autour du fil. */
     #fil-messages {
-        --reserve: 24.5rem;
+        --reserve: 26rem;
     }
 }
 
 /* « … est en train d'écrire » : discret, en italique, juste sous le fil des messages */
 #en-train-ecrire {
+    display: flex;
+    align-items: baseline;
+    gap: var(--espace-1);
     margin: var(--espace-2) 0 0;
     color: var(--encre-douce);
     font-size: 0.875rem;
     font-style: italic;
+}
+
+/* display: flex ci-dessus l'emporterait sur l'attribut hidden : on rappelle que hidden cache bien la zone. */
+#en-train-ecrire[hidden] {
+    display: none;
+}
+
+/*
+    Les trois points animés : chacun monte et s'éclaire à son tour (@keyframes), décalé de 0,2 s grâce à animation-delay.
+    On anime transform et opacity, que le navigateur sait animer sans recalculer la mise en page.
+*/
+#en-train-ecrire .points {
+    display: inline-flex;
+    gap: 0.1875rem;
+}
+
+#en-train-ecrire .points span {
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 50%;
+    background-color: currentColor;
+    animation: points-ecriture 1.2s ease-in-out infinite;
+}
+
+#en-train-ecrire .points span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+#en-train-ecrire .points span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes points-ecriture {
+    0%,
+    60%,
+    100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(-0.1875rem);
+    }
+}
+
+/* Pour qui a demandé moins de mouvement : les points restent immobiles et bien visibles, le texte suffit à dire que quelqu'un écrit. */
+@media (prefers-reduced-motion: reduce) {
+    #en-train-ecrire .points span {
+        animation: none;
+        opacity: 1;
+    }
 }

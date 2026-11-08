@@ -233,6 +233,24 @@ const Data = {
       .subscribe();
   },
 
+  /*
+      « En train d'écrire » : un canal de diffusion (Broadcast) propre au salon. Les signaux passent directement d'une page ouverte à l'autre,
+      sans rien enregistrer dans la base. self: false : on ne reçoit pas ses propres signaux.
+      On ne diffuse que l'identifiant de la personne, jamais un pseudo tapé à la main : la page qui reçoit retrouve le pseudo dans utilisateurs.
+  */
+  subscribeToTyping(salonId, onEcrit, onArrete) {
+    return supabaseClient
+      .channel("ecriture-" + salonId, { config: { broadcast: { self: false } } })
+      .on("broadcast", { event: "ecrit" }, ({ payload }) => onEcrit(payload?.id))
+      .on("broadcast", { event: "arrete" }, ({ payload }) => onArrete(payload?.id))
+      .subscribe();
+  },
+
+  // Envoie un signal « ecrit » ou « arrete » sur le canal du salon.
+  sendTyping(canal, evenement, monId) {
+    return canal.send({ type: "broadcast", event: evenement, payload: { id: monId } });
+  },
+
   // Coupe une écoute : en quittant un salon, on ne veut plus recevoir ses messages.
   async unsubscribe(canal) {
     if (canal) {

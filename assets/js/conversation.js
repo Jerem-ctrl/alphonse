@@ -625,6 +625,31 @@ async function envoyer(avecAssistant) {
 }
 
 
+// -- « En train d'écrire »
+
+
+// Montre ou cache la zone avec l'attribut hidden, et écrit qui est en train d'écrire. Les trois points animés sont dans le HTML.
+function afficherEcriture(noms) {
+  const zone = document.getElementById("en-train-ecrire");
+  const texte = document.getElementById("texte-ecriture");
+
+  if (noms.length === 0) {
+    zone.hidden = true;
+    texte.textContent = "";
+  } else if (noms.length === 1) {
+    texte.textContent = noms[0] + " est en train d'écrire";
+  } else if (noms.length === 2) {
+    texte.textContent = noms[0] + " et " + noms[1] + " sont en train d'écrire";
+  } else {
+    texte.textContent = "Plusieurs personnes sont en train d'écrire";
+  }
+
+  if (noms.length > 0) {
+    zone.hidden = false;
+  }
+}
+
+
 // -- Ouverture de la page
 
 
@@ -699,7 +724,7 @@ async function init() {
   Local.enregistrerDernierSalon(salonActif);
 
   // L'indicateur « en train d'écrire » : on rejoint le canal de ce salon
-  Ecriture.demarrer(salonActif, monId);
+  Ecriture.demarrer(salonActif, monId, afficherEcriture);
 
   // Le brouillon laissé dans ce salon, s'il y en a un. Avec l'analyse automatique, Alphonse le note tout de suite.
   champMessage.value = Local.lireBrouillon(salonActif);
@@ -772,9 +797,11 @@ champMessage.addEventListener("input", () => {
   }
   mettreAJourBoutons();
 
-  // On signale aux autres qu'on écrit (au plus une fois toutes les 2 secondes)
+  // On signale aux autres qu'on écrit ; si le champ est vidé, on signale tout de suite qu'on a arrêté
   if (salonActif && champMessage.value.trim()) {
     Ecriture.signalerFrappe();
+  } else {
+    Ecriture.signalerArret();
   }
 
   if (caseAnalyseAuto.checked) {
@@ -896,6 +923,7 @@ filMessages.addEventListener("scroll", () => {
 // En quittant la page (autre salon, autre page), on coupe l'écoute du salon avec removeChannel.
 window.addEventListener("pagehide", () => {
   Data.unsubscribe(canalMessages);
+  Ecriture.arreter();
 });
 
 // Si la session se termine (déconnexion, ou personne n'est connecté), on renvoie vers la page de connexion.

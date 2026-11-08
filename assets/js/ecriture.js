@@ -1,97 +1,117 @@
 /*
-ecriture.js — L'indicateur « … est en train d'écrire ».
-Il passe par la diffusion (Broadcast) du temps réel de Supabase : de petits signaux envoyés directement
-aux autres pages ouvertes sur le même salon, sans rien enregistrer dans la base.
+    ecriture.js — L'indicateur « … est en train d'écrire ».
+
+    Pendant la saisie (événement input), on diffuse un signal « ecrit » sur le canal du salon ouvert.
+    Après 3 secondes sans frappe (setTimeout), on diffuse « arrete » : l'indicateur s'efface chez les autres.
+    Comme Alphonse et Presence, Ecriture ne touche pas au document : elle donne la liste des pseudos, et conversation.js l'affiche.
 */
 
 // On n'envoie pas un signal à chaque lettre : au plus un toutes les 2 secondes
 const INTERVALLE_SIGNAL = 2000;
 
-// Sans nouveau signal pendant 4 secondes, on considère que la personne a arrêté d'écrire
+// 3 secondes sans frappe : on prévient qu'on a arrêté d'écrire
+const DELAI_ARRET = 3000;
+
+// Filet de sécurité chez celui qui reçoit : si le signal « arrete » se perd (onglet fermé brutalement), l'indicateur s'efface quand même
 const DUREE_AFFICHAGE = 4000;
 
 const Ecriture = {
 
-  // Le canal de diffusion du salon ouvert, et son propre pseudo
+  // Le canal de diffusion du salon ouvert, et notre identifiant
   canal: null,
-  monPseudo: null,
+  monId: null,
 
-  // L'heure du dernier signal envoyé
+  // L'heure du dernier signal envoyé, et le minuteur des 3 secondes sans frappe
   dernierEnvoi: 0,
+  minuteurArret: null,
 
-  // Les personnes en train d'écrire : pseudo → minuteur qui les retirera après 4 secondes sans signal
+  // Les personnes en train d'écrire : identifiant → { pseudo, minuteur qui la retirera }
   personnes: new Map(),
 
-  // Rejoint le canal du salon. self: false : on ne reçoit pas ses propres signaux.
-  async demarrer(salonId, monId) {
-    const { data } = await Data.fetchPseudo(monId);
-    Ecriture.monPseudo = data ? data.pseudo : null;
+  // Les pseudos déjà retrouvés, pour ne pas les redemander à chaque signal
+  pseudos: new Map(),
 
-    Ecriture.canal = supabaseClient
-      .channel("ecriture-" + salonId, { config: { broadcast: { self: false } } })
-      .on("broadcast", { event: "ecrit" }, ({ payload }) => Ecriture.recevoir(payload.pseudo))
-      .on("broadcast", { event: "arrete" }, ({ payload }) => Ecriture.retirer(payload.pseudo))
-      .subscribe();
+  // La fonction de la page qui affiche la liste des pseudos
+  rappel: null,
+
+  // Rejoint le canal du salon. rappel(pseudos) est appelée chaque fois que la liste change.
+  demarrer(salonId, monId, rappel) {
+    Ecriture.monId = monId;
+    Ecriture.rappel = rappel;
+    Ecriture.canal = Data.subscribeToTyping(salonId, Ecriture.recevoir, Ecriture.retirer);
   },
 
-  // Appelée à chaque frappe : envoie « j'écris », au plus une fois toutes les 2 secondes
+  // Appelée à chaque frappe : « j'écris », au plus une fois toutes les 2 secondes.
+  // Chaque frappe relance aussi le minuteur : c'est 3 secondes après la dernière lettre qu'on envoie « arrete ».
   signalerFrappe() {
-    const maintenant = Date.now();
-    if (!Ecriture.canal || !Ecriture.monPseudo || maintenant - Ecriture.dernierEnvoi < INTERVALLE_SIGNAL) {
+    if (!Ecriture.canal) {
       return;
     }
-    Ecriture.dernierEnvoi = maintenant;
-    Ecriture.canal.send({ type: "broadcast", event: "ecrit", payload: { pseudo: Ecriture.monPseudo } });
+
+    clearTimeout(Ecriture.minuteurArret);
+    Ecriture.minuteurArret = setTimeout(Ecriture.signalerArret, DELAI_ARRET);
+
+    const maintenant = Date.now();
+    if (maintenant - Ecriture.dernierEnvoi >= INTERVALLE_SIGNAL) {
+      Ecriture.dernierEnvoi = maintenant;
+      Data.sendTyping(Ecriture.canal, "ecrit", Ecriture.monId);
+    }
   },
 
-  // Appelée après l'envoi d'un message : « j'ai fini », pour que l'indicateur disparaisse tout de suite chez les autres
+  // « J'ai arrêté » : après 3 secondes sans frappe, quand le champ est vidé, ou quand le message est envoyé.
   signalerArret() {
-    if (!Ecriture.canal || !Ecriture.monPseudo) {
+    clearTimeout(Ecriture.minuteurArret);
+    if (!Ecriture.canal || Ecriture.dernierEnvoi === 0) {
       return;
     }
     Ecriture.dernierEnvoi = 0;
-    Ecriture.canal.send({ type: "broadcast", event: "arrete", payload: { pseudo: Ecriture.monPseudo } });
+    Data.sendTyping(Ecriture.canal, "arrete", Ecriture.monId);
   },
 
-  // Quelqu'un écrit : on l'ajoute (ou on relance son minuteur), puis on met à jour l'affichage
-  recevoir(pseudo) {
-    clearTimeout(Ecriture.personnes.get(pseudo));
-    Ecriture.personnes.set(pseudo, setTimeout(() => Ecriture.retirer(pseudo), DUREE_AFFICHAGE));
-    Ecriture.afficher();
-  },
-
-  // Quelqu'un a arrêté d'écrire (signal « arrete », ou 4 secondes sans signal)
-  retirer(pseudo) {
-    clearTimeout(Ecriture.personnes.get(pseudo));
-    Ecriture.personnes.delete(pseudo);
-    Ecriture.afficher();
-  },
-
-  // Remplit le <p id="en-train-ecrire">, ou le cache s'il n'y a personne
-  afficher() {
-    const zone = document.getElementById("en-train-ecrire");
-    const noms = [...Ecriture.personnes.keys()];
-
-    if (noms.length === 0) {
-      zone.textContent = "";
-      zone.hidden = true;
+  // Quelqu'un écrit : on retrouve son pseudo, on l'ajoute (ou on relance son minuteur), puis on prévient la page.
+  // Un identifiant qui ne correspond à aucun profil est ignoré.
+  async recevoir(id) {
+    if (!id || id === Ecriture.monId) {
       return;
     }
 
-    if (noms.length === 1) {
-      zone.textContent = noms[0] + " est en train d'écrire…";
-    } else if (noms.length === 2) {
-      zone.textContent = noms[0] + " et " + noms[1] + " sont en train d'écrire…";
-    } else {
-      zone.textContent = "Plusieurs personnes sont en train d'écrire…";
+    if (!Ecriture.pseudos.has(id)) {
+      const { data } = await Data.fetchPseudo(id);
+      if (!data) {
+        return;
+      }
+      Ecriture.pseudos.set(id, data.pseudo);
     }
-    zone.hidden = false;
+
+    clearTimeout(Ecriture.personnes.get(id)?.minuteur);
+    Ecriture.personnes.set(id, {
+      pseudo: Ecriture.pseudos.get(id),
+      minuteur: setTimeout(() => Ecriture.retirer(id), DUREE_AFFICHAGE)
+    });
+    Ecriture.prevenir();
+  },
+
+  // Quelqu'un a arrêté d'écrire (signal « arrete », ou plus de nouvelles depuis 4 secondes)
+  retirer(id) {
+    if (!Ecriture.personnes.has(id)) {
+      return;
+    }
+    clearTimeout(Ecriture.personnes.get(id).minuteur);
+    Ecriture.personnes.delete(id);
+    Ecriture.prevenir();
+  },
+
+  // Donne à la page la liste des pseudos en train d'écrire
+  prevenir() {
+    if (Ecriture.rappel) {
+      Ecriture.rappel([...Ecriture.personnes.values()].map((personne) => personne.pseudo));
+    }
+  },
+
+  // En quittant le salon, on prévient qu'on n'écrit plus et on coupe le canal.
+  arreter() {
+    Ecriture.signalerArret();
+    Data.unsubscribe(Ecriture.canal);
+    Ecriture.canal = null;
   },
 };
-
-// En quittant la page, on quitte aussi le canal
-window.addEventListener("pagehide", () => {
-  if (Ecriture.canal) {
-    supabaseClient.removeChannel(Ecriture.canal);
-  }
-});
