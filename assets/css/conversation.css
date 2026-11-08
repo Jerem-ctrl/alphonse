@@ -1,16 +1,18 @@
 /*
-    conversation.css — La mise en page de la page des conversations.
+    conversation.css
+    Mise en page de la page des conversations.
 
-    On l'a pensée d'abord pour le téléphone : sans media query, tout tient sur une colonne, et on ne montre qu'un panneau à la fois.
-    À partir de 768 px de large, une seule media query passe à une grille à deux colonnes : les salons à gauche, la conversation à droite.
+    Elle est conçue d'abord pour le téléphone. Sans media query, tout tient sur une colonne et un seul panneau est affiché à la fois.
+    À partir de 768 px de large, une unique media query passe à une grille à deux colonnes, 
+    avec les salons à gauche et la conversation à droite.
 */
 
 
 /* ---------- 1. Un seul panneau à la fois sur téléphone ---------- */
 
 /*
-    Sur un petit écran, on montre soit la liste des salons, soit la conversation, jamais les deux.
-    conversation.js ajoute la classe open au <body> quand un salon est ouvert ; le bouton « Retour aux salons » la retire.
+    Sur un petit écran, seule la liste des salons ou la conversation est affichée, jamais les deux.
+    conversation.js ajoute la classe open au <body> à l'ouverture d'un salon, et le bouton « Retour aux salons » la retire.
 */
 body.open > aside,
 body:not(.open) > main {
@@ -21,7 +23,7 @@ body:not(.open) > main {
     margin-bottom: var(--espace-2);
 }
 
-/* Sur téléphone, chaque pixel de hauteur compte : on resserre le haut de la conversation. */
+/* Sur téléphone, la hauteur disponible est précieuse, le haut de la conversation est donc resserré. */
 main {
     padding-top: var(--espace-4);
 }
@@ -29,18 +31,18 @@ main {
 
 /* ---------- 2. Les salons ---------- */
 
-/* Sur téléphone, quand la liste est seule à l'écran, elle prend toute la hauteur libre : le pied de page reste en bas. */
+/* Sur téléphone, lorsque la liste est seule à l'écran, elle occupe toute la hauteur libre et le pied de page reste en bas. */
 body > aside {
     flex: 1;
     padding-bottom: var(--espace-6);
 }
 
-/* Un peu d'air entre le champ du nom et le bouton, qui sinon se collent au filet du champ. */
+/* Espacement entre le champ du nom et le bouton, qui sinon se collent au filet du champ */
 #formulaire-salon button {
     margin-top: var(--espace-3);
 }
 
-/* clamp() : le titre grandit avec l'écran, sans descendre sous 22 px ni dépasser 26 px. */
+/* clamp() fait grandir le titre avec l'écran, sans descendre sous 22 px ni dépasser 26 px. */
 #titre-salons {
     font-size: clamp(1.375rem, 1.125rem + 1vw, 1.625rem);
 }
@@ -51,7 +53,7 @@ body > aside {
     list-style: none;
 }
 
-/* Chaque salon occupe toute la ligne et fait au moins 44 px de haut : facile à viser au doigt. */
+/* Chaque salon occupe toute la ligne et mesure au moins 44 px de haut, pour être facile à toucher. */
 #liste-salons a {
     display: flex;
     align-items: center;
@@ -63,17 +65,18 @@ body > aside {
     overflow-wrap: anywhere;
 }
 
-/* Chaque lien de salon sert de repère à sa pastille (position: relative) et lui laisse la place à droite. */
+/* Chaque lien de salon sert de repère à sa pastille (position: relative) et lui réserve la place à droite. */
 #liste-salons a {
     position: relative;
     padding-right: 3.5rem;
 }
 
 /*
-    La pastille des messages non lus : posée à droite du lien (position: absolute), centrée en hauteur.
-    Elle arrive en grossissant (@keyframes pastille-arrivee), puis une onde bleue s'en échappe trois fois (pastille-onde) pour attirer l'œil sans clignoter sans fin.
-    z-index: 0 crée un petit empilement à part : l'onde (z-index: -1) passe derrière le chiffre sans disparaître derrière le lien.
-    Comme partout, prefers-reduced-motion (dans style.css) coupe ces animations pour qui l'a demandé.
+    Pastille des messages non lus, placée à droite du lien (position: absolute) et centrée en hauteur.
+    Elle apparaît en grossissant (@keyframes pastille-arrivee), puis une onde bleue s'en échappe trois fois (pastille-onde)
+    pour attirer l'attention sans clignoter indéfiniment.
+    z-index: 0 crée un contexte d'empilement propre, afin que l'onde (z-index: -1) passe derrière le chiffre sans disparaître derrière le lien.
+    Comme ailleurs, prefers-reduced-motion (dans style.css) désactive ces animations sur demande.
 */
 .pastille {
     position: absolute;
@@ -127,7 +130,7 @@ body > aside {
     }
 }
 
-/* Le salon ouvert : un trait bleu à gauche et le texte en gras. Le gras dit la même chose que la couleur, pour qui ne la voit pas. */
+/* Salon ouvert, signalé par un trait bleu à gauche et un texte en gras. Le gras transmet la même information que la couleur. */
 #liste-salons a[aria-current="page"] {
     border-left-color: var(--bleu);
     font-weight: 600;
@@ -136,7 +139,7 @@ body > aside {
 
 /* ---------- 3. Le titre du salon ---------- */
 
-/* clamp() : de 28 px sur téléphone à 40 px sur grand écran. Un nom de salon très long passe à la ligne au lieu de déborder. */
+/* clamp() fait passer le titre de 28 px sur téléphone à 40 px sur grand écran. Un nom de salon très long passe à la ligne au lieu de déborder. */
 #titre-salon {
     font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
     overflow-wrap: anywhere;
@@ -146,11 +149,11 @@ body > aside {
 /* ---------- 4. Le fil des messages ---------- */
 
 /*
-    La hauteur du fil part de la hauteur visible de l'écran, moins la place de l'en-tête, du titre et du formulaire d'envoi (--reserve) :
-    le formulaire reste visible sous le fil dès l'ouverture du salon.
-    dvh suit la vraie hauteur visible sur téléphone (barre d'adresse, clavier ouvert) ; la ligne en vh juste avant sert aux navigateurs qui ne connaissent pas dvh.
-    min-height empêche le fil de devenir minuscule sur un écran très bas.
-    Le fil a sa propre barre de défilement : c'est en remontant tout en haut qu'on charge les messages plus anciens.
+    La hauteur du fil part de la hauteur visible de l'écran, moins la place de l'en-tête, du titre et du formulaire d'envoi (--reserve),
+    afin que le formulaire reste visible sous le fil dès l'ouverture du salon.
+    L'unité dvh suit la hauteur réellement visible sur téléphone (barre d'adresse, clavier ouvert), et la ligne en vh précédente sert aux navigateurs qui ne la connaissent pas.
+    min-height empêche le fil de devenir trop petit sur un écran très bas.
+    Le fil possède sa propre barre de défilement, et c'est en remontant tout en haut que les messages plus anciens sont chargés.
 */
 #fil-messages {
     --reserve: 33rem;
@@ -165,9 +168,9 @@ body > aside {
 }
 
 /*
-    Chaque message est une bulle : Flexbox en colonne pour empiler le pseudo, le texte, l'image et l'heure.
+    Chaque message est une bulle, disposée en Flexbox en colonne pour empiler le pseudo, le texte, l'image et l'heure.
     Les messages reçus restent à gauche, sur le gris des panneaux, avec un coin pointu en bas à gauche, du côté de leur auteur.
-    max-width laisse toujours voir de quel côté penche la bulle.
+    max-width permet de toujours voir de quel côté se trouve la bulle.
 */
 #fil-messages article {
     display: flex;
@@ -183,8 +186,8 @@ body > aside {
 }
 
 /*
-    Ses propres messages : à droite, sur le bleu de la charte, avec le coin pointu en bas à droite.
-    Le texte prend la couleur du fond : environ 6:1 la nuit et 4,9:1 le jour, au-dessus du minimum AA de 4,5:1.
+    Messages de la personne connectée, placés à droite sur le bleu de la charte, avec le coin pointu en bas à droite.
+    Le texte prend la couleur du fond, avec un contraste d'environ 6:1 la nuit et 4,9:1 le jour, au-dessus du minimum AA de 4,5:1.
 */
 #fil-messages article.envoye {
     align-self: flex-end;
@@ -193,12 +196,12 @@ body > aside {
     color: var(--fond);
 }
 
-/* Proximité (Gestalt) : un message qui suit de près un message du même auteur se colle au précédent. */
+/* Loi de proximité de la Gestalt. Un message qui suit de près un message du même auteur se rapproche du précédent. */
 #fil-messages article.suite {
     margin-top: var(--espace-1);
 }
 
-/* Le pseudo, en petites capitales comme les étiquettes de la charte. */
+/* Pseudo en petites capitales, comme les étiquettes de la charte */
 #fil-messages article > header {
     color: var(--encre-douce);
     font-size: 0.75rem;
@@ -207,7 +210,7 @@ body > aside {
     text-transform: uppercase;
 }
 
-/* La présence de l'auteur d'un message reçu : un point gris en ::before, vert quand il est en ligne, avec « en ligne » écrit à la suite. */
+/* Présence de l'auteur d'un message reçu, avec un point gris en ::before, vert lorsqu'il est en ligne, suivi de la mention « en ligne ». */
 #fil-messages header[data-auteur]::before {
     content: "";
     display: inline-block;
@@ -229,8 +232,8 @@ body > aside {
 }
 
 /*
-    Dans un bloc, on ne répète pas le pseudo à chaque bulle. On le cache seulement à l'écran :
-    les lecteurs d'écran le lisent toujours, pour que chaque message garde son auteur.
+    Dans un bloc, le pseudo n'est pas répété à chaque bulle. Il est seulement masqué à l'écran,
+    et les lecteurs d'écran continuent de le lire, afin que chaque message conserve son auteur.
 */
 #fil-messages article.suite > header {
     position: absolute;
@@ -241,7 +244,7 @@ body > aside {
     white-space: nowrap;
 }
 
-/* pre-wrap garde les retours à la ligne faits avec Maj + Entrée. */
+/* pre-wrap conserve les retours à la ligne saisis avec Maj + Entrée. */
 #fil-messages article p {
     margin: 0;
     white-space: pre-wrap;
@@ -260,8 +263,8 @@ body > aside {
 }
 
 /*
-    « Supprimer » devient un petit lien discret dans la bulle, plutôt qu'un gros bouton.
-    min-height: 1.5rem garde une cible de 24 px, le minimum demandé par les règles d'accessibilité (WCAG 2.2).
+    « Supprimer » prend la forme d'un petit lien discret dans la bulle plutôt que d'un grand bouton.
+    min-height: 1.5rem garantit une cible de 24 px, le minimum exigé par les règles d'accessibilité (WCAG 2.2).
 */
 #fil-messages article button {
     align-self: flex-end;
@@ -280,7 +283,7 @@ body > aside {
     text-decoration-thickness: 0.125rem;
 }
 
-/* Le contour de focus est bleu : sur une bulle bleue, il disparaîtrait. On le passe à la couleur du fond. */
+/* Le contour de focus bleu disparaîtrait sur une bulle bleue, il prend donc la couleur du fond. */
 #fil-messages article.envoye :focus-visible {
     outline-color: var(--fond);
 }
@@ -289,8 +292,8 @@ body > aside {
 /* ---------- 5. Le formulaire d'envoi ---------- */
 
 /*
-    Une grille à deux colonnes : le libellé et la zone de texte sur toute la largeur, puis l'image à gauche et « Envoyer » à droite.
-    padding-bottom avec env(safe-area-inset-bottom) : sur un téléphone à encoche, le formulaire ne passe pas sous la barre d'accueil.
+    Grille à deux colonnes, avec le libellé et la zone de texte sur toute la largeur, puis l'image à gauche et « Envoyer » à droite.
+    padding-bottom avec env(safe-area-inset-bottom) évite que le formulaire passe sous la barre d'accueil d'un téléphone à encoche.
 */
 #formulaire-message {
     display: grid;
@@ -310,7 +313,7 @@ body > aside {
     margin-bottom: 0;
 }
 
-/* « Envoyer » reste sur la ligne du choix de l'image ; l'aide sur les formats passe juste en dessous. */
+/* « Envoyer » reste sur la ligne du choix de l'image, et l'aide sur les formats passe juste en dessous. */
 #formulaire-message button {
     grid-column: 2;
     grid-row: 4;
@@ -321,7 +324,7 @@ body > aside {
     margin-top: calc(-1 * var(--espace-1));
 }
 
-/* Une hauteur fixe plutôt que les 3 lignes de rows="3", trop hautes avec notre police : on peut toujours l'agrandir à la main (resize). */
+/* Hauteur fixe plutôt que les 3 lignes de rows="3", trop hautes avec la police choisie. La zone reste redimensionnable à la main (resize). */
 #formulaire-message textarea {
     height: 4.5rem;
     min-height: 3rem;
@@ -332,14 +335,14 @@ body > aside {
 
 /*
     Le panneau de l'assistant se détache du formulaire. Il reprend le fond des panneaux (main > section, dans style.css),
-    avec des marges intérieures plus étroites sur téléphone : le tableau a besoin de toute la largeur.
+    avec des marges intérieures plus étroites sur téléphone, le tableau ayant besoin de toute la largeur.
 */
 #assistant {
     margin-top: var(--espace-5);
     padding: var(--espace-4) var(--espace-3);
 }
 
-/* La note et le feu côte à côte, alignés au centre (Flexbox). */
+/* Note et feu côte à côte, alignés au centre (Flexbox) */
 #note-assistant {
     display: flex;
     flex-wrap: wrap;
@@ -349,8 +352,8 @@ body > aside {
 }
 
 /*
-    Le feu tricolore : trois pastilles dans un petit boîtier sombre, à la façon d'un vrai feu couché.
-    Éteintes, elles restent visibles mais pâles ; une seule s'allume, selon l'attribut data-couleur que conversation.js met à jour.
+    Feu tricolore composé de trois pastilles dans un petit boîtier sombre, à la manière d'un feu couché.
+    Éteintes, elles restent visibles mais pâles. Une seule s'allume, selon l'attribut data-couleur mis à jour par conversation.js.
 */
 .feu {
     display: inline-flex;
@@ -363,8 +366,8 @@ body > aside {
 }
 
 /*
-    transition : quand la note change, l'ancienne pastille s'éteint et la nouvelle s'allume en douceur (0,4 s), au lieu de sauter d'une couleur à l'autre.
-    Comme partout, prefers-reduced-motion (dans style.css) coupe la transition pour qui l'a demandé.
+    La transition éteint l'ancienne pastille et allume la nouvelle en douceur (0,4 s) lorsque la note change.
+    Comme ailleurs, prefers-reduced-motion (dans style.css) désactive la transition sur demande.
 */
 .feu span {
     width: 1rem;
@@ -375,7 +378,7 @@ body > aside {
     transition: background-color 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
 }
 
-/* Dans l'ordre du boîtier : rouge, orange, vert. La pastille allumée prend sa couleur et un léger halo. */
+/* Dans l'ordre du boîtier, rouge, orange, puis vert. La pastille allumée prend sa couleur et un léger halo. */
 .feu[data-couleur="rouge"] span:nth-child(1) {
     background-color: var(--rouge);
     box-shadow: 0 0 0.5rem var(--rouge);
@@ -394,7 +397,7 @@ body > aside {
     opacity: 1;
 }
 
-/* « Analyser » et la case « Analyse automatique » sur une ligne, qui passe à la ligne si l'écran est étroit. */
+/* « Analyser » et la case « Analyse automatique » sur une même ligne, qui passe à la ligne si l'écran est étroit */
 #commandes-assistant {
     display: flex;
     flex-wrap: wrap;
@@ -403,7 +406,7 @@ body > aside {
     margin-bottom: var(--espace-4);
 }
 
-/* Les intertitres du résultat reprennent le style des étiquettes de la charte : petits, en capitales espacées. */
+/* Les intertitres du résultat reprennent le style des étiquettes de la charte, petits et en capitales espacées. */
 #resultat-assistant h3 {
     margin: var(--espace-5) 0 var(--espace-2);
     color: var(--encre-douce);
@@ -413,7 +416,7 @@ body > aside {
     text-transform: uppercase;
 }
 
-/* On garde les retours à la ligne du message : la reformulation ajoute « Cordialement » sur sa propre ligne. */
+/* Conserve les retours à la ligne du message, la reformulation ajoutant « Cordialement » sur sa propre ligne */
 #texte-annote,
 #corrections,
 #reformulation q {
@@ -421,9 +424,9 @@ body > aside {
 }
 
 /*
-    Les fautes surlignées : un fond orangé léger et un soulignement ondulé, comme le correcteur d'un traitement de texte.
-    Le jaune par défaut de <mark> criait trop sur notre fond sombre. color-mix() mélange l'orange de la charte avec du transparent ;
-    la première ligne sert aux navigateurs qui ne connaissent pas color-mix().
+    Fautes surlignées par un fond orangé léger et un soulignement ondulé, comme dans un traitement de texte.
+    Le jaune par défaut de <mark> ressortait trop sur le fond sombre. color-mix() mélange l'orange de la charte avec du transparent,
+    et la première déclaration sert aux navigateurs qui ne connaissent pas color-mix().
 */
 #texte-annote mark {
     background-color: transparent;
@@ -435,7 +438,7 @@ body > aside {
     cursor: help;
 }
 
-/* Ce qu'on retire est barré en rouge et pâli ; ce qu'on ajoute est souligné en vert. Barré et souligné disent la même chose que les couleurs. */
+/* Les retraits sont barrés en rouge et pâlis, les ajouts soulignés en vert. Le barré et le soulignement transmettent la même information que les couleurs. */
 #corrections del {
     color: var(--encre-douce);
     text-decoration-color: var(--rouge);
@@ -448,14 +451,14 @@ body > aside {
     text-underline-offset: 0.2em;
 }
 
-/* La reformulation complète, citée en guillemets français, dans la police des titres. */
+/* Reformulation complète, citée entre guillemets français, dans la police des titres */
 #reformulation q {
     quotes: "« " " »";
     font-family: var(--police-titre);
     font-size: 1.125rem;
 }
 
-/* ::marker : la puce de chaque défaut devient un tiret bleu, la couleur d'accent de la charte. */
+/* ::marker transforme la puce de chaque défaut en tiret bleu, la couleur d'accent de la charte. */
 #liste-defauts {
     margin: 0;
     padding-left: var(--espace-5);
@@ -472,11 +475,11 @@ body > aside {
 }
 
 /*
-    Le tableau du détail de la note. border-collapse fusionne les bordures des cellules.
-    :nth-child(even) colore une ligne sur deux du <tbody> : l'œil suit plus facilement une ligne d'un bout à l'autre.
-    Les chiffres sont alignés à droite et de même largeur (tabular-nums), pour se lire en colonne.
+    Tableau du détail de la note. border-collapse fusionne les bordures des cellules.
+    :nth-child(even) colore une ligne sur deux du <tbody>, ce qui facilite la lecture d'une ligne d'un bout à l'autre.
+    Les chiffres sont alignés à droite et de largeur égale (tabular-nums), pour se lire en colonne.
 */
-/* Le conteneur du tableau ne défile de côté que si le tableau ne tient pas en largeur (overflow-x: auto). */
+/* Le conteneur du tableau ne défile horizontalement que si le tableau ne tient pas en largeur (overflow-x: auto). */
 .tableau-defilant {
     margin-top: var(--espace-5);
     overflow-x: auto;
@@ -528,7 +531,7 @@ body > aside {
     background-color: var(--fond);
 }
 
-/* Le total, séparé par un double filet comme le bas d'une addition. */
+/* Total séparé par un double filet, comme le bas d'une addition */
 #detail-note tfoot th,
 #detail-note tfoot td {
     border-top: var(--filet-double);
@@ -536,8 +539,8 @@ body > aside {
 }
 
 /*
-    Les deux choix de l'assistant. « Appliquer la reformulation » est le choix conseillé : il prend le style du bouton principal (plein d'encre).
-    « Envoyer tel quel » garde le style secondaire (un simple contour) : on peut le choisir, mais on ne le met pas en avant.
+    Les deux choix de l'assistant. « Appliquer la reformulation », le choix conseillé, prend le style du bouton principal (plein d'encre).
+    « Envoyer tel quel » garde le style secondaire (un simple contour). Ce choix reste possible sans être mis en avant.
 */
 #choix-assistant {
     display: flex;
@@ -558,7 +561,7 @@ body > aside {
     color: var(--fond);
 }
 
-/* Un bouton désactivé pâlit et montre un curseur d'interdiction : on comprend qu'il n'y a rien à faire pour l'instant. */
+/* Un bouton désactivé pâlit et affiche un curseur d'interdiction, pour indiquer qu'aucune action n'est possible pour l'instant. */
 #assistant button:disabled {
     opacity: 0.45;
     cursor: not-allowed;
@@ -574,7 +577,7 @@ body > aside {
     color: var(--fond);
 }
 
-/* « Comment la note est calculée » : le résumé se repère au triangle bleu (::marker) et au curseur en forme de main. */
+/* Le résumé « Comment la note est calculée » se repère au triangle bleu (::marker) et au curseur en forme de main. */
 #assistant details {
     margin-top: var(--espace-5);
     padding-top: var(--espace-4);
@@ -594,7 +597,7 @@ body > aside {
     margin-bottom: var(--espace-3);
 }
 
-/* L'avertissement sur LanguageTool, en bas du panneau, séparé par un filet. */
+/* Avertissement sur LanguageTool, en bas du panneau, séparé par un filet */
 #avertissement-assistant {
     margin: var(--espace-4) 0 0;
     padding-top: var(--espace-3);
@@ -602,12 +605,12 @@ body > aside {
 }
 
 
-/* ---------- 7. Grand écran : deux colonnes ---------- */
+/* ---------- 7. Grand écran en deux colonnes ---------- */
 
 /*
-    À partir de 768 px, le <body> devient une grille : l'en-tête et le pied de page sur toute la largeur,
-    les salons dans une colonne de 14 à 20 rem, et la conversation dans tout le reste (minmax(0, 1fr) l'empêche de déborder).
-    Les deux panneaux sont visibles en même temps : la classe open ne change plus rien, et le bouton « Retour » disparaît.
+    À partir de 768 px, le <body> devient une grille, avec l'en-tête et le pied de page sur toute la largeur,
+    les salons dans une colonne de 14 à 20 rem et la conversation dans l'espace restant (minmax(0, 1fr) l'empêche de déborder).
+    Les deux panneaux sont visibles simultanément. La classe open n'a plus d'effet, et le bouton « Retour » disparaît.
 */
 @media (min-width: 768px) {
     body {
@@ -646,13 +649,13 @@ body > aside {
         padding: var(--espace-5);
     }
 
-    /* Sans le bouton « Retour » et avec un en-tête sur une seule ligne, il faut moins de place autour du fil. */
+    /* Sans le bouton « Retour » et avec un en-tête sur une seule ligne, moins de place est nécessaire autour du fil. */
     #fil-messages {
         --reserve: 26rem;
     }
 }
 
-/* « … est en train d'écrire » : discret, en italique, juste sous le fil des messages */
+/* Indicateur « … est en train d'écrire », discret et en italique, juste sous le fil des messages */
 #en-train-ecrire {
     display: flex;
     align-items: baseline;
@@ -663,14 +666,14 @@ body > aside {
     font-style: italic;
 }
 
-/* display: flex ci-dessus l'emporterait sur l'attribut hidden : on rappelle que hidden cache bien la zone. */
+/* La déclaration display: flex précédente l'emporterait sur l'attribut hidden, d'où ce rappel pour que hidden masque bien la zone. */
 #en-train-ecrire[hidden] {
     display: none;
 }
 
 /*
-    Les trois points animés : chacun monte et s'éclaire à son tour (@keyframes), décalé de 0,2 s grâce à animation-delay.
-    On anime transform et opacity, que le navigateur sait animer sans recalculer la mise en page.
+    Les trois points animés montent et s'éclairent à tour de rôle (@keyframes), décalés de 0,2 s grâce à animation-delay.
+    Seules les propriétés transform et opacity sont animées, car le navigateur les anime sans recalculer la mise en page.
 */
 #en-train-ecrire .points {
     display: inline-flex;
@@ -707,7 +710,7 @@ body > aside {
     }
 }
 
-/* Pour qui a demandé moins de mouvement : les points restent immobiles et bien visibles, le texte suffit à dire que quelqu'un écrit. */
+/* Sur demande de réduction des mouvements, les points restent immobiles et visibles, le texte suffisant à indiquer que quelqu'un écrit. */
 @media (prefers-reduced-motion: reduce) {
     #en-train-ecrire .points span {
         animation: none;

@@ -1,10 +1,11 @@
 /*
-    contact.css — La mise en page de la page des contacts.
+    contact.css
+    Mise en page de la page des contacts.
 */
 
 /*
-    Mes contacts, en cartes. repeat(auto-fit, minmax(...)) : la grille place autant de colonnes de 12 rem au moins qu'il en tient dans la largeur,
-    puis les étire pour remplir la ligne. Une colonne sur téléphone, trois ou quatre sur ordinateur, sans aucune media query.
+    Contacts affichés en cartes. repeat(auto-fit, minmax(...)) place autant de colonnes d'au moins 12 rem que la largeur le permet,
+    puis les étire pour remplir la ligne. Une colonne sur téléphone, trois ou quatre sur ordinateur, sans media query.
     min(100%, 12rem) évite qu'une carte déborde sur un écran plus étroit que 12 rem.
 */
 #mes-contacts {
@@ -16,7 +17,7 @@
     list-style: none;
 }
 
-/* Chaque carte : le fond de la page posé sur le panneau, un filet fin, le pseudo en haut et le bouton en bas (Flexbox en colonne). */
+/* Chaque carte reprend le fond de la page sur le panneau, avec un filet fin, le pseudo en haut et le bouton en bas (Flexbox en colonne). */
 #mes-contacts li {
     display: flex;
     flex-direction: column;
@@ -27,7 +28,7 @@
     background-color: var(--fond);
 }
 
-/* Le pseudo dans la police des titres. overflow-wrap: anywhere coupe un pseudo de 20 caractères plutôt que de le laisser sortir de la carte. */
+/* Pseudo dans la police des titres. overflow-wrap: anywhere coupe un pseudo de 20 caractères plutôt que de le laisser déborder de la carte. */
 #mes-contacts h3 {
     margin: 0;
     font-family: var(--police-titre);
@@ -36,12 +37,12 @@
     overflow-wrap: anywhere;
 }
 
-/* Le bouton garde sa taille naturelle au lieu de prendre toute la largeur de la carte. */
+/* Le bouton garde sa taille naturelle au lieu d'occuper toute la largeur de la carte. */
 #mes-contacts button {
     align-self: flex-start;
 }
 
-/* Les résultats de recherche : une ligne par personne, le pseudo à gauche et le bouton à droite, séparés par un filet comme les lignes d'un sommaire. */
+/* Résultats de recherche, une ligne par personne, avec le pseudo à gauche et le bouton à droite, séparés par un filet comme dans un sommaire. */
 #resultats-recherche {
     margin: 0;
     padding: 0;
@@ -58,20 +59,20 @@
     border-bottom: var(--filet-fin);
 }
 
-/* « Dans vos contacts » : une simple mention, plus discrète qu'un bouton, puisqu'il n'y a rien à faire. */
+/* La mention « Dans vos contacts » reste plus discrète qu'un bouton, puisqu'aucune action n'est possible. */
 #resultats-recherche small {
     margin: 0;
 }
 
-/* Les deux zones de message du haut ne prennent pas de place tant qu'elles sont vides. */
+/* Les deux zones de message du haut n'occupent aucune place tant qu'elles sont vides. */
 #statut-contacts:empty {
     margin: 0;
 }
 
 /*
-    « En ligne / hors ligne » sous le pseudo d'un contact : un point en ::before, gris par défaut, vert quand la personne est en ligne,
-    et toujours le mot écrit à côté : la couleur ne porte jamais seule l'information.
-    Le point est un simple rond dessiné en CSS (content vide) : un lecteur d'écran n'a rien à lire, il entend seulement « En ligne » ou « Hors ligne ».
+    Indicateur « En ligne / Hors ligne » sous le pseudo d'un contact. Un point en ::before, gris par défaut et vert quand la personne est en ligne,
+    est toujours accompagné du mot, afin que la couleur ne porte jamais seule l'information.
+    Le point est un simple rond dessiné en CSS (content vide), si bien qu'un lecteur d'écran annonce uniquement « En ligne » ou « Hors ligne ».
 */
 .presence {
     margin: 0;
