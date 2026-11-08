@@ -67,7 +67,7 @@ const Alerte = {
   */
   jouerSon() {
     const son = document.getElementById("son-notification");
-    if (!son || !Local.lirePreference("son", false)) {
+    if (!son || !Local.lirePreference("son", true)) {
       return;
     }
 

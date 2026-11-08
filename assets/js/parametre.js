@@ -50,7 +50,7 @@ document.querySelectorAll('input[name="theme"]').forEach((bouton) => {
 
 // Reprend le réglage enregistré du son des notifications, et conserve chaque changement avec Local
 const caseSon = document.getElementById("option-son");
-caseSon.checked = Local.lirePreference("son", false);
+caseSon.checked = Local.lirePreference("son", true);
 caseSon.addEventListener("change", () => {
   Local.enregistrerPreference("son", caseSon.checked);
 });
