@@ -56,7 +56,10 @@
             car le nom est écrit juste à côté et un lecteur d'écran l'annoncerait deux fois. Chaque page conserve son propre <h1>.
         -->
         <a href="conversation.html" class="marque">
-            <img src="../assets/img/logo-alphonse.png" alt="" width="500" height="500">
+            <picture>
+                <source type="image/webp" srcset="../assets/img/logo-alphonse-128.webp 128w, ../assets/img/logo-alphonse-256.webp 256w, ../assets/img/logo-alphonse-500.webp 500w" sizes="2.5rem">
+                <img src="../assets/img/logo-alphonse.png" alt="" width="500" height="500">
+            </picture>
             <span>Alphonse</span>
         </a>
         <!-- Bloc de navigation nommé par aria-label. Sur la page des conversations, ce nom le distingue de la liste des salons. -->
