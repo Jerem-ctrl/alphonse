@@ -42,6 +42,48 @@
     align-self: flex-start;
 }
 
+/* Les invitations reçues : mêmes cartes que les contacts, avec un trait bleu à gauche et les deux boutons côte à côte. */
+#invitations {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--espace-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#invitations li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espace-4);
+    padding: var(--espace-4);
+    border: var(--filet-fin);
+    border-left: 0.25rem solid var(--bleu);
+    background-color: var(--fond);
+}
+
+#invitations h3 {
+    margin: 0;
+    font-family: var(--police-titre);
+    font-size: 1.375rem;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+}
+
+.boutons-invitation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-2);
+}
+
+/* « Invitation envoyée, en attente » sur une carte de contact, en italique discret. */
+.attente {
+    margin: 0;
+    color: var(--encre-douce);
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
 /* Résultats de recherche, une ligne par personne, avec le pseudo à gauche et le bouton à droite, séparés par un filet comme dans un sommaire. */
 #resultats-recherche {
     margin: 0;

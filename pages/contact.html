@@ -71,6 +71,15 @@
             Contacts affichés en cartes. tabindex="-1" sur le titre permet d'y ramener le focus après le retrait d'une carte,
             afin que la navigation au clavier ne se perde pas.
         -->
+        <!--
+            Les invitations reçues : les personnes qui nous ont ajoutés et qu'on n'a pas encore ajoutées en retour.
+            Accepter les ajoute à notre liste ; refuser retire leur invitation. La section reste cachée (hidden) tant qu'il n'y en a pas.
+        -->
+        <section id="section-invitations" aria-labelledby="titre-invitations" hidden>
+            <h2 id="titre-invitations">Invitations reçues</h2>
+            <ul id="invitations"></ul>
+        </section>
+
         <section aria-labelledby="titre-mes-contacts">
             <h2 id="titre-mes-contacts" tabindex="-1">Mes contacts</h2>
             <p id="aucun-contact" hidden>Vous n'avez encore aucun contact. Cherchez un pseudo ci-dessous pour en ajouter un.</p>

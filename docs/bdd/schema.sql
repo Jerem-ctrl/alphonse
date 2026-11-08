@@ -341,9 +341,13 @@ create policy "Mise à jour de ses propres lectures"
     5.7 Les contacts : une liste de contacts est privée. Chacun ne voit, n'ajoute et ne retire que les siens.
     C'est la seule table qu'un compte connecté ne peut pas lire en entier, et c'est voulu.
 */
+/*
+    Les invitations : ajouter quelqu'un, c'est l'inviter. La personne invitée doit donc voir la ligne qui la concerne (contact_id),
+    pour accepter (elle ajoute la ligne inverse) ou refuser (elle supprime la ligne). Personne d'autre ne voit ces lignes.
+*/
 create policy "Chacun voit ses propres contacts"
     on public.contacts for select to authenticated
-    using ((select auth.uid()) = user_id);
+    using ((select auth.uid()) = user_id or (select auth.uid()) = contact_id);
 
 create policy "Ajout d'un contact à sa propre liste"
     on public.contacts for insert to authenticated
@@ -351,7 +355,7 @@ create policy "Ajout d'un contact à sa propre liste"
 
 create policy "Retrait d'un contact de sa propre liste"
     on public.contacts for delete to authenticated
-    using ((select auth.uid()) = user_id);
+    using ((select auth.uid()) = user_id or (select auth.uid()) = contact_id);
 
 /*
     5.8 Les contraintes CHECK : les mêmes règles que les formulaires, mais côté base, là où on ne peut pas les contourner.

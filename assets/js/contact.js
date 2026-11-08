@@ -18,6 +18,8 @@ const formulaireRecherche = document.getElementById("formulaire-recherche");
 const champRecherche = document.getElementById("recherche-contact");
 const etatRecherche = document.getElementById("etat-recherche");
 const resultatsRecherche = document.getElementById("resultats-recherche");
+const sectionInvitations = document.getElementById("section-invitations");
+const listeInvitations = document.getElementById("invitations");
 
 
 // -- État de la page
@@ -29,6 +31,10 @@ let monId = null;
 // Ses contacts, rangés par identifiant de la personne ajoutée : { pseudo, derniere_activite }.
 // Avec une Map, on sait tout de suite si quelqu'un est déjà dans la liste.
 const mesContacts = new Map();
+
+// Les personnes qui nous ont ajoutés : identifiant → { pseudo, derniere_activite }.
+// Quelqu'un qui est dans les deux Maps est un contact mutuel ; s'il n'est que dans celle-ci, c'est une invitation en attente.
+const ajoutePar = new Map();
 
 // Les derniers résultats affichés, pour les redessiner après un ajout ou un retrait
 let derniersResultats = [];
@@ -102,7 +108,17 @@ function afficherMesContacts() {
     bouton.textContent = "Retirer";
     bouton.setAttribute("aria-label", "Retirer " + personne.pseudo + " de mes contacts");
 
-    li.append(pseudo, presence, bouton);
+    li.append(pseudo, presence);
+
+    // Tant que la personne n'a pas accepté, on le dit sur la carte
+    if (!ajoutePar.has(id)) {
+      const attente = document.createElement("p");
+      attente.className = "attente";
+      attente.textContent = "Invitation envoyée, en attente";
+      li.append(attente);
+    }
+
+    li.append(bouton);
     return li;
   });
 
@@ -110,9 +126,55 @@ function afficherMesContacts() {
   aucunContact.hidden = mesContacts.size > 0;
 }
 
+// Les invitations reçues et pas encore acceptées : une carte par personne, avec « Accepter » et « Refuser ».
+function afficherInvitations() {
+  const enAttente = [...ajoutePar.entries()].filter(([id]) => !mesContacts.has(id));
+
+  const cartes = enAttente.map(([id, personne]) => {
+    const li = document.createElement("li");
+    const pseudo = document.createElement("h3");
+    pseudo.textContent = personne.pseudo;
+
+    const accepter = document.createElement("button");
+    accepter.type = "button";
+    accepter.dataset.action = "accepter";
+    accepter.dataset.id = id;
+    accepter.textContent = "Accepter";
+    accepter.setAttribute("aria-label", "Accepter l'invitation de " + personne.pseudo);
+
+    const refuser = document.createElement("button");
+    refuser.type = "button";
+    refuser.dataset.action = "refuser";
+    refuser.dataset.id = id;
+    refuser.textContent = "Refuser";
+    refuser.setAttribute("aria-label", "Refuser l'invitation de " + personne.pseudo);
+
+    const boutons = document.createElement("div");
+    boutons.className = "boutons-invitation";
+    boutons.append(accepter, refuser);
+
+    li.append(pseudo, boutons);
+    return li;
+  });
+
+  listeInvitations.replaceChildren(...cartes);
+  sectionInvitations.hidden = cartes.length === 0;
+}
+
+// Charge les invitations reçues (les personnes qui nous ont ajoutés).
+async function chargerInvitations() {
+  const { data, error } = await Data.fetchInvitations(monId);
+  if (error) {
+    afficherErreur("Impossible de charger vos invitations.", error);
+    return;
+  }
+  ajoutePar.clear();
+  data.forEach((ligne) => ajoutePar.set(ligne.user_id, ligne.personne));
+}
+
 // Charge ses contacts depuis Data et les range dans la Map.
 async function chargerMesContacts() {
-  const { data, error } = await Data.fetchContacts();
+  const { data, error } = await Data.fetchContacts(monId);
   if (error) {
     afficherErreur("Impossible de charger vos contacts.", error);
     return;
@@ -220,7 +282,9 @@ async function init() {
   }
   monId = user.id;
 
+  await chargerInvitations();
   await chargerMesContacts();
+  afficherInvitations();
 
   // « En ligne / hors ligne » : mis à jour en temps réel, et recalculé toutes les 30 secondes
   Presence.suivre(mettreAJourPresences);
@@ -274,6 +338,7 @@ resultatsRecherche.addEventListener("click", async (event) => {
     }
 
     afficherResultats(derniersResultats);
+    afficherInvitations();
     afficherStatut(profil.pseudo + " a été ajouté à vos contacts.");
     champRecherche.focus();
   } finally {
@@ -303,7 +368,48 @@ listeMesContacts.addEventListener("click", async (event) => {
     mesContacts.delete(id);
     afficherMesContacts();
     afficherResultats(derniersResultats);
+    afficherInvitations();
     afficherStatut(pseudo + " a été retiré de vos contacts.");
+    titreMesContacts.focus();
+  } finally {
+    bouton.disabled = false;
+  }
+});
+
+// Les boutons des invitations, avec un seul écouteur. Accepter = l'ajouter à sa liste ; refuser = supprimer son invitation.
+listeInvitations.addEventListener("click", async (event) => {
+  const bouton = event.target.closest("[data-action]");
+  if (!bouton) {
+    return;
+  }
+
+  const id = bouton.dataset.id;
+  const personne = ajoutePar.get(id);
+  bouton.disabled = true;
+
+  try {
+    if (bouton.dataset.action === "accepter") {
+      const { error } = await Data.addContact(id);
+      if (error && error.code !== "23505") {
+        afficherErreur("Impossible d'accepter l'invitation de " + personne.pseudo + ".", error);
+        return;
+      }
+      mesContacts.set(id, personne);
+      Presence.noter(id, personne.derniere_activite);
+      afficherMesContacts();
+      afficherStatut(personne.pseudo + " fait maintenant partie de vos contacts.");
+    } else {
+      const { error } = await Data.refuseInvitation(id, monId);
+      if (error) {
+        afficherErreur("Impossible de refuser l'invitation de " + personne.pseudo + ".", error);
+        return;
+      }
+      ajoutePar.delete(id);
+      afficherStatut("L'invitation de " + personne.pseudo + " a été refusée.");
+    }
+
+    afficherInvitations();
+    afficherResultats(derniersResultats);
     titreMesContacts.focus();
   } finally {
     bouton.disabled = false;

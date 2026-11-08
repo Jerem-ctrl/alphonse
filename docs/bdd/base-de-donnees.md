@@ -84,6 +84,10 @@ Une seule ligne par personne et par salon (contrainte `une_lecture_par_salon`).
 On ne peut pas s'ajouter soi-même (`pas_soi_meme`) ni ajouter deux fois la même personne (`un_contact_une_fois`).
 Si l'un des deux comptes est supprimé, le lien disparaît.
 
+**Invitations.** Ajouter quelqu'un, c'est l'inviter : la personne ajoutée voit la ligne qui la concerne (`contact_id`).
+Elle accepte en ajoutant la ligne inverse (le contact devient mutuel) ou refuse en supprimant la ligne reçue.
+Personne d'autre ne voit ces lignes.
+
 ## Index
 Postgres ne crée pas d'index tout seul sur les clés étrangères. Nous en avons ajouté sur les colonnes les plus interrogées :
 `messages (salon_id, created_at)`, `messages (user_id)`, `salons (created_by)`, `lectures (salon_id)` et `contacts (contact_id)`.
@@ -116,7 +120,7 @@ Les visiteurs non connectés (rôle `anon`) n'ont aucun droit sur nos tables. Po
 | `salons`       | Tous les salons                  | En son propre nom (`created_by`)                       | Non                                         | Non                     |
 | `messages`     | Tous les messages                | En son propre nom (`user_id`), image dans son dossier  | Non                                         | Ses propres messages    |
 | `lectures`     | Toutes (pour « reçu » et « lu ») | Les siennes                                            | Les siennes                                 | Non (cascade)           |
-| `contacts`     | Sa propre liste seulement        | Dans sa propre liste                                   | Non                                         | Dans sa propre liste    |
+| `contacts`     | Sa liste et les invitations reçues | Dans sa propre liste                                 | Non                                         | Dans sa liste, ou une invitation reçue (refus) |
 
 Chaque création est vérifiée par `WITH CHECK ((select auth.uid()) = user_id)` (ou `created_by`) : impossible d'écrire au nom de quelqu'un d'autre.
 Les identifiants sont de toute façon remplis par la base avec `default auth.uid()`.

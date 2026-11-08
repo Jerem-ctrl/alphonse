@@ -536,6 +536,11 @@ dd {
     font-variant-numeric: tabular-nums;
 }
 
+/* Les titres des colonnes de chiffres s'alignent à droite, comme les chiffres sous eux. */
+#tableau-statistiques thead th:not(:first-child) {
+    text-align: right;
+}
+
 #tableau-statistiques tbody tr:nth-child(even) {
     background-color: var(--fond);
 }

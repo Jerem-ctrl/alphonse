@@ -33,11 +33,31 @@ const Data = {
   // Ses propres contacts, avec le profil de chaque personne ajoutée.
   // contacts a deux liens vers utilisateurs (user_id et contact_id) : on précise !contact_id pour joindre le bon, celui de la personne ajoutée.
   // Pas besoin de filtrer sur son identifiant : la RLS ne renvoie que les lignes dont on est le propriétaire.
-  async fetchContacts() {
+  // On filtre sur user_id : la RLS laisse aussi voir les invitations reçues, qui ne font pas partie de sa liste.
+  async fetchContacts(monId) {
     return await supabaseClient
       .from("contacts")
       .select("id, contact_id, personne:utilisateurs!contact_id(pseudo, derniere_activite)")
+      .eq("user_id", monId)
       .order("created_at");
+  },
+
+  // Les invitations reçues : les personnes qui nous ont ajoutés. On joint cette fois le profil de l'auteur (!user_id).
+  async fetchInvitations(monId) {
+    return await supabaseClient
+      .from("contacts")
+      .select("user_id, personne:utilisateurs!user_id(pseudo, derniere_activite)")
+      .eq("contact_id", monId)
+      .order("created_at");
+  },
+
+  // Refuser une invitation : on supprime la ligne de l'autre personne qui nous concerne. La RLS ne le permet qu'à la personne invitée.
+  async refuseInvitation(deId, monId) {
+    return await supabaseClient
+      .from("contacts")
+      .delete()
+      .eq("user_id", deId)
+      .eq("contact_id", monId);
   },
 
   // Ajoute quelqu'un à sa liste : on n'envoie que la personne ajoutée, la base remplit le propriétaire.
