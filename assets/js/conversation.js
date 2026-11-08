@@ -1071,6 +1071,42 @@ boutonEnvoyerTelQuel.addEventListener("click", () => {
 });
 
 // « Analyser » : l'analyse à la demande.
+// -- Dictée vocale
+
+
+// Le bouton « Dicter » n'apparaît que si le navigateur sait reconnaître la voix.
+const boutonDicter = document.getElementById("bouton-dicter");
+boutonDicter.hidden = !Dictee.disponible;
+
+// Remet le bouton dans son état de repos
+function finDeDictee() {
+  boutonDicter.setAttribute("aria-pressed", "false");
+  boutonDicter.textContent = "Dicter";
+}
+
+// Un clic démarre la dictée, un second l'arrête. Chaque phrase reconnue s'ajoute à la fin du champ,
+// puis on déclenche l'événement input : le brouillon, les boutons et l'analyse automatique réagissent comme pour un texte tapé.
+boutonDicter.addEventListener("click", () => {
+  if (Dictee.reconnaissance) {
+    Dictee.arreter();
+    return;
+  }
+
+  effacerErreur();
+  boutonDicter.setAttribute("aria-pressed", "true");
+  boutonDicter.textContent = "Arrêter la dictée";
+
+  Dictee.demarrer(
+    (texte) => {
+      const avant = champMessage.value.trimEnd();
+      champMessage.value = avant ? avant + " " + texte : texte;
+      champMessage.dispatchEvent(new Event("input"));
+    },
+    finDeDictee,
+    (message) => afficherErreur(message)
+  );
+});
+
 boutonAnalyser.addEventListener("click", () => {
   analyserMaintenant();
 });

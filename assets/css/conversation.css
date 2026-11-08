@@ -416,6 +416,13 @@ body > aside {
     margin-bottom: var(--espace-4);
 }
 
+/* Pendant la dictée, le bouton passe au bleu : on voit que le micro écoute. Son texte (« Arrêter la dictée ») le dit aussi. */
+#bouton-dicter[aria-pressed="true"] {
+    border-color: var(--bleu);
+    background-color: var(--bleu);
+    color: var(--fond);
+}
+
 /* Les intertitres du résultat reprennent le style des étiquettes de la charte, petits et en capitales espacées. */
 #resultat-assistant h3 {
     margin: var(--espace-5) 0 var(--espace-2);

@@ -23,6 +23,7 @@
     <script src="../assets/js/ecriture.js" defer></script>
     <script src="../assets/js/alphonse.js" defer></script>
     <script src="../assets/js/notification.js" defer></script>
+    <script src="../assets/js/dictee.js" defer></script>
     <script src="../assets/js/conversation.js" defer></script>
     <script src="../assets/js/theme.js"></script>
 </head>
@@ -148,6 +149,9 @@
             -->
             <div id="commandes-assistant">
                 <button type="button" id="bouton-analyser">Analyser</button>
+                <!-- La dictée : cachée (hidden) par défaut, dictee.js ne l'affiche que si le navigateur sait reconnaître la voix.
+                     aria-pressed dit aux lecteurs d'écran si la dictée est en cours. -->
+                <button type="button" id="bouton-dicter" aria-pressed="false" hidden>Dicter</button>
                 <div>
                     <input type="checkbox" id="analyse-auto">
                     <label for="analyse-auto">Analyse automatique</label>
@@ -221,7 +225,8 @@
                 target="_blank" l'ouvre dans un nouvel onglet, et rel="noopener noreferrer" empêche ce nouvel onglet d'agir sur la page ou d'en connaître l'origine.
             -->
             <p id="avertissement-assistant">
-                <small>Pour être analysé, votre texte est envoyé à <a href="https://languagetool.org" target="_blank" rel="noopener noreferrer">LanguageTool</a>, un service extérieur. Pour une information confidentielle, n'utilisez pas l'analyse : laissez « Analyse automatique » décochée et ne cliquez pas sur « Analyser ».</small>
+                <small>Pour être analysé, votre texte est envoyé à <a href="https://languagetool.org" target="_blank" rel="noopener noreferrer">LanguageTool</a>, un service extérieur. Pour une information confidentielle, n'utilisez pas l'analyse : laissez « Analyse automatique » décochée et ne cliquez pas sur « Analyser ».
+                La dictée passe elle aussi par le service de reconnaissance vocale de votre navigateur.</small>
             </p>
         </section>
         <!--
