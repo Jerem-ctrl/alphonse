@@ -1,14 +1,17 @@
-// spclient.js — Connexion au projet Supabase d'Alphonse
+// spclient.js
+// Connexion au projet Supabase d'Alphonse.
 
-// La clé publishable est faite pour être vue : n'importe qui peut la lire dans le code de la page, et ce n'est pas grave, parce que ce sont nos policies RLS qui décident qui lit ou écrit quoi. Une clé secrète, elle, n'a rien à faire ici : elle passe outre la RLS, ce serait laisser le passe-partout sur la porte.
+// La clé « publishable » est prévue pour être visible dans le code de la page.
+// La protection des données repose sur les règles RLS, qui déterminent qui peut lire ou écrire quoi.
+// Une clé secrète n'a jamais sa place ici, car elle contourne la RLS.
 
-// Adresse du projet Supabase :
+// Adresse du projet Supabase
 const SUPABASE_URL = "https://nsncedqaecfkgijeulyz.supabase.co";
 
-// Clé publique :
+// Clé publique
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_QrH4g8-GVaugBMM-eoZWZg_M3c2Z2ug";
 
-// On confie à Supabase notre adaptateur avec auth.storage : c'est Local qui décide où dort la session, selon la case « Se souvenir de moi ».
+// L'option auth.storage confie le stockage de la session à Local, qui choisit son emplacement selon la case « Se souvenir de moi »
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { storage: Local.stockageSession }
 });
