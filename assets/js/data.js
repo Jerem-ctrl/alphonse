@@ -134,16 +134,30 @@ const Data = {
   },
 
   // Le lien public d'une image du compartiment images, à partir du chemin gardé dans le message.
+  // Les dimensions glissées dans le nom du fichier, ou null pour une image déposée sans elles.
+  imageDimensions(chemin) {
+    const resultat = chemin.match(/-(\d+)x(\d+)\.[a-z]+$/);
+    return resultat ? { largeur: Number(resultat[1]), hauteur: Number(resultat[2]) } : null;
+  },
+
   imageUrl(chemin) {
     return supabaseClient.storage.from("images").getPublicUrl(chemin).data.publicUrl;
   },
 
-  // Dépose une image dans le compartiment "images", dans le dossier de la personne connectée (exigé par la RLS du stockage).
-  // Le nom est rendu unique (date + quelques caractères au hasard) : deux « photo.png » ne s'écrasent jamais.
-  // Renvoie { chemin, error } : le chemin est ce qu'on enregistre ensuite dans messages.image.
-  async uploadImage(fichier, userId) {
-    const extension = fichier.name.split(".").pop().toLowerCase();
-    const chemin = userId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + extension;
+  // L'extension du fichier déposé, tirée de son type et non de son nom : un « photo.html » déclaré comme PNG est rangé en .png.
+  EXTENSIONS_IMAGE: { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" },
+
+  /*
+      Dépose une image dans le compartiment "images", dans le dossier de la personne connectée (exigé par la RLS du stockage).
+      Le nom est rendu unique (date + quelques caractères au hasard) : deux « photo.png » ne s'écrasent jamais.
+      On y glisse aussi la largeur et la hauteur de l'image (« -800x600 ») : à l'affichage, on les relit pour donner width et height à <img>,
+      sans ajouter de colonne à la table messages.
+      Renvoie { chemin, error } : le chemin est ce qu'on enregistre ensuite dans messages.image.
+  */
+  async uploadImage(fichier, userId, largeur, hauteur) {
+    const extension = Data.EXTENSIONS_IMAGE[fichier.type];
+    const chemin = userId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
+      + "-" + largeur + "x" + hauteur + "." + extension;
 
     const { error } = await supabaseClient.storage
       .from("images")

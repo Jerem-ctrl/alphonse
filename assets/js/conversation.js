@@ -213,11 +213,22 @@ function creerArticle(message, pseudo) {
     article.append(texte);
   }
 
+  // L'image : alt pour qui ne la voit pas, loading="lazy" pour ne la télécharger qu'à l'approche du fil visible,
+  // et width / height pour que le navigateur lui réserve sa place avant qu'elle arrive : le fil ne saute pas pendant le chargement.
+  // On réduit ces dimensions pour qu'une image ne dépasse pas 320 px de haut ; le CSS (max-width: 100 %) l'adapte ensuite à la bulle.
   if (message.image) {
     const image = document.createElement("img");
     image.src = Data.imageUrl(message.image);
     image.alt = "Image envoyée par " + pseudo;
     image.loading = "lazy";
+
+    const dimensions = Data.imageDimensions(message.image);
+    if (dimensions) {
+      const echelle = Math.min(1, HAUTEUR_MAX_IMAGE / dimensions.hauteur);
+      image.width = Math.round(dimensions.largeur * echelle);
+      image.height = Math.round(dimensions.hauteur * echelle);
+    }
+
     article.append(image);
   }
 
@@ -581,6 +592,25 @@ async function analyserMaintenant() {
 const TAILLE_MAX_IMAGE = 2 * 1024 * 1024; // 2 Mo
 const TYPES_IMAGE = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 
+// La hauteur maximale d'une image dans le fil, en pixels
+const HAUTEUR_MAX_IMAGE = 320;
+
+/*
+    Lit la largeur et la hauteur de l'image choisie, en la décodant avec createImageBitmap.
+    C'est aussi une vérification : un fichier renommé en .png qui n'est pas une vraie image ne se décode pas, et on le refuse.
+    Renvoie { largeur, hauteur }, ou null si le fichier n'est pas une image lisible.
+*/
+async function lireDimensions(fichier) {
+  try {
+    const bitmap = await createImageBitmap(fichier);
+    const dimensions = { largeur: bitmap.width, hauteur: bitmap.height };
+    bitmap.close();
+    return dimensions;
+  } catch (erreur) {
+    return null;
+  }
+}
+
 // Enregistre le message (texte, image, ou les deux), puis vide le champ, le brouillon et l'assistant,
 // et prévient les autres qu'on a fini d'écrire.
 // L'image est d'abord déposée dans le stockage, puis son chemin est enregistré avec le message.
@@ -589,7 +619,13 @@ async function enregistrerMessage(texte, fichier) {
   let chemin = null;
 
   if (fichier) {
-    const envoi = await Data.uploadImage(fichier, monId);
+    const dimensions = await lireDimensions(fichier);
+    if (!dimensions) {
+      afficherErreur("Ce fichier n'est pas une image lisible : choisissez une image PNG, JPEG, WebP ou GIF.");
+      return;
+    }
+
+    const envoi = await Data.uploadImage(fichier, monId, dimensions.largeur, dimensions.hauteur);
     if (envoi.error) {
       afficherErreur("L'image n'a pas pu être envoyée. Vérifiez son format et sa taille, puis réessayez.", envoi.error);
       return;
