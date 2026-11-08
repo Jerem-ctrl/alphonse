@@ -47,6 +47,21 @@ init();
 // -- Événements
 
 
+// Les statistiques de l'assistant, lues par Local. Une part est arrondie au pour cent : « 3 sur 4 » donne « 75 % ».
+function afficherStatistiques() {
+  const stats = Local.lireStatistiques();
+  const part = (nombre) => stats.relus > 0 ? Math.round((nombre / stats.relus) * 100) + " %" : "—";
+
+  document.getElementById("stat-relus").textContent = stats.relus;
+  document.getElementById("stat-moyenne").textContent = stats.relus > 0 ? Math.round(stats.sommeNotes / stats.relus) + " / 100" : "—";
+  document.getElementById("stat-appliquees").textContent = stats.appliquees;
+  document.getElementById("part-appliquees").textContent = part(stats.appliquees);
+  document.getElementById("stat-tel-quel").textContent = stats.telQuel;
+  document.getElementById("part-tel-quel").textContent = part(stats.telQuel);
+}
+
+afficherStatistiques();
+
 // Le thème : on coche le choix enregistré, puis chaque nouveau choix est appliqué et gardé tout de suite.
 document.querySelectorAll('input[name="theme"]').forEach((bouton) => {
   bouton.checked = bouton.value === Theme.lire();

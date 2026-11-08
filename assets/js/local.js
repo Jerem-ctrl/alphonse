@@ -49,6 +49,31 @@ const Local = {
     }
   },
 
+  /*
+      Les statistiques de l'assistant, gardées dans ce navigateur (localStorage, en JSON) : ce sont les résultats attendus de la fiche d'analyse.
+      - relus : messages envoyés après une analyse d'Alphonse ;
+      - sommeNotes : la somme de leurs notes, pour calculer la moyenne ;
+      - appliquees : reformulations appliquées ;
+      - telQuel : messages envoyés avec « Envoyer tel quel ».
+      On ne relit que des nombres entiers positifs : un objet bricolé dans la console repart de zéro.
+  */
+  lireStatistiques() {
+    const zero = { relus: 0, sommeNotes: 0, appliquees: 0, telQuel: 0 };
+    const lues = Local.lirePreference("statistiques", zero);
+    const statistiques = {};
+    for (const cle of Object.keys(zero)) {
+      statistiques[cle] = Number.isInteger(lues[cle]) && lues[cle] >= 0 ? lues[cle] : 0;
+    }
+    return statistiques;
+  },
+
+  // Ajoute 1 (ou la valeur donnée) à une statistique
+  compter(cle, valeur = 1) {
+    const statistiques = Local.lireStatistiques();
+    statistiques[cle] += valeur;
+    Local.enregistrerPreference("statistiques", statistiques);
+  },
+
   // Le brouillon et le dernier salon vont dans sessionStorage, pas dans localStorage : ils disparaissent avec l'onglet. Un brouillon peut contenir quelque chose de privé, on ne veut pas qu'il reste sur l'ordinateur.
 
   // Les brouillons de tous les salons tiennent dans un seul objet { identifiant du salon: texte }, relu avec JSON.parse. Si ce qu'on relit n'est pas un objet, on repart d'un objet vide.

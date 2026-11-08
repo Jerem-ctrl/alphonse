@@ -750,7 +750,7 @@ async function enregistrerMessage(texte, fichier) {
       await Data.deleteImage(chemin);
     }
     afficherErreur("Le message n'a pas pu être envoyé. Votre texte est toujours là, vous pouvez réessayer.", error);
-    return;
+    return false;
   }
 
   formulaireMessage.reset();
@@ -761,6 +761,7 @@ async function enregistrerMessage(texte, fichier) {
   mettreAJourBoutons();
   await afficherMessage(message);
   descendreEnBas();
+  return true;
 }
 
 /*
@@ -799,7 +800,19 @@ async function envoyer(avecAssistant) {
       }
     }
 
-    await enregistrerMessage(texte, fichier);
+    // Pour les statistiques : le résultat d'Alphonse, s'il correspond au texte qui part
+    const resultatUtilise = dernierResultat?.texte === texteDuChamp() ? dernierResultat : null;
+
+    const envoye = await enregistrerMessage(texte, fichier);
+
+    // Statistiques de l'assistant : un message relu (avec sa note), et s'il est parti avec « Envoyer tel quel »
+    if (envoye && resultatUtilise) {
+      Local.compter("relus");
+      Local.compter("sommeNotes", resultatUtilise.note);
+    }
+    if (envoye && !avecAssistant) {
+      Local.compter("telQuel");
+    }
   } finally {
     envoiEnCours = false;
     mettreAJourBoutons();
@@ -1079,6 +1092,7 @@ boutonAppliquer.addEventListener("click", () => {
   }
   champMessage.value = dernierResultat.reformulation;
   Local.enregistrerBrouillon(salonActif, champMessage.value);
+  Local.compter("appliquees");
   champMessage.focus();
   analyserMaintenant();
 });

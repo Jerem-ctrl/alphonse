@@ -102,6 +102,49 @@
             <p><small>Le titre de l'onglet et une pastille sur le salon vous préviennent toujours, avec ou sans son.</small></p>
         </section>
 
+        <!-- Les statistiques de l'assistant : les résultats attendus de la fiche d'analyse, calculés sur cet appareil.
+             <caption> titre le tableau, <th scope="row"> nomme chaque ligne, et le <tfoot> rappelle d'où viennent les chiffres. -->
+        <section aria-labelledby="titre-statistiques">
+            <h2 id="titre-statistiques">Statistiques de l'assistant</h2>
+            <table id="tableau-statistiques">
+                <caption>Vos messages relus par Alphonse, sur cet appareil</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Indicateur</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Part</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Messages relus par Alphonse</th>
+                        <td id="stat-relus">0</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Note moyenne</th>
+                        <td id="stat-moyenne">—</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Reformulations appliquées</th>
+                        <td id="stat-appliquees">0</td>
+                        <td id="part-appliquees">—</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Messages envoyés tel quel</th>
+                        <td id="stat-tel-quel">0</td>
+                        <td id="part-tel-quel">—</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3">Les parts sont calculées sur les messages relus par Alphonse.</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </section>
+
         <!-- Déconnexion -->
         <button type="button" id="bouton-deconnexion">Se déconnecter</button>
                 

@@ -512,6 +512,40 @@ dd {
     }
 }
 
+/* Le tableau des statistiques : lignes séparées par un filet, chiffres alignés à droite, une ligne sur deux teintée. */
+#tableau-statistiques {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#tableau-statistiques caption {
+    margin-bottom: var(--espace-2);
+    color: var(--encre-douce);
+    text-align: left;
+}
+
+#tableau-statistiques th,
+#tableau-statistiques td {
+    padding: var(--espace-2);
+    border-bottom: var(--filet-fin);
+    text-align: left;
+}
+
+#tableau-statistiques td {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+#tableau-statistiques tbody tr:nth-child(even) {
+    background-color: var(--fond);
+}
+
+#tableau-statistiques tfoot td {
+    color: var(--encre-douce);
+    font-size: 0.8125rem;
+    text-align: left;
+}
+
 /* La case à cocher prend le bleu d'accent grâce à accent-color, sans avoir à la redessiner. */
 input[type="checkbox"] {
     width: 1.25rem;
