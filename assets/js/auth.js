@@ -1,10 +1,12 @@
 /*
-    auth.js — Inscription, connexion et déconnexion avec Supabase
+    auth.js
+    Inscription, connexion et déconnexion avec Supabase Auth.
+    Nécessite spclient.js, chargé avant ce fichier.
 */
 
 const Auth = {
 
-  // Connexion avec email et mot de passe
+  // Connecte la personne avec son adresse courriel et son mot de passe
   async signIn(email, password) {
     return await supabaseClient.auth.signInWithPassword({
       email,
@@ -12,7 +14,8 @@ const Auth = {
     });
   },
 
-  // Création d'un compte (Supabase hache le mot de passe)
+  // Crée un compte. Le mot de passe est haché par Supabase et n'est jamais stocké en clair.
+  // Le pseudo est transmis dans les métadonnées du compte, puis recopié dans la table utilisateurs par le trigger creation_profil.
   async signUp(email, password, pseudo) {
     return await supabaseClient.auth.signUp({
       email,
@@ -28,7 +31,7 @@ const Auth = {
     return await supabaseClient.auth.signOut({ scope });
   },
 
-  // Renvoie l'utilisateur connecté (ou null)
+  // Renvoie la personne connectée, ou null accompagné d'une erreur si aucune session n'est ouverte
   async getUser() {
     const { data, error } = await supabaseClient.auth.getSession();
     if (error || !data.session) {
@@ -37,12 +40,14 @@ const Auth = {
     return { user: data.session.user, error: null };
   },
 
-  // Exécute "callback" à chaque connexion ou déconnexion
+  // Appelle la fonction callback à chaque changement de session (connexion, déconnexion, ouverture de la page).
+  // Un callback est une fonction transmise en paramètre, que Supabase exécute au moment voulu.
   onSessionChange(callback) {
     supabaseClient.auth.onAuthStateChange((event, session) => callback(event, session));
   },
 
-  // Exécute "callback" si personne n'est connecté
+  // Appelle la fonction callback lorsque personne n'est connecté, après une déconnexion ou à l'ouverture d'une page sans session.
+  // Les pages protégées s'en servent pour renvoyer vers la page de connexion.
   onSessionEnded(callback) {
     Auth.onSessionChange((event, session) => {
       if (event === "SIGNED_OUT" || (event === "INITIAL_SESSION" && !session)) {
