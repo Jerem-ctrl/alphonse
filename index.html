@@ -34,7 +34,9 @@
         et ne les exécute qu'une fois la page construite, dans l'ordre d'écriture.
         Cet ordre est nécessaire, car chaque script utilise le précédent (Supabase, puis le client, puis Auth, puis le script de la page).
     -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <!-- supabase-js, figé à une version précise (2.118.0). integrity donne l'empreinte attendue du fichier : si jsDelivr servait un fichier modifié,
+         le navigateur refuserait de l'exécuter. crossorigin="anonymous" est nécessaire pour que cette vérification soit possible. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous" defer></script>
     <script src="./assets/js/spclient.js" defer></script>
     <script src="./assets/js/auth.js" defer></script>
     <script src="./assets/js/connexion.js" defer></script>
@@ -48,13 +50,28 @@
 
         <!-- Titre de la page, placé hors du formulaire car il présente l'ensemble de la page et pas seulement les champs de connexion -->
         <div id="title-form">
-            <img src="./assets/img/logo-alphonse.png" alt="" width="500" height="500" class="logo">
+            <!--
+                Les images en <picture> : le navigateur prend le WebP (bien plus léger) s'il le connaît, sinon le PNG de l'<img>.
+                srcset propose plusieurs largeurs du même fichier, et sizes dit la largeur affichée : le navigateur télécharge la plus petite qui suffit
+                à l'écran (et à sa densité de pixels), au lieu de l'image de 1500 px pour un téléphone.
+            -->
+            <picture>
+                <source type="image/webp" srcset="./assets/img/logo-alphonse-128.webp 128w, ./assets/img/logo-alphonse-256.webp 256w, ./assets/img/logo-alphonse-500.webp 500w" sizes="4rem">
+                <img src="./assets/img/logo-alphonse.png" alt="" width="500" height="500" class="logo">
+            </picture>
             <!--
                 Deux versions de la bannière, une par thème, dont style.css n'affiche que la version correspondante.
                 Le même texte alternatif est utilisé, puisqu'une seule bannière est visible et lue à la fois.
             -->
-            <img src="./assets/img/banniere-alphonse-nuit.png" alt="Alphonse" width="1500" height="600" class="banniere banniere-nuit" fetchpriority="high">
-            <img src="./assets/img/banniere-alphonse-jour.png" alt="Alphonse" width="1500" height="600" class="banniere banniere-jour">
+            <!-- fetchpriority="high" sur la bannière du thème par défaut : c'est la plus grande image visible au chargement, le navigateur la demande en premier. -->
+            <picture>
+                <source type="image/webp" srcset="./assets/img/banniere-alphonse-nuit-750.webp 750w, ./assets/img/banniere-alphonse-nuit-1500.webp 1500w" sizes="(min-width: 30rem) 28rem, calc(100vw - 2rem)">
+                <img src="./assets/img/banniere-alphonse-nuit.png" alt="Alphonse" width="1500" height="600" class="banniere banniere-nuit" fetchpriority="high">
+            </picture>
+            <picture>
+                <source type="image/webp" srcset="./assets/img/banniere-alphonse-jour-750.webp 750w, ./assets/img/banniere-alphonse-jour-1500.webp 1500w" sizes="(min-width: 30rem) 28rem, calc(100vw - 2rem)">
+                <img src="./assets/img/banniere-alphonse-jour.png" alt="Alphonse" width="1500" height="600" class="banniere banniere-jour">
+            </picture>
             <h1>Connexion</h1>
         </div>
 

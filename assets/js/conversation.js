@@ -1133,15 +1133,37 @@ boutonAppliquer.addEventListener("click", () => {
   analyserMaintenant();
 });
 
+// La suppression d'un message se confirme dans une fenêtre <dialog>. On retient le bouton cliqué, le temps que la personne réponde.
+const dialogSuppressionMessage = document.getElementById("dialog-suppression-message");
+let boutonASupprimer = null;
+
 // Un seul écouteur pour tous les boutons « Supprimer » du fil : event.target dit sur quoi on a cliqué, closest() remonte jusqu'au bouton.
-filMessages.addEventListener("click", async (event) => {
+filMessages.addEventListener("click", (event) => {
   const bouton = event.target.closest("[data-action='supprimer']");
   if (!bouton) {
     return;
   }
+  boutonASupprimer = bouton;
+  dialogSuppressionMessage.showModal();
+});
 
-  // Une suppression ne s'annule pas : on demande confirmation avant.
-  if (!confirm("Supprimer ce message ? Il disparaîtra aussi pour les autres membres du salon.")) {
+document.getElementById("annuler-suppression-message").addEventListener("click", () => {
+  dialogSuppressionMessage.close();
+});
+
+// À la fermeture (Annuler, Échap ou après la suppression), le focus revient sur le bouton « Supprimer » s'il existe encore.
+dialogSuppressionMessage.addEventListener("close", () => {
+  if (boutonASupprimer && boutonASupprimer.isConnected) {
+    boutonASupprimer.focus();
+  }
+  boutonASupprimer = null;
+});
+
+// « Supprimer » dans la fenêtre : on supprime le message, puis on ferme.
+document.getElementById("confirmer-suppression-message").addEventListener("click", async () => {
+  const bouton = boutonASupprimer;
+  dialogSuppressionMessage.close();
+  if (!bouton) {
     return;
   }
 
@@ -1163,6 +1185,7 @@ filMessages.addEventListener("click", async (event) => {
     }
 
     retirerMessage(messageId);
+    champMessage.focus();
   } finally {
     bouton.disabled = false;
   }

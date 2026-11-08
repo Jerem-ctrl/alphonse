@@ -36,7 +36,9 @@
         et ne les exécute qu'une fois la page construite, dans l'ordre d'écriture.
         Cet ordre est nécessaire, car chaque script utilise le précédent (Supabase, puis le client, puis Auth, puis le script de la page).
     -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <!-- supabase-js, figé à une version précise (2.118.0). integrity donne l'empreinte attendue du fichier : si jsDelivr servait un fichier modifié,
+         le navigateur refuserait de l'exécuter. crossorigin="anonymous" est nécessaire pour que cette vérification soit possible. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous" defer></script>
     <script src="../assets/js/spclient.js" defer></script>
     <script src="../assets/js/auth.js" defer></script>
     <script src="../assets/js/data.js" defer></script>
@@ -54,7 +56,10 @@
             car le nom est écrit juste à côté et un lecteur d'écran l'annoncerait deux fois. Chaque page conserve son propre <h1>.
         -->
         <a href="conversation.html" class="marque">
-            <img src="../assets/img/logo-alphonse.png" alt="" width="500" height="500">
+            <picture>
+                <source type="image/webp" srcset="../assets/img/logo-alphonse-128.webp 128w, ../assets/img/logo-alphonse-256.webp 256w, ../assets/img/logo-alphonse-500.webp 500w" sizes="2.5rem">
+                <img src="../assets/img/logo-alphonse.png" alt="" width="500" height="500">
+            </picture>
             <span>Alphonse</span>
         </a>
         <!-- Bloc de navigation nommé par aria-label. Sur la page des conversations, ce nom le distingue de la liste des salons. -->
@@ -108,6 +113,7 @@
                 <label for="recherche-contact">Rechercher un pseudo</label>
                 <input type="search" id="recherche-contact" name="recherche" maxlength="20" autocomplete="off" spellcheck="false" aria-describedby="aide-recherche">
                 <small id="aide-recherche">Lettres sans accent, chiffres, _ ou -, comme dans un pseudo.</small>
+                <button type="submit">Rechercher</button>
             </form>
 
             <!-- Nombre de personnes trouvées, annoncé à chaque recherche -->

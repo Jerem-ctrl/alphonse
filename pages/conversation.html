@@ -27,7 +27,9 @@
     <!-- Les styles propres à cette page sont chargés après les styles communs, qu'ils complètent sans les répéter. -->
     <link rel="stylesheet" href="../assets/css/conversation.css">
     <script src="../assets/js/local.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <!-- supabase-js, figé à une version précise (2.118.0). integrity donne l'empreinte attendue du fichier : si jsDelivr servait un fichier modifié,
+         le navigateur refuserait de l'exécuter. crossorigin="anonymous" est nécessaire pour que cette vérification soit possible. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous" defer></script>
     <script src="../assets/js/spclient.js" defer></script>
     <script src="../assets/js/auth.js" defer></script>
     <script src="../assets/js/data.js" defer></script>
@@ -52,7 +54,10 @@
             car le nom est écrit juste à côté et un lecteur d'écran l'annoncerait deux fois. Chaque page conserve son propre <h1>.
         -->
         <a href="conversation.html" class="marque">
-            <img src="../assets/img/logo-alphonse.png" alt="" width="500" height="500">
+            <picture>
+                <source type="image/webp" srcset="../assets/img/logo-alphonse-128.webp 128w, ../assets/img/logo-alphonse-256.webp 256w, ../assets/img/logo-alphonse-500.webp 500w" sizes="2.5rem">
+                <img src="../assets/img/logo-alphonse.png" alt="" width="500" height="500">
+            </picture>
             <span>Alphonse</span>
         </a>
         <!-- Bloc de navigation nommé par aria-label. Sur la page des conversations, ce nom le distingue de la liste des salons. -->
@@ -187,9 +192,9 @@
 
                 <!--
                     Sur un très petit écran, le tableau peut dépasser la largeur du panneau. Ce conteneur défile alors horizontalement au lieu de faire déborder la page.
-                    tabindex="0" permet de le faire défiler au clavier, et role="region" avec son nom l'annonce aux lecteurs d'écran.
+                    tabindex="0" permet de le faire défiler au clavier, et la <section> nommée par aria-label l'annonce aux lecteurs d'écran.
                 -->
-                <div class="tableau-defilant" role="region" aria-label="Détail de la note" tabindex="0">
+                <section class="tableau-defilant" aria-label="Détail de la note" tabindex="0">
                     <!-- Détail de la note. <caption> donne son titre au tableau, <thead> les colonnes, <tbody> une ligne par critère et <tfoot> le total. -->
                     <table id="detail-note">
                         <caption>Détail de la note</caption>
@@ -209,7 +214,7 @@
                             </tr>
                         </tfoot>
                     </table>
-                </div>
+                </section>
 
                 <!-- Deux choix laissés à la personne, Alphonse conseillant sans décider -->
                 <div id="choix-assistant">
@@ -241,6 +246,17 @@
                 La dictée passe elle aussi par le service de reconnaissance vocale de votre navigateur.</small>
             </p>
         </section>
+        <!-- La confirmation avant de supprimer un message, dans une fenêtre <dialog> plutôt qu'un confirm() qui bloque toute la page.
+             showModal() la place au-dessus de la page et y met le focus ; Échap ou « Annuler » la ferment sans rien faire. -->
+        <dialog id="dialog-suppression-message" aria-labelledby="titre-suppression-message">
+            <h2 id="titre-suppression-message">Supprimer ce message ?</h2>
+            <p>Il disparaîtra aussi pour les autres membres du salon. Cette action ne peut pas être annulée.</p>
+            <div class="actions-dialogue">
+                <button type="button" id="annuler-suppression-message">Annuler</button>
+                <button type="button" id="confirmer-suppression-message">Supprimer</button>
+            </div>
+        </dialog>
+
         <!--
             Son de notification. Sans l'attribut controls, le lecteur reste invisible, et notification.js le déclenche avec play() si l'option est activée.
             Deux formats sont proposés avec <source>, et le navigateur utilise le premier qu'il sait lire.
