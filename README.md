@@ -38,6 +38,39 @@ Projet fil-rouge du cours 8WEB101 (UQAC, automne 2026).
 Avant l'envoi, le message peut être vérifié par le correcteur **LanguageTool** (orthographe, grammaire, typographie), complété par des règles locales sur la politesse et le ton.
 
 
+# Conception
+
+La conception a suivi la démarche du cours : fiche d'analyse, arborescence et flux d'utilisation, croquis à la main, puis maquette fil de fer et prototype interactif réalisés avec Penpot.
+
+**Prototype Penpot (lien public) :** [ouvrir le prototype](https://design.penpot.app/?screen=viewer&file-id=d3aee43a-8d21-8092-8008-ea812d7c6151&page-id=c5491450-457d-8059-8008-ea81583466aa&section=interactions&frame-id=c5491450-457d-8059-8008-ea951477de1e&index=0&share-id=0f08110d-f016-450e-a214-4580bb9b9061)
+
+## Maquette fil de fer
+Les quatre pages du site, au format téléphone, puisque la mise en page a été pensée d'abord pour le mobile.
+
+| Connexion | Conversations | Contacts | Paramètres |
+|---|---|---|---|
+| ![Connexion](docs/maquette/fil-de-fer-connexion.png) | ![Conversations](docs/maquette/fil-de-fer-conversations.png) | ![Contacts](docs/maquette/fil-de-fer-contacts.png) | ![Paramètres](docs/maquette/fil-de-fer-parametres.png) |
+
+## Relecture selon les heuristiques de Nielsen
+| Heuristique | Réponse dans la maquette |
+|---|---|
+| Visibilité de l'état du système | Statuts envoyé, reçu et lu ; indication « en train d'écrire » ; présence en ligne ; badge des messages non lus. |
+| Prévention des erreurs | L'assistant retient l'envoi d'un message noté sous 80/100 ; une confirmation précède toute suppression. |
+| Contrôle et liberté de l'utilisateur | Bouton « Envoyer tel quel », retour à la liste des salons, bouton Annuler dans chaque boîte de dialogue. |
+| Cohérence et standards | Même en-tête sur toutes les pages ; le logo ramène aux conversations. |
+| Aide à reconnaître et corriger les erreurs | Fautes surlignées avec la correction proposée ; messages d'erreur rédigés en clair. |
+| Esthétique et minimalisme | Un seul panneau à la fois sur téléphone ; aucun élément décoratif superflu. |
+
+## Prototype interactif : l'assistant de rédaction
+Le prototype suit le parcours de la fonctionnalité supplémentaire : rédaction, analyse, reformulation, puis envoi.
+
+| 1. Rédaction | 2. Analyse | 3. Reformulation | 4. Envoi |
+|---|---|---|---|
+| ![Rédaction](docs/maquette/prototype-1-redaction.png) | ![Analyse](docs/maquette/prototype-2-analyse.png) | ![Reformulation](docs/maquette/prototype-3-reformulation.png) | ![Envoi](docs/maquette/prototype-4-envoye.png) |
+
+Les autres documents de conception sont regroupés dans le dossier [`docs`](docs/README.md).
+
+
 # Technologies
 
 - **HTML5** sémantique et accessible (`<header>`, `<nav>`, `<main>`, `<dialog>`, `<fieldset>`, attributs ARIA).
@@ -71,11 +104,14 @@ alphonse/
 │       └── parametre.js        Page des paramètres
 └── docs/
     ├── bdd/                    Documentation de la base de données
-    ├── croquis/                Croquis des pages
+    ├── charte/                 Charte graphique (couleurs, typographies, composants)
+    ├── croquis/                Croquis des pages, dessinés à la main
+    ├── maquette/               Maquette fil de fer, relecture Nielsen et prototype (exports Penpot)
     ├── api-languagetool.md     Étude de l'API LanguageTool
     ├── arborescence.jpeg
     ├── flux-utilisation.jpeg
-    └── fiche-analyse.pdf
+    ├── fiche-analyse.pdf
+    └── README.md               Sommaire du dossier docs
 ```
 
 **Règle de nommage :** les fichiers repris du projet Webchat du cours gardent leur nom d'origine (`spclient.js`, `auth.js`, `data.js`) ; nos propres fichiers sont nommés en français.
