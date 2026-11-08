@@ -21,9 +21,11 @@ const Auth = {
     });
   },
 
-  // Déconnexion
-  async signOut() {
-    return await supabaseClient.auth.signOut();
+  // Ferme la session et efface le jeton enregistré dans le navigateur.
+  // Avec scope "local", seule la session du navigateur est effacée, sans appel au serveur,
+  // ce qui est nécessaire après la suppression du compte, puisque celui-ci n'existe plus.
+  async signOut(scope = "global") {
+    return await supabaseClient.auth.signOut({ scope });
   },
 
   // Renvoie l'utilisateur connecté (ou null)
