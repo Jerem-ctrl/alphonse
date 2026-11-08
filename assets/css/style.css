@@ -557,6 +557,16 @@ button:active {
     transform: translateY(0.0625rem);
 }
 
+/* Bouton de suppression du compte, en rouge pour signaler une action irréversible */
+#bouton-supprimer-compte {
+    border-color: var(--rouge);
+    color: var(--rouge);
+}
+
+#bouton-supprimer-compte:hover {
+    background-color: var(--rouge);
+    color: var(--fond);
+}
 
 /* ---------- 9. Panneaux ---------- */
 

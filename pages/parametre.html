@@ -22,13 +22,13 @@
         et ne les exécute qu'une fois la page construite, dans l'ordre d'écriture.
         Cet ordre est nécessaire, car chaque script utilise le précédent (Supabase, puis le client, puis Auth, puis le script de la page).
     -->
+    <script src="../assets/js/theme.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="../assets/js/spclient.js" defer></script>
     <script src="../assets/js/auth.js" defer></script>
-    <script src="../assets/js/parametre.js" defer></script>
-    <script src="../assets/js/theme.js"></script>
     <script src="../assets/js/data.js" defer></script>
     <script src="../assets/js/presence.js" defer></script>
+    <script src="../assets/js/parametre.js" defer></script>
 </head>
 
 <body>
@@ -88,7 +88,15 @@
 
         <!-- Déconnexion -->
         <button type="button" id="bouton-deconnexion">Se déconnecter</button>
-
+                
+        <!-- Suppression du compte, placée en dernier car l'action est définitive -->
+        <section>
+            <h2>Supprimer mon compte</h2>
+            <p>Votre profil, vos messages, vos images et vos contacts seront définitivement effacés. Cette action ne peut pas être annulée.</p>
+            <button type="button" id="bouton-supprimer-compte">Supprimer mon compte</button>
+            <p id="erreur-compte" role="alert"></p>
+        </section>
+        
     </main>
 
     <!-- Pied de page -->
