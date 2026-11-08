@@ -262,6 +262,16 @@ body > aside {
     font-size: 0.75rem;
 }
 
+/* Le statut de ses messages (« envoyé », « reçu », « lu »), discret, sous l'heure. « lu » passe en gras : le mot change, pas seulement l'aspect. */
+#fil-messages .statut {
+    align-self: flex-end;
+    font-size: 0.75rem;
+}
+
+#fil-messages .statut.lu {
+    font-weight: 700;
+}
+
 /*
     « Supprimer » prend la forme d'un petit lien discret dans la bulle plutôt que d'un grand bouton.
     min-height: 1.5rem garantit une cible de 24 px, le minimum exigé par les règles d'accessibilité (WCAG 2.2).

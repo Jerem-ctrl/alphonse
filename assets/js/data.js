@@ -193,29 +193,29 @@ const Data = {
       .update({ derniere_activite: new Date().toISOString() })
       .eq("id", monId);
   },
-  
-  // -- Compte --
 
-  // Supprime toutes les images du dossier de la personne connectée dans le compartiment images.
-  // La RLS du stockage n'autorise la liste et la suppression que dans son propre dossier.
-  async deleteMyImages(userId) {
-    const { data: fichiers, error } = await supabaseClient.storage
-      .from("images")
-      .list(userId, { limit: 1000 });
 
-    if (error || !fichiers || fichiers.length === 0) {
-      return { error };
-    }
+  // -- Lectures (statut « reçu » et « lu »)
 
-    const chemins = fichiers.map((fichier) => userId + "/" + fichier.name);
-    return await supabaseClient.storage.from("images").remove(chemins);
+  // Où en sont les membres d'un salon : jusqu'à quel message chacun a reçu, et lu.
+  async fetchLectures(salonId) {
+    return await supabaseClient
+      .from("lectures")
+      .select("user_id, derniere_reception, derniere_lecture")
+      .eq("salon_id", salonId);
   },
 
-  // Supprime le compte de la personne connectée avec la fonction supprimer_mon_compte de la base.
-  // La cascade efface ensuite son profil, ses messages, ses lectures et ses contacts.
-  async deleteAccount() {
-    return await supabaseClient.rpc("supprimer_mon_compte");
+  /*
+      Enregistre où l'on en est dans un salon, avec upsert : la ligne est créée la première fois, puis mise à jour
+      (une seule ligne par personne et par salon, grâce à la contrainte unique sur user_id et salon_id).
+      On n'envoie pas user_id : la base le remplit avec auth.uid(), et la RLS refuse de toucher à la ligne de quelqu'un d'autre.
+  */
+  async updateLecture(salonId, champs) {
+    return await supabaseClient
+      .from("lectures")
+      .upsert({ salon_id: salonId, ...champs }, { onConflict: "user_id,salon_id" });
   },
+
 
   // -- Temps réel --
 
@@ -298,6 +298,16 @@ const Data = {
   // Envoie un signal « ecrit » ou « arrete » sur le canal du salon.
   sendTyping(canal, evenement, monId) {
     return canal.send({ type: "broadcast", event: evenement, payload: { id: monId } });
+  },
+
+  // Écoute les lectures du salon ouvert (création et mise à jour), pour faire passer ses messages à « reçu » puis « lu » sans recharger.
+  subscribeToLectures(salonId, onChange) {
+    const filtre = { schema: "public", table: "lectures", filter: "salon_id=eq." + salonId };
+    return supabaseClient
+      .channel("lectures-" + salonId)
+      .on("postgres_changes", { event: "INSERT", ...filtre }, (payload) => onChange(payload.new))
+      .on("postgres_changes", { event: "UPDATE", ...filtre }, (payload) => onChange(payload.new))
+      .subscribe();
   },
 
   // Coupe une écoute : en quittant un salon, on ne veut plus recevoir ses messages.

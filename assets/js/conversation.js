@@ -238,6 +238,14 @@ function creerArticle(message, pseudo) {
   heure.textContent = formaterDate(message.created_at);
   article.append(heure);
 
+  // Sous ses propres messages, le statut dans un <small> : « envoyé » dès qu'il est enregistré, puis « reçu » et « lu ».
+  if (estAMoi) {
+    const statut = document.createElement("small");
+    statut.className = "statut";
+    statut.textContent = "envoyé";
+    article.append(statut);
+  }
+
   // « Supprimer » seulement sous ses propres messages. Ce n'est qu'un confort : c'est la RLS qui interdit de supprimer ceux des autres.
   if (estAMoi) {
     const boutonSupprimer = document.createElement("button");
@@ -308,15 +316,111 @@ async function afficherMessage(message) {
   // Un message inséré change aussi le regroupement de celui qui le suit
   regrouper(article);
   regrouper(article.nextElementSibling);
+
+  // Son propre message prend tout de suite le bon statut
+  if (article.classList.contains("envoye")) {
+    mettreAJourStatuts();
+  }
 }
 
 // Un message arrive en temps réel dans le salon ouvert : on l'affiche, et on descend si on était déjà en bas (ou si c'est le sien).
+// S'il vient de quelqu'un d'autre, on le note comme reçu, et comme lu si on regarde la page.
 async function recevoirMessage(message) {
   const suivre = estEnBasDuFil() || message.user_id === monId;
   await afficherMessage(message);
   if (suivre) {
     descendreEnBas();
   }
+  if (message.user_id !== monId) {
+    marquer(salonActif, message.created_at, !document.hidden);
+  }
+}
+
+
+// -- Statut « envoyé », « reçu », « lu »
+
+
+/*
+    La table lectures garde, pour chaque personne et chaque salon, la date du dernier message reçu et du dernier message lu.
+    On y range la date du message lui-même (donnée par la base), et non l'heure de l'appareil : une horloge mal réglée ne fausse rien.
+*/
+
+// Où en sont les autres membres du salon ouvert : identifiant → { derniere_reception, derniere_lecture }
+const lectures = new Map();
+
+// Ce qu'on a déjà enregistré pour soi, par salon : on n'écrit dans la base que si ça avance
+const mesLectures = new Map();
+
+// Le canal qui écoute les lectures du salon ouvert
+let canalLectures = null;
+
+// Une date ISO devient un nombre de millisecondes (0 si elle est vide), pour comparer facilement.
+function enMillisecondes(date) {
+  return date ? Date.parse(date) : 0;
+}
+
+// Enregistre qu'on a reçu (et, si lu vaut true, lu) les messages d'un salon jusqu'à celui daté dateMessage.
+async function marquer(salonId, dateMessage, lu) {
+  const deja = mesLectures.get(salonId) ?? {};
+  const champs = {};
+
+  if (enMillisecondes(dateMessage) > enMillisecondes(deja.derniere_reception)) {
+    champs.derniere_reception = dateMessage;
+  }
+  if (lu && enMillisecondes(dateMessage) > enMillisecondes(deja.derniere_lecture)) {
+    champs.derniere_lecture = dateMessage;
+  }
+  if (Object.keys(champs).length === 0) {
+    return;
+  }
+
+  mesLectures.set(salonId, { ...deja, ...champs });
+  const { error } = await Data.updateLecture(salonId, champs);
+  if (error) {
+    console.error(error);
+  }
+}
+
+// Le salon ouvert est sous les yeux : tout ce qui est affiché est reçu et lu (si l'onglet est visible).
+function marquerSalonOuvert() {
+  const dernier = filMessages.lastElementChild;
+  if (salonActif && dernier) {
+    marquer(salonActif, dernier.querySelector("time").dateTime, !document.hidden);
+  }
+}
+
+// Retient la lecture d'un autre membre (on ignore la sienne), puis met les statuts à jour.
+function noterLecture(ligne) {
+  if (ligne && ligne.user_id !== monId) {
+    lectures.set(ligne.user_id, ligne);
+    mettreAJourStatuts();
+  }
+}
+
+// Le statut de chacun de ses messages : « lu » si au moins un autre membre l'a lu, « reçu » si au moins un l'a reçu, « envoyé » sinon.
+// Il suffit de connaître le plus loin qu'un membre ait lu, et le plus loin qu'un membre ait reçu.
+function mettreAJourStatuts() {
+  let lectureMax = 0;
+  let receptionMax = 0;
+  for (const ligne of lectures.values()) {
+    lectureMax = Math.max(lectureMax, enMillisecondes(ligne.derniere_lecture));
+    receptionMax = Math.max(receptionMax, enMillisecondes(ligne.derniere_reception));
+  }
+  // Un message lu a forcément été reçu
+  receptionMax = Math.max(receptionMax, lectureMax);
+
+  filMessages.querySelectorAll("article.envoye").forEach((article) => {
+    const temps = enMillisecondes(article.querySelector("time").dateTime);
+    const statut = article.querySelector(".statut");
+    if (temps <= lectureMax) {
+      statut.textContent = "lu";
+    } else if (temps <= receptionMax) {
+      statut.textContent = "reçu";
+    } else {
+      statut.textContent = "envoyé";
+    }
+    statut.classList.toggle("lu", temps <= lectureMax);
+  });
 }
 
 // -- Notifications
@@ -352,6 +456,11 @@ function afficherPastille(salonId) {
 function signalerMessage(message) {
   if (message.user_id === monId) {
     return;
+  }
+
+  // Un message d'un autre salon est arrivé sur cet appareil : il est « reçu » (pas encore lu, le salon n'est pas ouvert).
+  if (message.salon_id !== salonActif) {
+    marquer(message.salon_id, message.created_at, false);
   }
   if (message.salon_id === salonActif && !document.hidden) {
     return;
@@ -829,6 +938,17 @@ async function init() {
   }
   noterPaquet(reponseMessages.data);
   descendreEnBas();
+
+  // Les statuts de ses messages : on écoute les lectures du salon, on charge où en sont les autres, puis on note qu'on a tout reçu et lu.
+  canalLectures = Data.subscribeToLectures(salonActif, noterLecture);
+  const reponseLectures = await Data.fetchLectures(salonActif);
+  if (reponseLectures.error) {
+    console.error(reponseLectures.error);
+  } else {
+    reponseLectures.data.forEach(noterLecture);
+  }
+  mettreAJourStatuts();
+  marquerSalonOuvert();
 }
 
 init();
@@ -1010,12 +1130,14 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden && salonActif) {
     Alerte.lire(salonActif);
     afficherPastille(salonActif);
+    marquerSalonOuvert();
   }
 });
 
 // En quittant la page (autre salon, autre page), on coupe l'écoute du salon avec removeChannel.
 window.addEventListener("pagehide", () => {
   Data.unsubscribe(canalMessages);
+  Data.unsubscribe(canalLectures);
   Ecriture.arreter();
 });
 
