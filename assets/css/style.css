@@ -110,6 +110,22 @@ html {
     font-size: 100%;
 }
 
+/*
+    La taille du texte choisie dans les paramètres (data-taille, posé par theme.js). Tout le site est en rem :
+    changer la taille de base agrandit d'un coup les textes, les marges et les boutons, sans rien casser.
+*/
+html[data-taille="petite"] {
+    font-size: 87.5%;
+}
+
+html[data-taille="grande"] {
+    font-size: 112.5%;
+}
+
+html[data-taille="tres-grande"] {
+    font-size: 125%;
+}
+
 /* Le corps est disposé en colonne. Le contenu occupe l'espace libre et repousse le pied de page en bas, même sur une page presque vide. */
 body {
     display: flex;
@@ -424,6 +440,78 @@ dialog input:autofill {
     box-shadow: 0 0 0 6.25rem var(--surface) inset;
 }
 
+/* La liste déroulante reprend la ligne d'écriture des autres champs. */
+select {
+    width: 100%;
+    max-width: 20rem;
+    min-height: 2.75rem;
+    padding: var(--espace-2) 0;
+    border: 0;
+    border-bottom: var(--filet-fin);
+    background-color: var(--surface);
+    color: var(--encre);
+    font: inherit;
+    accent-color: var(--bleu);
+}
+
+select:focus-visible {
+    border-bottom-color: var(--bleu);
+}
+
+/* Le bouton radio prend lui aussi le bleu d'accent ; son libellé, placé autour de lui, se lit en casse normale. */
+input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0 var(--espace-2) 0 0;
+    vertical-align: -0.2em;
+    accent-color: var(--bleu);
+}
+
+label:has(input[type="radio"]) {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    margin: 0;
+    color: var(--encre);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    cursor: pointer;
+}
+
+/* Le profil, en liste de définitions (<dl>) : chaque intitulé (<dt>) en étiquette, sa valeur (<dd>) juste dessous. */
+dl {
+    display: grid;
+    gap: var(--espace-1) var(--espace-5);
+    margin: 0;
+}
+
+dt {
+    color: var(--encre-douce);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.125em;
+    text-transform: uppercase;
+}
+
+dd {
+    margin: 0 0 var(--espace-3);
+    overflow-wrap: anywhere;
+}
+
+/* Sur grand écran, intitulés et valeurs côte à côte, sur deux colonnes. */
+@media (min-width: 768px) {
+    dl {
+        grid-template-columns: max-content 1fr;
+        align-items: baseline;
+    }
+
+    dd {
+        margin: 0;
+    }
+}
+
 /* La case à cocher prend le bleu d'accent grâce à accent-color, sans avoir à la redessiner. */
 input[type="checkbox"] {
     width: 1.25rem;
@@ -680,6 +768,25 @@ dialog::backdrop {
 
 #signup-form button[type="submit"] {
     width: 100%;
+}
+
+/* Les boutons d'une fenêtre de confirmation, côte à côte, et qui passent l'un sous l'autre sur un écran étroit. */
+.actions-dialogue {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-3);
+    margin-top: var(--espace-4);
+}
+
+/* Le bouton qui supprime pour de bon est en rouge : on voit tout de suite que c'est l'action dangereuse. Le texte, lui, le dit aussi. */
+#confirmer-suppression {
+    border-color: var(--rouge);
+    color: var(--rouge);
+}
+
+#confirmer-suppression:hover {
+    background-color: var(--rouge);
+    color: var(--fond);
 }
 
 

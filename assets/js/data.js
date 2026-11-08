@@ -108,6 +108,15 @@ const Data = {
       .limit(Data.TAILLE_PAQUET);
   },
 
+  // Le profil de la personne connectée, pour la page des paramètres
+  async fetchProfil(userId) {
+    return await supabaseClient
+      .from("utilisateurs")
+      .select("pseudo, created_at")
+      .eq("id", userId)
+      .single();
+  },
+
   // Le pseudo d'une personne : les messages reçus en temps réel n'ont que user_id, sans le pseudo.
   async fetchPseudo(userId) {
     return await supabaseClient

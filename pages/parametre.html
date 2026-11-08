@@ -58,27 +58,43 @@
 
         <h1>Paramètres</h1>
 
-        <!-- Informations du compte -->
-        <section>
-            <h2>Mon compte</h2>
-            <p>Pseudo : <strong id="affichage-pseudo">…</strong></p>
-            <p>Email : <strong id="affichage-email">…</strong></p>
+        <!-- Le profil, en liste de définitions : <dt> nomme l'information, <dd> la donne. C'est la balise faite pour des paires « intitulé : valeur ». -->
+        <section aria-labelledby="titre-compte">
+            <h2 id="titre-compte">Mon compte</h2>
+            <dl>
+                <dt>Pseudo</dt>
+                <dd id="affichage-pseudo">…</dd>
+                <dt>Courriel</dt>
+                <dd id="affichage-email">…</dd>
+                <dt>Membre depuis</dt>
+                <dd><time id="affichage-inscription">…</time></dd>
+            </dl>
         </section>
 
-        <!-- Apparence. Le choix est conservé dans le navigateur et appliqué sur toutes les pages par theme.js. -->
-        <section>
-            <h2>Apparence</h2>
+        <!-- Les préférences : elles sont gardées dans ce navigateur (localStorage) et s'appliquent tout de suite, sur toutes les pages. -->
+        <section aria-labelledby="titre-preferences">
+            <h2 id="titre-preferences">Préférences</h2>
+
+            <!-- Le thème : trois boutons radio dans un <fieldset>, dont la <legend> donne la question. Un seul choix possible, d'où le même name. -->
             <fieldset>
                 <legend>Thème</legend>
-                <label><input type="radio" name="theme" value="nuit"> Nuit</label>
-                <label><input type="radio" name="theme" value="jour"> Jour</label>
-                <label><input type="radio" name="theme" value="auto"> Comme l'appareil</label>
+                <label><input type="radio" name="theme" value="nuit"> Sombre</label>
+                <label><input type="radio" name="theme" value="jour"> Clair</label>
+                <label><input type="radio" name="theme" value="auto"> Comme le système de l'appareil</label>
             </fieldset>
-        </section>
-        
-        <!-- Notifications. Le son est activé par défaut et peut être désactivé. Le choix est conservé par Local. -->
-        <section>
-            <h2>Notifications</h2>
+
+            <!-- La taille du texte : une liste déroulante, plus compacte que quatre boutons radio. -->
+            <p>
+                <label for="option-taille">Taille du texte</label>
+                <select id="option-taille" name="taille">
+                    <option value="petite">Petite</option>
+                    <option value="normale">Normale</option>
+                    <option value="grande">Grande</option>
+                    <option value="tres-grande">Très grande</option>
+                </select>
+            </p>
+
+            <!-- Le son des notifications : une case à cocher, puisque c'est oui ou non. -->
             <p>
                 <input type="checkbox" id="option-son" checked>
                 <label for="option-son">Jouer un son à l'arrivée d'un message</label>
@@ -96,6 +112,22 @@
             <button type="button" id="bouton-supprimer-compte">Supprimer mon compte</button>
             <p id="erreur-compte" role="alert"></p>
         </section>
+
+        <!-- La confirmation de la suppression, dans une fenêtre <dialog> plutôt qu'un prompt() qui bloque toute la page.
+             showModal() l'ouvre au-dessus de la page, place le focus dedans et la ferme avec Échap. On retape son pseudo pour confirmer : l'action est définitive. -->
+        <dialog id="dialog-suppression" aria-labelledby="titre-suppression">
+            <form id="form-suppression" method="dialog">
+                <h2 id="titre-suppression">Supprimer mon compte</h2>
+                <p>Cette action est définitive. Pour confirmer, tapez votre pseudo : <strong id="rappel-pseudo"></strong></p>
+                <label for="confirmation-pseudo">Votre pseudo</label>
+                <input type="text" id="confirmation-pseudo" autocomplete="off" spellcheck="false" required>
+                <p id="erreur-suppression" role="alert"></p>
+                <div class="actions-dialogue">
+                    <button type="button" id="annuler-suppression">Annuler</button>
+                    <button type="submit" id="confirmer-suppression">Supprimer définitivement</button>
+                </div>
+            </form>
+        </dialog>
         
     </main>
 

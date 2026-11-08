@@ -1,43 +1,62 @@
 /*
-theme.js — Thème jour ou nuit, choisi dans les paramètres et gardé dans le navigateur (localStorage).
+    theme.js — Les préférences d'affichage : le thème (sombre, clair ou celui du système) et la taille du texte.
+
+    Elles sont choisies dans les paramètres et gardées par Local, en localStorage avec JSON.stringify et JSON.parse.
+    Ce fichier est chargé dans le <head> de chaque page, sans defer : le thème et la taille s'appliquent avant le premier affichage,
+    sans éclair blanc ni texte qui change de taille sous les yeux.
 */
 
-const CLE_THEME = "alphonse-theme";
+// Les choix possibles. Toute autre valeur trouvée dans le navigateur est ignorée.
+const THEMES = ["nuit", "jour", "auto"];
+const TAILLES = ["petite", "normale", "grande", "tres-grande"];
+
+// La préférence du système, lue avec la media query prefers-color-scheme
+const SYSTEME_CLAIR = window.matchMedia("(prefers-color-scheme: light)");
 
 const Theme = {
 
-  // Le choix enregistré : "nuit" (par défaut), "jour" ou "auto". Toute autre valeur compte comme "nuit".
-  // try/catch : en navigation privée, le localStorage peut être bloqué, et la page ne doit pas planter pour autant.
+  // Le thème choisi : "nuit" (sombre, par défaut), "jour" (clair) ou "auto" (celui du système)
   lire() {
-    try {
-      const choix = localStorage.getItem(CLE_THEME);
-      return ["nuit", "jour", "auto"].includes(choix) ? choix : "nuit";
-    } catch (erreur) {
-      return "nuit";
-    }
+    const choix = Local.lirePreference("theme", "nuit");
+    return THEMES.includes(choix) ? choix : "nuit";
   },
 
-  // Garde le choix pour les prochaines visites, sur toutes les pages
   enregistrer(choix) {
-    try {
-      localStorage.setItem(CLE_THEME, choix);
-    } catch (erreur) {
-      console.error(erreur);
-    }
+    Local.enregistrerPreference("theme", choix);
   },
 
-  // Applique le thème : data-theme="jour" sur <html> active les couleurs jour de style.css,
+  // data-theme="jour" sur <html> active les couleurs claires de style.css ; sans l'attribut, c'est le thème sombre.
+  // Avec "auto", on suit le système : clair s'il le demande, sombre sinon.
   appliquer(choix) {
-    const jour = choix === "jour"
-      || (choix === "auto" && window.matchMedia("(prefers-color-scheme: light)").matches);
-
-    if (jour) {
+    const clair = choix === "jour" || (choix === "auto" && SYSTEME_CLAIR.matches);
+    if (clair) {
       document.documentElement.dataset.theme = "jour";
     } else {
       document.documentElement.removeAttribute("data-theme");
     }
   },
+
+  // La taille du texte : "normale" par défaut
+  lireTaille() {
+    const taille = Local.lirePreference("taille", "normale");
+    return TAILLES.includes(taille) ? taille : "normale";
+  },
+
+  enregistrerTaille(taille) {
+    Local.enregistrerPreference("taille", taille);
+  },
+
+  // data-taille sur <html> change la taille de base de la page ; tout est en rem, donc tout suit : textes, marges, boutons.
+  appliquerTaille(taille) {
+    document.documentElement.dataset.taille = taille;
+  },
 };
 
-// Dès le chargement de la page : on applique le thème choisi
+// Dès le chargement de la page : on applique le thème et la taille choisis
 Theme.appliquer(Theme.lire());
+Theme.appliquerTaille(Theme.lireTaille());
+
+// Si le thème suit le système et que le système change (passage au mode sombre le soir, par exemple), la page suit sans recharger.
+SYSTEME_CLAIR.addEventListener("change", () => {
+  Theme.appliquer(Theme.lire());
+});
